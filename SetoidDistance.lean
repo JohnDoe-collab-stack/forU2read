@@ -366,6 +366,60 @@ theorem cauchy_transport_of_pointwise
 end SetoidMetric
 
 /-!
+### Nat-valued convergence: limits are unique modulo `R`
+
+For `D = Nat`, no quotient or extra axioms are needed: taking `ε = 1` forces distance `0`,
+hence `R`-equivalence by `sep`.
+-/
+
+namespace SetoidMetric
+
+section NatValued
+
+variable {R : Setoid α} (M : SetoidMetric (α := α) (D := Nat) R)
+
+def EventualRToNat (R : Setoid α) (u : Nat → α) (ℓ : α) : Prop :=
+  ∃ N : Nat, ∀ n : Nat, N ≤ n → R.r (u n) ℓ
+
+theorem converges_nat_iff_eventualRToNat (u : Nat → α) (ℓ : α) :
+    M.ConvergesTo u ℓ ↔ EventualRToNat (α := α) R u ℓ := by
+  constructor
+  · intro hu
+    rcases hu 1 Nat.zero_lt_one with ⟨N, hN⟩
+    refine ⟨N, ?_⟩
+    intro n hn
+    have hlt : M.d (u n) ℓ < 1 := hN n hn
+    have hd0 : M.d (u n) ℓ = 0 := by
+      apply Nat.eq_zero_of_le_zero
+      -- `t < 1` implies `t ≤ 0` constructively (avoid `Nat.lt_one_iff` which uses `propext`).
+      exact Nat.le_of_lt_succ (n := 0) hlt
+    exact (M.sep (u n) ℓ).1 hd0
+  · rintro ⟨N, hN⟩ ε hε
+    refine ⟨N, ?_⟩
+    intro n hn
+    have hR : R.r (u n) ℓ := hN n hn
+    have hd0 : M.d (u n) ℓ = 0 := (M.sep (u n) ℓ).2 hR
+    -- rewrite to `0 < ε`
+    rw [hd0]
+    exact hε
+
+theorem converges_unique_modR_nat {u : Nat → α} {ℓ₁ ℓ₂ : α} :
+    M.ConvergesTo u ℓ₁ → M.ConvergesTo u ℓ₂ → R.r ℓ₁ ℓ₂ := by
+  intro h₁ h₂
+  rcases (converges_nat_iff_eventualRToNat (M := M) u ℓ₁).1 h₁ with ⟨N1, hN1⟩
+  rcases (converges_nat_iff_eventualRToNat (M := M) u ℓ₂).1 h₂ with ⟨N2, hN2⟩
+  -- Avoid `Nat.le_max_left/right` (they use `propext`): use `N1 + N2` as a common bound.
+  have h1 : R.r (u (N1 + N2)) ℓ₁ :=
+    hN1 (N1 + N2) (Nat.le_add_right N1 N2)
+  have h2 : R.r (u (N1 + N2)) ℓ₂ :=
+    hN2 (N1 + N2) (Nat.le_add_left N2 N1)
+  exact R.iseqv.trans (R.iseqv.symm h1) h2
+
+end NatValued
+
+end SetoidMetric
+
+/-!
 ### Discrete setoid-metric on `Nat` and its topology/Cauchy behavior
 
 This is the canonical “quotient geometry”: it measures *discrete variability* at the setoid level:
@@ -410,15 +464,18 @@ theorem converges_discrete_iff_eventualRTo (u : Nat → α) (ℓ : α) :
     rcases hu 1 Nat.zero_lt_one with ⟨N, hN⟩
     refine ⟨N, ?_⟩
     intro n hn
-    have hlt : discreteDist (α := α) (R := R) (u n) ℓ < 1 := by
-      simpa [SetoidMetric.ConvergesTo, discreteSetoidMetric] using hN n hn
+    have hlt : (discreteSetoidMetric (α := α) R).d (u n) ℓ < 1 := hN n hn
+    dsimp [discreteSetoidMetric] at hlt
     exact (discreteDist_lt_one_iff (α := α) (R := R) (u n) ℓ).1 hlt
   · rintro ⟨N, hN⟩ ε hε
     refine ⟨N, ?_⟩
     intro n hn
     have hR : R.r (u n) ℓ := hN n hn
     -- discrete distance is `0` on `R`, hence `< ε` for any `ε > 0`.
-    simpa [SetoidMetric.ConvergesTo, discreteSetoidMetric, discreteDist, hR] using hε
+    change discreteDist (α := α) (R := R) (u n) ℓ < ε
+    unfold discreteDist
+    rw [if_pos hR]
+    exact hε
 
 theorem converges_discrete_unique_modR {u : Nat → α} {ℓ₁ ℓ₂ : α} :
     (discreteSetoidMetric (α := α) R).ConvergesTo u ℓ₁ →
@@ -535,6 +592,10 @@ This file is setoid-only (no `Quot`) and should not depend on `propext`.
 #print axioms PrimitiveHolonomy.triangle_descends
 #print axioms PrimitiveHolonomy.discreteDist_triangle
 #print axioms PrimitiveHolonomy.SetoidMetric
+#print axioms PrimitiveHolonomy.SetoidMetric.ConvergesTo
+#print axioms PrimitiveHolonomy.SetoidMetric.converges_unique_modR_nat
+#print axioms PrimitiveHolonomy.converges_discrete_iff_eventualRTo
+#print axioms PrimitiveHolonomy.SetoidMetric.cauchy_discrete_exists_limit
 #print axioms PrimitiveHolonomy.SetoidMetric.cauchy_discrete_iff_eventualPairwiseR
 
 end PrimitiveHolonomy
