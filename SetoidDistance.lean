@@ -294,6 +294,53 @@ def CauchySeq (u : Nat → α) : Prop :=
   ∀ ε : D, 0 < ε →
     ∃ N : Nat, ∀ m n : Nat, N ≤ m → N ≤ n → M.d (u m) (u n) < ε
 
+/-- Convergence on representatives (setoid-first). -/
+def ConvergesTo (u : Nat → α) (ℓ : α) : Prop :=
+  ∀ ε : D, 0 < ε → ∃ N : Nat, ∀ n : Nat, N ≤ n → M.d (u n) ℓ < ε
+
+theorem converges_transport_of_pointwise
+    {u v : Nat → α}
+    (hresp : ∀ n, R.r (u n) (v n)) (ℓ : α) :
+    M.ConvergesTo u ℓ ↔ M.ConvergesTo v ℓ := by
+  constructor
+  · intro hu ε hε
+    rcases hu ε hε with ⟨N, hN⟩
+    refine ⟨N, ?_⟩
+    intro n hn
+    have hdn : M.d (u n) ℓ = M.d (v n) ℓ :=
+      M.respects (hresp n) (R.iseqv.refl ℓ)
+    have : M.d (u n) ℓ < ε := hN n hn
+    simpa [hdn] using this
+  · intro hv ε hε
+    rcases hv ε hε with ⟨N, hN⟩
+    refine ⟨N, ?_⟩
+    intro n hn
+    have hdn : M.d (v n) ℓ = M.d (u n) ℓ :=
+      M.respects (R.iseqv.symm (hresp n)) (R.iseqv.refl ℓ)
+    have : M.d (v n) ℓ < ε := hN n hn
+    simpa [hdn] using this
+
+theorem converges_transport_of_limit
+    {u : Nat → α} {ℓ ℓ' : α} (hℓ : R.r ℓ ℓ') :
+    M.ConvergesTo u ℓ ↔ M.ConvergesTo u ℓ' := by
+  constructor
+  · intro hu ε hε
+    rcases hu ε hε with ⟨N, hN⟩
+    refine ⟨N, ?_⟩
+    intro n hn
+    have hdn : M.d (u n) ℓ = M.d (u n) ℓ' :=
+      M.respects (R.iseqv.refl (u n)) hℓ
+    have : M.d (u n) ℓ < ε := hN n hn
+    simpa [hdn] using this
+  · intro hu ε hε
+    rcases hu ε hε with ⟨N, hN⟩
+    refine ⟨N, ?_⟩
+    intro n hn
+    have hdn : M.d (u n) ℓ' = M.d (u n) ℓ :=
+      M.respects (R.iseqv.refl (u n)) (R.iseqv.symm hℓ)
+    have : M.d (u n) ℓ' < ε := hN n hn
+    simpa [hdn] using this
+
 theorem cauchy_transport_of_pointwise
     {u v : Nat → α}
     (hresp : ∀ n, R.r (u n) (v n)) :
@@ -336,6 +383,9 @@ def discreteSetoidMetric : SetoidMetric (α := α) (D := Nat) R where
   tri := discreteDist_triangle (α := α) (R := R)
   sep := discreteDist_zero_iff (α := α) (R := R)
 
+def EventualRTo (u : Nat → α) (ℓ : α) : Prop :=
+  ∃ N : Nat, ∀ n : Nat, N ≤ n → R.r (u n) ℓ
+
 theorem discreteDist_lt_one_iff (x y : α) :
     discreteDist (α := α) (R := R) x y < 1 ↔ R.r x y := by
   unfold discreteDist
@@ -352,6 +402,32 @@ theorem discreteDist_lt_one_iff (x y : α) :
       exact False.elim (Nat.lt_irrefl 1 h)
     · intro h
       exact False.elim (hxy h)
+
+theorem converges_discrete_iff_eventualRTo (u : Nat → α) (ℓ : α) :
+    (discreteSetoidMetric (α := α) R).ConvergesTo u ℓ ↔ EventualRTo (α := α) (R := R) u ℓ := by
+  constructor
+  · intro hu
+    rcases hu 1 Nat.zero_lt_one with ⟨N, hN⟩
+    refine ⟨N, ?_⟩
+    intro n hn
+    have hlt : discreteDist (α := α) (R := R) (u n) ℓ < 1 := by
+      simpa [SetoidMetric.ConvergesTo, discreteSetoidMetric] using hN n hn
+    exact (discreteDist_lt_one_iff (α := α) (R := R) (u n) ℓ).1 hlt
+  · rintro ⟨N, hN⟩ ε hε
+    refine ⟨N, ?_⟩
+    intro n hn
+    have hR : R.r (u n) ℓ := hN n hn
+    -- discrete distance is `0` on `R`, hence `< ε` for any `ε > 0`.
+    simpa [SetoidMetric.ConvergesTo, discreteSetoidMetric, discreteDist, hR] using hε
+
+theorem converges_discrete_unique_modR {u : Nat → α} {ℓ₁ ℓ₂ : α} :
+    (discreteSetoidMetric (α := α) R).ConvergesTo u ℓ₁ →
+      (discreteSetoidMetric (α := α) R).ConvergesTo u ℓ₂ → R.r ℓ₁ ℓ₂ := by
+  intro h₁ h₂
+  rcases (converges_discrete_iff_eventualRTo (α := α) (R := R) u ℓ₁).1 h₁ with ⟨N1, hN1⟩
+  rcases (converges_discrete_iff_eventualRTo (α := α) (R := R) u ℓ₂).1 h₂ with ⟨N2, hN2⟩
+  refine R.iseqv.trans (R.iseqv.symm (hN1 (Nat.max N1 N2) (Nat.le_max_left _ _))) ?_
+  exact hN2 (Nat.max N1 N2) (Nat.le_max_right _ _)
 
 theorem metricIsOpen_discrete_iff_isSat (U : Set α) :
     (discreteSetoidMetric (α := α) R).MetricIsOpen U ↔ IsSat (α := α) R U := by
@@ -417,6 +493,23 @@ theorem cauchy_discrete_of_eventualPairwiseR (u : Nat → α) :
   unfold discreteDist
   rw [if_pos hmn]
   exact hε
+
+theorem converges_discrete_of_eventualRTo (u : Nat → α) (ℓ : α) :
+    EventualRTo (α := α) (R := R) u ℓ → (discreteSetoidMetric (α := α) R).ConvergesTo u ℓ := by
+  intro h
+  exact (converges_discrete_iff_eventualRTo (α := α) (R := R) u ℓ).2 h
+
+theorem cauchy_discrete_exists_limit (u : Nat → α) :
+    (discreteSetoidMetric (α := α) R).CauchySeq u →
+      ∃ ℓ : α, (discreteSetoidMetric (α := α) R).ConvergesTo u ℓ := by
+  intro hC
+  rcases eventualPairwiseR_of_cauchy_discrete (α := α) (R := R) u hC with ⟨N, hN⟩
+  refine ⟨u N, ?_⟩
+  refine (converges_discrete_iff_eventualRTo (α := α) (R := R) u (u N)).2 ?_
+  refine ⟨N, ?_⟩
+  intro n hn
+  have : R.r (u N) (u n) := hN N n (le_rfl) hn
+  exact R.iseqv.symm this
 
 theorem cauchy_discrete_iff_eventualPairwiseR (u : Nat → α) :
     (discreteSetoidMetric (α := α) R).CauchySeq u ↔ EventualPairwiseR (α := α) (R := R) u := by
