@@ -158,19 +158,42 @@ Everything remains setoid-only: we never form `α / R` as a type.
 
 section SetoidMetricPack
 
-variable {D : Type v} [Preorder D] [Add D] [Zero D]
+variable {D : Type v} [LE D] [Add D]
 
-/-- A metric-like structure whose separation axiom is relative to a setoid `R` (setoid-first). -/
+/-- A metric-like structure on representatives, compatible with a setoid `R` (setoid-first).
+
+No separation requirement (`d x y = 0 ↔ R.r x y`) is bundled here; that property is proved
+per-construction when available.
+-/
 structure SetoidMetric (R : Setoid α) where
   d : α → α → D
   respects : RespectsSetoid (α := α) R d
   symm : ∀ x y, d x y = d y x
   tri : ∀ x y z, d x z ≤ d x y + d y z
-  sep : ∀ x y, d x y = 0 ↔ R.r x y
+
+section WithZero
+
+variable [Zero D]
 
 namespace SetoidMetric
 
-variable {R : Setoid α} (M : SetoidMetric (α := α) (D := D) R)
+/-- Separation property relative to `R`: distance `0` exactly on `R`. -/
+def Separates {R : Setoid α} (M : SetoidMetric (α := α) (D := D) R) : Prop :=
+  ∀ x y, M.d x y = 0 ↔ R.r x y
+
+end SetoidMetric
+
+/-- A `SetoidMetric` equipped with a proof of separation relative to `R`. -/
+structure SetoidMetricSep (R : Setoid α) extends SetoidMetric (α := α) (D := D) R where
+  sep : ∀ x y, d x y = 0 ↔ R.r x y
+
+instance {R : Setoid α} :
+    Coe (SetoidMetricSep (α := α) (D := D) R) (SetoidMetric (α := α) (D := D) R) :=
+  ⟨fun M => M.toSetoidMetric⟩
+
+namespace SetoidMetricSep
+
+variable {R : Setoid α} (M : SetoidMetricSep (α := α) (D := D) R)
 
 theorem d_self (x : α) : M.d x x = 0 :=
   (M.sep x x).2 (R.iseqv.refl x)
@@ -178,7 +201,9 @@ theorem d_self (x : α) : M.d x x = 0 :=
 theorem d_eq_zero_iff (x y : α) : M.d x y = 0 ↔ R.r x y :=
   M.sep x y
 
-end SetoidMetric
+end SetoidMetricSep
+
+end WithZero
 
 /-!
 ### Balls and saturation
@@ -207,6 +232,7 @@ theorem sat_isSat (R : Setoid α) (U : Set α) : IsSat (α := α) R (Sat (α := 
 namespace SetoidMetric
 
 variable {R : Setoid α} (M : SetoidMetric (α := α) (D := D) R)
+variable [LT D]
 
 /-- Open ball on representatives. -/
 def Ball (x : α) (r : D) : Set α :=
@@ -272,6 +298,8 @@ show that for the *discrete* setoid-distance on `Nat`, it collapses exactly to s
 namespace SetoidMetric
 
 variable {R : Setoid α} (M : SetoidMetric (α := α) (D := D) R)
+variable [Zero D]
+variable [LT D]
 
 def MetricIsOpen (U : Set α) : Prop :=
   IsSat (α := α) R U ∧
@@ -289,6 +317,8 @@ end SetoidMetric
 namespace SetoidMetric
 
 variable {R : Setoid α} (M : SetoidMetric (α := α) (D := D) R)
+variable [Zero D]
+variable [LT D]
 
 def CauchySeq (u : Nat → α) : Prop :=
   ∀ ε : D, 0 < ε →
@@ -376,7 +406,7 @@ namespace SetoidMetric
 
 section NatValued
 
-variable {R : Setoid α} (M : SetoidMetric (α := α) (D := Nat) R)
+variable {R : Setoid α} (M : SetoidMetricSep (α := α) (D := Nat) R)
 
 def EventualRToNat (R : Setoid α) (u : Nat → α) (ℓ : α) : Prop :=
   ∃ N : Nat, ∀ n : Nat, N ≤ n → R.r (u n) ℓ
@@ -430,7 +460,7 @@ section DiscreteDerived
 
 variable (R : Setoid α) [DecidableRel R.r]
 
-def discreteSetoidMetric : SetoidMetric (α := α) (D := Nat) R where
+def discreteSetoidMetric : SetoidMetricSep (α := α) (D := Nat) R where
   d := discreteDist (α := α) (R := R)
   respects := discreteDist_respectsSetoid (α := α) (R := R)
   symm := discreteDist_symm (α := α) (R := R)
@@ -483,8 +513,11 @@ theorem converges_discrete_unique_modR {u : Nat → α} {ℓ₁ ℓ₂ : α} :
   intro h₁ h₂
   rcases (converges_discrete_iff_eventualRTo (α := α) (R := R) u ℓ₁).1 h₁ with ⟨N1, hN1⟩
   rcases (converges_discrete_iff_eventualRTo (α := α) (R := R) u ℓ₂).1 h₂ with ⟨N2, hN2⟩
-  refine R.iseqv.trans (R.iseqv.symm (hN1 (Nat.max N1 N2) (Nat.le_max_left _ _))) ?_
-  exact hN2 (Nat.max N1 N2) (Nat.le_max_right _ _)
+  have h1 : R.r (u (N1 + N2)) ℓ₁ :=
+    hN1 (N1 + N2) (Nat.le_add_right N1 N2)
+  have h2 : R.r (u (N1 + N2)) ℓ₂ :=
+    hN2 (N1 + N2) (Nat.le_add_left N2 N1)
+  exact R.iseqv.trans (R.iseqv.symm h1) h2
 
 theorem metricIsOpen_discrete_iff_isSat (U : Set α) :
     (discreteSetoidMetric (α := α) R).MetricIsOpen U ↔ IsSat (α := α) R U := by
@@ -583,7 +616,7 @@ end SetoidMetricPack
 end SetoidOnly
 
 /-!
-## Axiom audit
+## Dependency audit
 
 This file is setoid-only (no `Quot`) and should not depend on `propext`.
 -/
@@ -592,6 +625,7 @@ This file is setoid-only (no `Quot`) and should not depend on `propext`.
 #print axioms PrimitiveHolonomy.triangle_descends
 #print axioms PrimitiveHolonomy.discreteDist_triangle
 #print axioms PrimitiveHolonomy.SetoidMetric
+#print axioms PrimitiveHolonomy.SetoidMetricSep
 #print axioms PrimitiveHolonomy.SetoidMetric.ConvergesTo
 #print axioms PrimitiveHolonomy.SetoidMetric.converges_unique_modR_nat
 #print axioms PrimitiveHolonomy.converges_discrete_iff_eventualRTo
