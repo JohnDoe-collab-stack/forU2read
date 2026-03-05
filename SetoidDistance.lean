@@ -616,6 +616,88 @@ end SetoidMetricPack
 end SetoidOnly
 
 /-!
+## 5) Probe-derived proximity (no numeric distance)
+
+This section derives "balls / Cauchy / convergence" directly from the probe family, via
+`ProbeIndistinguishableOn`, without introducing any numeric codomain or order structure.
+-/
+
+section ProbeDerived
+
+variable {P : Type u} [HistoryGraph P]
+variable {S V : Type w}
+variable (C : CoeffCat) (fam : SemFamily C P S)
+variable (obs : S → V) (target_obs : P → V)
+variable {h : P}
+
+abbrev FiberState : Type w :=
+  FiberPt (P := P) obs target_obs h
+
+/-- "Ball" of radius `C0` around `x`: points indistinguishable from `x` by probes in `C0`. -/
+def ProbeBallOn (C0 : Set C.Obj) (x : FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) :
+    Set (FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) :=
+  { y | ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h x y }
+
+/-- Cauchy (radius-parametrized): eventually indistinguishable for every probe budget `C0`. -/
+def ProbeCauchy (u : Nat → FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) : Prop :=
+  ∀ C0 : Set C.Obj, ∃ N : Nat, ∀ m n : Nat, N ≤ m → N ≤ n →
+    ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h (u m) (u n)
+
+/-- Convergence (radius-parametrized): eventually indistinguishable from `ℓ` for every `C0`. -/
+def ProbeConvergesTo
+    (u : Nat → FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h))
+    (ℓ : FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) : Prop :=
+  ∀ C0 : Set C.Obj, ∃ N : Nat, ∀ n : Nat, N ≤ n →
+    ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h (u n) ℓ
+
+/-- Convergence implies Cauchy (purely from transitivity/symmetry of probe-indistinguishability). -/
+theorem probeCauchy_of_converges
+    (u : Nat → FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h))
+    (ℓ : FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) :
+    ProbeConvergesTo (P := P) (C := C) fam obs target_obs (h := h) u ℓ →
+      ProbeCauchy (P := P) (C := C) fam obs target_obs (h := h) u := by
+  intro hconv C0
+  rcases hconv C0 with ⟨N, hN⟩
+  refine ⟨N, ?_⟩
+  intro m n hm hn
+  have hmℓ : ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h (u m) ℓ := hN m hm
+  have hnℓ : ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h (u n) ℓ := hN n hn
+  let R0 := ProbeSetoidOn (P := P) (C := C) fam C0 obs target_obs h
+  exact R0.iseqv.trans hmℓ (R0.iseqv.symm hnℓ)
+
+/-- Limits are unique up to indistinguishability by probes in `C0`. -/
+theorem probeConverges_unique_mod
+    (u : Nat → FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h))
+    (C0 : Set C.Obj)
+    {ℓ₁ ℓ₂ : FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)} :
+    ProbeConvergesTo (P := P) (C := C) fam obs target_obs (h := h) u ℓ₁ →
+      ProbeConvergesTo (P := P) (C := C) fam obs target_obs (h := h) u ℓ₂ →
+      ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h ℓ₁ ℓ₂ := by
+  intro h₁ h₂
+  rcases h₁ C0 with ⟨N1, hN1⟩
+  rcases h₂ C0 with ⟨N2, hN2⟩
+  let N := N1 + N2
+  have h1 : ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h (u N) ℓ₁ :=
+    hN1 N (Nat.le_add_right N1 N2)
+  have h2 : ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h (u N) ℓ₂ :=
+    hN2 N (Nat.le_add_left N2 N1)
+  let R0 := ProbeSetoidOn (P := P) (C := C) fam C0 obs target_obs h
+  exact R0.iseqv.trans (R0.iseqv.symm h1) h2
+
+/-- Limits are unique up to indistinguishability by all probes (i.e. `C0 = univ`). -/
+theorem probeConverges_unique_mod_all
+    (u : Nat → FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h))
+    {ℓ₁ ℓ₂ : FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)} :
+    ProbeConvergesTo (P := P) (C := C) fam obs target_obs (h := h) u ℓ₁ →
+      ProbeConvergesTo (P := P) (C := C) fam obs target_obs (h := h) u ℓ₂ →
+      ProbeIndistinguishableOn (P := P) C fam Set.univ obs target_obs h ℓ₁ ℓ₂ := by
+  intro h₁ h₂
+  simpa using
+    probeConverges_unique_mod (P := P) (C := C) fam obs target_obs (h := h) u Set.univ h₁ h₂
+
+end ProbeDerived
+
+/-!
 ## Dependency audit
 
 This file is setoid-only (no `Quot`) and should not depend on `propext`.
@@ -631,5 +713,8 @@ This file is setoid-only (no `Quot`) and should not depend on `propext`.
 #print axioms PrimitiveHolonomy.converges_discrete_iff_eventualRTo
 #print axioms PrimitiveHolonomy.SetoidMetric.cauchy_discrete_exists_limit
 #print axioms PrimitiveHolonomy.SetoidMetric.cauchy_discrete_iff_eventualPairwiseR
+#print axioms PrimitiveHolonomy.probeCauchy_of_converges
+#print axioms PrimitiveHolonomy.probeConverges_unique_mod
+#print axioms PrimitiveHolonomy.probeConverges_unique_mod_all
 
 end PrimitiveHolonomy
