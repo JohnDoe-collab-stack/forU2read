@@ -633,10 +633,30 @@ variable {h : P}
 abbrev FiberState : Type w :=
   FiberPt (P := P) obs target_obs h
 
+/-- The setoid on `FiberState` induced by restricting probes to `C0`. -/
+abbrev ProbeR (C0 : Set C.Obj) : Setoid (FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) :=
+  ProbeSetoidOn (P := P) (C := C) fam C0 obs target_obs h
+
 /-- "Ball" of radius `C0` around `x`: points indistinguishable from `x` by probes in `C0`. -/
 def ProbeBallOn (C0 : Set C.Obj) (x : FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) :
     Set (FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) :=
   { y | ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h x y }
+
+/-- `ProbeBallOn` is exactly the `ProbeR C0`-equivalence class of `x` (membership form). -/
+theorem mem_probeBallOn_iff (C0 : Set C.Obj)
+    (x y : FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) :
+    y ∈ ProbeBallOn (P := P) (C := C) fam obs target_obs (h := h) C0 x ↔
+      (ProbeR (P := P) (C := C) fam obs target_obs (h := h) C0).r x y := by
+  rfl
+
+/-- `ProbeBallOn` is exactly the `ProbeR C0`-equivalence class of `x` (set form). -/
+theorem probeBallOn_setEq (C0 : Set C.Obj)
+    (x : FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) :
+    SetEq (α := FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h))
+      (ProbeBallOn (P := P) (C := C) fam obs target_obs (h := h) C0 x)
+      { y | (ProbeR (P := P) (C := C) fam obs target_obs (h := h) C0).r x y } := by
+  intro y
+  rfl
 
 /-- Cauchy (radius-parametrized): eventually indistinguishable for every probe budget `C0`. -/
 def ProbeCauchy (u : Nat → FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) : Prop :=
@@ -649,6 +669,39 @@ def ProbeConvergesTo
     (ℓ : FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) : Prop :=
   ∀ C0 : Set C.Obj, ∃ N : Nat, ∀ n : Nat, N ≤ n →
     ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h (u n) ℓ
+
+/-- `ProbeCauchy` expressed purely in terms of the setoid relation `(ProbeR C0).r`. -/
+theorem probeCauchy_iff_forall_rel
+    (u : Nat → FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) :
+    ProbeCauchy (P := P) (C := C) fam obs target_obs (h := h) u ↔
+      ∀ C0 : Set C.Obj, ∃ N : Nat, ∀ m n : Nat, N ≤ m → N ≤ n →
+        (ProbeR (P := P) (C := C) fam obs target_obs (h := h) C0).r (u m) (u n) := by
+  constructor <;> intro h C0
+  · rcases h C0 with ⟨N, hN⟩
+    refine ⟨N, ?_⟩
+    intro m n hm hn
+    simpa using hN m n hm hn
+  · rcases h C0 with ⟨N, hN⟩
+    refine ⟨N, ?_⟩
+    intro m n hm hn
+    simpa using hN m n hm hn
+
+/-- `ProbeConvergesTo` expressed purely in terms of the setoid relation `(ProbeR C0).r`. -/
+theorem probeConvergesTo_iff_forall_rel
+    (u : Nat → FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h))
+    (ℓ : FiberState (P := P) (obs := obs) (target_obs := target_obs) (h := h)) :
+    ProbeConvergesTo (P := P) (C := C) fam obs target_obs (h := h) u ℓ ↔
+      ∀ C0 : Set C.Obj, ∃ N : Nat, ∀ n : Nat, N ≤ n →
+        (ProbeR (P := P) (C := C) fam obs target_obs (h := h) C0).r (u n) ℓ := by
+  constructor <;> intro h C0
+  · rcases h C0 with ⟨N, hN⟩
+    refine ⟨N, ?_⟩
+    intro n hn
+    simpa using hN n hn
+  · rcases h C0 with ⟨N, hN⟩
+    refine ⟨N, ?_⟩
+    intro n hn
+    simpa using hN n hn
 
 /-- Convergence implies Cauchy (purely from transitivity/symmetry of probe-indistinguishability). -/
 theorem probeCauchy_of_converges
@@ -713,6 +766,9 @@ This file is setoid-only (no `Quot`) and should not depend on `propext`.
 #print axioms PrimitiveHolonomy.converges_discrete_iff_eventualRTo
 #print axioms PrimitiveHolonomy.SetoidMetric.cauchy_discrete_exists_limit
 #print axioms PrimitiveHolonomy.SetoidMetric.cauchy_discrete_iff_eventualPairwiseR
+#print axioms PrimitiveHolonomy.mem_probeBallOn_iff
+#print axioms PrimitiveHolonomy.probeCauchy_iff_forall_rel
+#print axioms PrimitiveHolonomy.probeConvergesTo_iff_forall_rel
 #print axioms PrimitiveHolonomy.probeCauchy_of_converges
 #print axioms PrimitiveHolonomy.probeConverges_unique_mod
 #print axioms PrimitiveHolonomy.probeConverges_unique_mod_all
