@@ -1,5 +1,6 @@
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Lattice
+import Mathlib.Data.Set.Finite.Basic
 import Mathlib.Logic.Relation
 
 /-!
@@ -527,6 +528,74 @@ def ObstructionWrt {S : Type w} {V : Type w} (sem : Semantics P S) (obs : S → 
       let ⟨h, _, _, _, ⟨α⟩⟩ := c
       ∃ x x' : FiberPt (P := P) obs target_obs h,
         x ≠ x' ∧ CorrectedHolonomy sem obs target_obs φ α x x'
+
+/-!
+### Decisive structural laws (monotonicity)
+
+These are sharp, witness-preserving consequences of the *positive* definitions:
+
+- `Obstruction` is **upward closed** in the tested cell set `J`.
+- `AutoRegulated` is **downward closed** in `J`.
+- Same for the `Wrt OK` variants.
+-/
+
+theorem obstruction_mono_J {S : Type w} {V : Type w}
+    (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {J J' : Set (Cell (P := P))} (hJJ' : J ⊆ J') :
+    Obstruction (P := P) sem obs target_obs J → Obstruction (P := P) sem obs target_obs J' := by
+  intro hObs φ
+  rcases hObs φ with ⟨c, hcJ, hw⟩
+  exact ⟨c, hJJ' hcJ, hw⟩
+
+theorem obstructionWrt_mono_J {S : Type w} {V : Type w}
+    (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    (OK : Gauge (P := P) obs target_obs → Prop)
+    {J J' : Set (Cell (P := P))} (hJJ' : J ⊆ J') :
+    ObstructionWrt (P := P) sem obs target_obs OK J →
+      ObstructionWrt (P := P) sem obs target_obs OK J' := by
+  intro hObs φ hOK
+  rcases hObs φ hOK with ⟨c, hcJ, hw⟩
+  exact ⟨c, hJJ' hcJ, hw⟩
+
+theorem autoRegulated_anti_J {S : Type w} {V : Type w}
+    (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {J J' : Set (Cell (P := P))} (hJJ' : J ⊆ J') :
+    AutoRegulated (P := P) sem obs target_obs J' → AutoRegulated (P := P) sem obs target_obs J := by
+  rintro ⟨φ, hφ⟩
+  refine ⟨φ, ?_⟩
+  intro c hcJ
+  exact hφ c (hJJ' hcJ)
+
+theorem autoRegulatedWrt_anti_J {S : Type w} {V : Type w}
+    (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    (OK : Gauge (P := P) obs target_obs → Prop)
+    {J J' : Set (Cell (P := P))} (hJJ' : J ⊆ J') :
+    AutoRegulatedWrt (P := P) sem obs target_obs OK J' →
+      AutoRegulatedWrt (P := P) sem obs target_obs OK J := by
+  rintro ⟨φ, hOK, hφ⟩
+  refine ⟨φ, hOK, ?_⟩
+  intro c hcJ
+  exact hφ c (hJJ' hcJ)
+
+theorem autoRegulatedWrt_mono_OK {S : Type w} {V : Type w}
+    (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {OK OK' : Gauge (P := P) obs target_obs → Prop}
+    (hOK : ∀ φ, OK φ → OK' φ)
+    (J : Set (Cell (P := P))) :
+    AutoRegulatedWrt (P := P) sem obs target_obs OK J →
+      AutoRegulatedWrt (P := P) sem obs target_obs OK' J := by
+  rintro ⟨φ, hφOK, hφ⟩
+  exact ⟨φ, hOK φ hφOK, hφ⟩
+
+theorem obstructionWrt_anti_OK {S : Type w} {V : Type w}
+    (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {OK OK' : Gauge (P := P) obs target_obs → Prop}
+    (hOK : ∀ φ, OK φ → OK' φ)
+    (J : Set (Cell (P := P))) :
+    ObstructionWrt (P := P) sem obs target_obs OK' J →
+      ObstructionWrt (P := P) sem obs target_obs OK J := by
+  intro hObs φ hφOK
+  exact hObs φ (hOK φ hφOK)
 
 /-- With the current (unrestricted) `Gauge`, `Obstruction` is refutable via `emptyGauge`. -/
 theorem not_Obstruction_of_emptyGauge {S : Type w} {V : Type w}
@@ -1240,6 +1309,103 @@ def ProbeSetoidOn {P : Type u} [HistoryGraph P] {S V : Type w}
         exact (hxy.1 c hc k p q α t).trans (hyz.1 c hc k p q α t)
       · intro c hc k p q α t
         exact (hxy.2 c hc k p q α t).trans (hyz.2 c hc k p q α t)
+
+/-!
+## Probe budgets: finitary stability vs. global indistinguishability
+
+This is the quotient-free “LLN core” for probe semantics: how information refines as the
+available probe family grows. Everything here is constructive: no `Classical`, no `propext`,
+no witness extraction from negations.
+-/
+
+section ProbeBudget
+
+variable {P : Type u} [HistoryGraph P] {S V : Type w}
+variable (C : CoeffCat) (fam : SemFamily C P S) (obs : S → V) (target_obs : P → V)
+variable (h : P)
+
+abbrev ProbeIndist (C0 : Set C.Obj) (x y : FiberPt (P := P) obs target_obs h) : Prop :=
+  ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h x y
+
+theorem probeIndist_anti_mono {C0 C1 : Set C.Obj}
+    (hC : C0 ⊆ C1) {x y : FiberPt (P := P) obs target_obs h} :
+    ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h)
+        C1 x y →
+      ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h)
+        C0 x y := by
+  intro h1
+  constructor
+  · intro c hc0 k p q α z
+    exact h1.1 c (hC hc0) k p q α z
+  · intro c hc0 k p q α z
+    exact h1.2 c (hC hc0) k p q α z
+
+/-- `StableAt C0 x y` means enlarging the probe budget past `C0` never changes whether `x,y`
+are indistinguishable. -/
+def StableAt (C0 : Set C.Obj) (x y : FiberPt (P := P) obs target_obs h) : Prop :=
+  ∀ C1 : Set C.Obj, C0 ⊆ C1 →
+    (ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) C0 x y ↔
+     ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) C1 x y)
+
+theorem not_stableAt_of_indist_and_not_univ {C0 : Set C.Obj}
+    {x y : FiberPt (P := P) obs target_obs h}
+    (hC0 : ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) C0 x y)
+    (hUniv : ¬ ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h)
+        Set.univ x y) :
+    ¬ StableAt (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) C0 x y := by
+  intro hStable
+  have h' :
+      ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) Set.univ x y :=
+    (hStable Set.univ (by intro c _; trivial)).1 hC0
+  exact hUniv h'
+
+/-- A *probe obstruction* is: every **finite** probe budget fails to distinguish `x,y`, but the
+full family `univ` does distinguish them. -/
+def ProbeObstruction : Prop :=
+  ∃ x y : FiberPt (P := P) obs target_obs h,
+    (∀ C0 : Set C.Obj, Set.Finite C0 →
+        ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) C0 x y) ∧
+      ¬ ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) Set.univ x y
+
+/-- “Finitary compactness”: indistinguishable for all finite budgets ⇒ indistinguishable for `univ`. -/
+def FinitaryCompactness : Prop :=
+  ∀ x y : FiberPt (P := P) obs target_obs h,
+    (∀ C0 : Set C.Obj, Set.Finite C0 →
+        ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) C0 x y) →
+      ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) Set.univ x y
+
+theorem probeObstruction_not_finitaryCompactness :
+    ProbeObstruction (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) →
+      ¬ FinitaryCompactness (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) := by
+  rintro ⟨x, y, hFin, hUniv⟩ hComp
+  exact hUniv (hComp x y hFin)
+
+theorem finitaryCompactness_not_probeObstruction :
+    FinitaryCompactness (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) →
+      ¬ ProbeObstruction (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) := by
+  intro hComp hObs
+  exact (probeObstruction_not_finitaryCompactness (P := P) (C := C) (fam := fam) (obs := obs)
+    (target_obs := target_obs) (h := h) hObs) hComp
+
+
+theorem probeObstruction_forces_no_finite_stabilization :
+    ProbeObstruction (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) →
+      ∃ x y : FiberPt (P := P) obs target_obs h,
+        (∀ C0 : Set C.Obj, Set.Finite C0 →
+            ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) C0 x y) ∧
+          ¬ ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) Set.univ x y ∧
+            (∀ C0 : Set C.Obj, Set.Finite C0 →
+              ¬ StableAt (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) C0 x y) := by
+  rintro ⟨x, y, hFin, hUniv⟩
+  refine ⟨x, y, hFin, hUniv, ?_⟩
+  intro C0 hC0
+  have hC0xy :
+      ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) C0 x y :=
+    hFin C0 hC0
+  exact not_stableAt_of_indist_and_not_univ (P := P) (C := C) (fam := fam) (obs := obs)
+    (target_obs := target_obs) (h := h) (C0 := C0) hC0xy hUniv
+
+end ProbeBudget
 
 /-!
 ## Probe quotient (two layers)
