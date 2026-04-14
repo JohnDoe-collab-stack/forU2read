@@ -1,0 +1,31 @@
+{
+  "bundle_hash": "bd05df0cb45bc659eae41b84e909f9f82d72458757dfbc623be921a8ee3c3010",
+  "bundle_hash_short": "bd05df0cb45b",
+  "files": [
+    {
+      "name": "aslmt_env_v7_perfect_amodal_hidden_target.py",
+      "sha256": "4d975f8c75a5d6e21fab1fbb20eab213ba8e0cc0063854ec5b42566a6a274df7"
+    },
+    {
+      "name": "aslmt_model_v7_perfect_jepa.py",
+      "sha256": "5e26661ed47e5320de6f242ff64862747273237bd8551416334edd9bc5b26288"
+    },
+    {
+      "name": "render_v7_paired_ctx.py",
+      "sha256": "a4282df73892c305fbd0064f1deaa157dc55ededfbcbe5fa78659e8572ab4795"
+    },
+    {
+      "name": "verify_aslmt_v7_perfect_amodal_hidden_target_pair_oodrequired.py",
+      "sha256": "5a6ce5ae154c82847067ce50bd3ca50394921ccece7b9ccac207e834bfdc7dcd"
+    },
+    {
+      "name": "aslmt_train_v7_perfect_amodal_hidden_target_seeded_pair_trainood.py",
+      "sha256": "2f46ce7976fad549bb43aa0f8e52446d1e8ef6d8ac53caf342622ffcefe6d354"
+    }
+  ],
+  "kind": "aslmt_v7_pair_oodrequired_snapshot",
+  "snapshot_dir": "/mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/snapshots/aslmt_v7_pair_oodrequired_20260412_203347_bd05df0cb45b",
+  "train_script_name": "aslmt_train_v7_perfect_amodal_hidden_target_seeded_pair_trainood.py",
+  "ts": "20260412_203347",
+  "verify_script_name": "verify_aslmt_v7_perfect_amodal_hidden_target_pair_oodrequired.py"
+}

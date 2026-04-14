@@ -1,0 +1,25 @@
+timestamp: 2026-04-12 04:50:07
+snapshot_tag: 20260411_083117_843fe3a41e75
+seed: 3
+profile: solid
+cfg_name: C2_soft
+cfg: {"iid_n_occluders_max": 6, "iid_n_occluders_min": 2, "iid_occ_size_max": 6, "iid_occ_size_min": 3, "img_size": 32, "ood_center_radius": 12, "ood_noise_occluders": 2, "ood_noise_radius": 3, "thickness_max": 4, "thickness_min": 2}
+self_sha256: 72112815e9184c7a4ce8a297d161456162e10d9f6b3409af991e3216f7da74cf
+cmd: /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/snapshots/aslmt_law_v5b_amodal_localclass_20260411_083117_843fe3a41e75/aslmt_train_law_v5b_amodal_localclass_family_20260411_083117_843fe3a41e75.py --snapshot-tag 20260411_083117_843fe3a41e75 --seed 3 --profile solid --device cuda --cfg-name C2_soft --out-jsonl /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/aslmt_law_v5b_amodal_localclass_20260411_083117_843fe3a41e75/master_20260411_083117_843fe3a41e75.jsonl --out-txt /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/aslmt_law_v5b_amodal_localclass_20260411_083117_843fe3a41e75/log_20260411_083117_843fe3a41e75_C2_soft_seed3.txt
+baselines: ["B1_local_fcn", "B2_local_fcn_wide_rf9", "B3_window_mlp8"]
+step 1/30000 A.seg=0.7179 A.jepa=0.4992 | B_last.seg=0.6948
+step 2000/30000 A.seg=0.0182 A.jepa=-0.7662 | B_last.seg=0.2296
+step 4000/30000 A.seg=0.0098 A.jepa=-0.7501 | B_last.seg=0.2370
+step 6000/30000 A.seg=0.0051 A.jepa=-0.7558 | B_last.seg=0.2301
+step 8000/30000 A.seg=0.0067 A.jepa=-0.7727 | B_last.seg=0.2170
+step 10000/30000 A.seg=0.0052 A.jepa=-0.7910 | B_last.seg=0.2178
+step 12000/30000 A.seg=0.0031 A.jepa=-0.7775 | B_last.seg=0.2168
+step 14000/30000 A.seg=0.0084 A.jepa=-0.7728 | B_last.seg=0.2283
+step 16000/30000 A.seg=0.0024 A.jepa=-0.7853 | B_last.seg=0.2142
+step 18000/30000 A.seg=0.0036 A.jepa=-0.7818 | B_last.seg=0.2129
+step 20000/30000 A.seg=0.0035 A.jepa=-0.7974 | B_last.seg=0.2241
+step 22000/30000 A.seg=0.0046 A.jepa=-0.8051 | B_last.seg=0.2209
+step 24000/30000 A.seg=0.0029 A.jepa=-0.7871 | B_last.seg=0.2183
+step 26000/30000 A.seg=0.0061 A.jepa=-0.7853 | B_last.seg=0.2125
+step 28000/30000 A.seg=0.0027 A.jepa=-0.7957 | B_last.seg=0.2157
+step 30000/30000 A.seg=0.0060 A.jepa=-0.7805 | B_last.seg=0.2151

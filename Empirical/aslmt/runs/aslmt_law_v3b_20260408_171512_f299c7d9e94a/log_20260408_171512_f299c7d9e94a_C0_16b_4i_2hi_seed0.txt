@@ -1,0 +1,16 @@
+timestamp: 2026-04-08 17:15:15
+snapshot_tag: 20260408_171512_f299c7d9e94a
+seed: 0
+profile: smoke
+cfg_name: C0_16b_4i_2hi
+cfg: {"iid_delay_max": 1, "n_bits": 16, "n_hi_bits": 2, "n_index_bits": 4, "n_lo_bits": 2, "n_views": 6, "ood_delay_max": 4, "ood_delay_min": 2}
+step 1/9000 A.reward=0.1016 A.loss=0.1000 | B.reward=0.1094 B.loss=-0.0726
+step 1000/9000 A.reward=1.0000 A.loss=0.0000 | B.reward=0.2383 B.loss=0.0498
+step 2000/9000 A.reward=1.0000 A.loss=0.0000 | B.reward=0.2773 B.loss=0.1227
+step 3000/9000 A.reward=1.0000 A.loss=0.0000 | B.reward=0.2695 B.loss=0.1620
+step 4000/9000 A.reward=1.0000 A.loss=0.0000 | B.reward=0.2383 B.loss=0.1357
+step 5000/9000 A.reward=1.0000 A.loss=0.0000 | B.reward=0.1914 B.loss=0.0498
+step 6000/9000 A.reward=1.0000 A.loss=0.0000 | B.reward=0.2578 B.loss=0.1566
+step 7000/9000 A.reward=1.0000 A.loss=0.0000 | B.reward=0.2578 B.loss=0.1824
+step 8000/9000 A.reward=1.0000 A.loss=0.0000 | B.reward=0.2500 B.loss=0.2020
+step 9000/9000 A.reward=1.0000 A.loss=0.0000 | B.reward=0.2617 B.loss=0.1968

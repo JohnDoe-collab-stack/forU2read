@@ -1,0 +1,21 @@
+{
+  "bundle_hash": "0c1d9734c16d17233b490cc2ca739aba958b61b1cc4ba2ed099c8f86b44cfa4b",
+  "bundle_hash_short": "0c1d9734c16d",
+  "files": [
+    {
+      "name": "aslmt_env_law_v5b_amodal_localclass_family.py",
+      "sha256": "c58aba28b32aa424b4f452d239b3aa07ba89022a8ffc0795722dfb8fda687f83"
+    },
+    {
+      "name": "aslmt_model_law_v5b_amodal_localclass.py",
+      "sha256": "2e704b6cf0a3e8e1a6a7279cf3eed63d46431a20132d9bc0d7ed41521b57f020"
+    },
+    {
+      "name": "aslmt_train_law_v5b_amodal_localclass_family_20260411_080430_0c1d9734c16d.py",
+      "sha256": "72112815e9184c7a4ce8a297d161456162e10d9f6b3409af991e3216f7da74cf"
+    }
+  ],
+  "snapshot_dir": "/mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/snapshots/aslmt_law_v5b_amodal_localclass_20260411_080430_0c1d9734c16d",
+  "train_script": "/mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/snapshots/aslmt_law_v5b_amodal_localclass_20260411_080430_0c1d9734c16d/aslmt_train_law_v5b_amodal_localclass_family_20260411_080430_0c1d9734c16d.py",
+  "ts": "20260411_080430"
+}

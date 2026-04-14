@@ -1,0 +1,6 @@
+[V7 Pair-Grade OOD-Required] iid(n_ctx_min=64, obs_barrier_ok=True, A_both_min=0.8281, B_both_max=0.0000) | ood(n_ctx_min=64, obs_barrier_ok=True, A_both_min=1.0000, B_both_max=0.0000)
+
+[FAIL] V7 pair-grade OOD-required checks did not pass:
+ - pair_eval.iid.A_both_correct_rate min=0.8281 < 1.0000
+CMD: /home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/snapshots/aslmt_v7_pair_oodrequired_20260413_071103_63a03389b935/verify_aslmt_v7_perfect_amodal_hidden_target_pair_oodrequired.py --master-jsonl /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_071103_63a03389b935/v7_master_20260413_071103_63a03389b935.jsonl
+

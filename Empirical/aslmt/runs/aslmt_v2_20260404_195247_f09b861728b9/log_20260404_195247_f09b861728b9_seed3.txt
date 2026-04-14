@@ -1,0 +1,21 @@
+timestamp: 2026-04-04 19:55:14
+snapshot_tag: 20260404_195247_f09b861728b9
+seed: 3
+profile: solid
+cfg: {"iid_delay_max": 2, "n_bits": 16, "n_hi_bits": 2, "n_index_bits": 4, "n_lo_bits": 2, "ood_delay_max": 6, "ood_delay_min": 3}
+step 1/6000 A.reward=0.1250 A.q_acc=0.2246 A.loss=0.1367 | B.reward=0.1152 B.q_acc=0.2676 B.loss=0.5595
+step 400/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=-0.0000 | B.reward=0.2363 B.q_acc=0.2363 B.loss=-0.0051
+step 800/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=-0.0000 | B.reward=0.2715 B.q_acc=0.2715 B.loss=0.0935
+step 1200/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=-0.0000 | B.reward=0.2773 B.q_acc=0.2773 B.loss=0.0653
+step 1600/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=-0.0000 | B.reward=0.2637 B.q_acc=0.2637 B.loss=0.0395
+step 2000/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=0.0000 | B.reward=0.2754 B.q_acc=0.2754 B.loss=0.0411
+step 2400/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=0.0000 | B.reward=0.2500 B.q_acc=0.2500 B.loss=0.0676
+step 2800/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=-0.0000 | B.reward=0.2168 B.q_acc=0.2168 B.loss=-0.0136
+step 3200/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=0.0000 | B.reward=0.2578 B.q_acc=0.2578 B.loss=0.0346
+step 3600/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=-0.0000 | B.reward=0.2676 B.q_acc=0.2676 B.loss=0.0318
+step 4000/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=-0.0000 | B.reward=0.2715 B.q_acc=0.2715 B.loss=0.0780
+step 4400/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=-0.0000 | B.reward=0.2715 B.q_acc=0.2715 B.loss=0.0356
+step 4800/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=-0.0000 | B.reward=0.2344 B.q_acc=0.2344 B.loss=-0.0014
+step 5200/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=0.0000 | B.reward=0.2441 B.q_acc=0.2441 B.loss=0.0138
+step 5600/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=-0.0000 | B.reward=0.2363 B.q_acc=0.2363 B.loss=0.0305
+step 6000/6000 A.reward=1.0000 A.q_acc=1.0000 A.loss=-0.0000 | B.reward=0.2637 B.q_acc=0.2637 B.loss=0.0296

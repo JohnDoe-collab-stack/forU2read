@@ -1,0 +1,25 @@
+Starting Training (V7 Perfect Amodal Hidden-Target, pair-grade, train_ood_ratio=0.50, steps=3000, seed=2, device=cuda)...
+[0] M_A: 0.7065 (JEPA 0.5893) | M_B: 0.7079
+[250] M_A: 0.1451 (JEPA -0.5993) | M_B: 0.1626
+[500] M_A: 0.0787 (JEPA -0.7765) | M_B: 0.1359
+[750] M_A: 0.0326 (JEPA -0.7984) | M_B: 0.1038
+[1000] M_A: 0.0170 (JEPA -0.8116) | M_B: 0.0878
+[1250] M_A: 0.0101 (JEPA -0.8016) | M_B: 0.0881
+[1500] M_A: 0.0066 (JEPA -0.7689) | M_B: 0.0761
+[1750] M_A: 0.0044 (JEPA -0.8017) | M_B: 0.0775
+[2000] M_A: 0.0034 (JEPA -0.8040) | M_B: 0.0777
+[2250] M_A: 0.0029 (JEPA -0.8412) | M_B: 0.0831
+[2500] M_A: 0.0017 (JEPA -0.8167) | M_B: 0.0743
+[2750] M_A: 0.0017 (JEPA -0.8090) | M_B: 0.0790
+
+--- EVALUATION (diagnostic) ---
+IID  -> A_IoU: 0.9999 | B_IoU: 0.5493
+OOD  -> A_IoU: 0.9983 | B_IoU: 0.5225
+
+--- PAIR EVAL (COFRS-grade, binary) ---
+PAIR IID -> obs_barrier_ok=True A_both=1.0000 B_both=0.0000
+PAIR OOD -> obs_barrier_ok=True A_both=1.0000 B_both=0.0000
+CMD: /home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/snapshots/aslmt_v7_pair_oodrequired_20260412_201837_bd05df0cb45b/aslmt_train_v7_perfect_amodal_hidden_target_seeded_pair_trainood.py --seed 2 --steps 3000 --batch-size 128 --lr 0.001 --w-jepa 0.1 --train-ood-ratio 0.5 --device cuda --out-jsonl /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260412_201837_bd05df0cb45b/v7_master_20260412_201837_bd05df0cb45b.jsonl
+SNAPSHOT_DIR: /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/snapshots/aslmt_v7_pair_oodrequired_20260412_201837_bd05df0cb45b
+BUNDLE_HASH: bd05df0cb45bc659eae41b84e909f9f82d72458757dfbc623be921a8ee3c3010
+

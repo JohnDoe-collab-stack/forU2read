@@ -1,0 +1,21 @@
+{
+  "bundle_hash": "f299c7d9e94af25df39e479cdd2b2b1106aa4c6a1d76b9c407253344d53c6907",
+  "bundle_hash_short": "f299c7d9e94a",
+  "files": [
+    {
+      "name": "aslmt_env_law_v3b_hard_ood_masks_query_pomdp_family_balanced_split.py",
+      "sha256": "3cd1cfd0d78602e60063207a73541ed2f8db1af2e442df3e55d2eaf3a5fdbbd9"
+    },
+    {
+      "name": "aslmt_model_law_v3b_memory.py",
+      "sha256": "90547458e182e859a37cfd5affe36649ebf73d4540e631628a12a33b615c8cde"
+    },
+    {
+      "name": "aslmt_train_law_v3b_hard_ood_masks_query_pomdp_family_balanced_split_20260408_171512_f299c7d9e94a.py",
+      "sha256": "99ccdc42e8f70ecc3eb29a74c806da6188c15812d89e8baa530a18032ce22228"
+    }
+  ],
+  "snapshot_dir": "/mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/snapshots/aslmt_law_v3b_20260408_171512_f299c7d9e94a",
+  "train_script": "/mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/snapshots/aslmt_law_v3b_20260408_171512_f299c7d9e94a/aslmt_train_law_v3b_hard_ood_masks_query_pomdp_family_balanced_split_20260408_171512_f299c7d9e94a.py",
+  "ts": "20260408_171512"
+}

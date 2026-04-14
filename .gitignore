@@ -19,5 +19,4 @@ Thumbs.db
 # Python artifacts
 __pycache__/
 *.pyc
-Python/runs/
-Descriptive/Python/private/aslmt/runs/
+
