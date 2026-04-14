@@ -12,7 +12,7 @@ The entire development is intended to remain **constructive** (no `Classical`, n
 
 The repository’s thesis is realized as a concrete three-step pipeline:
 
-- **From diagonal obstruction to system-level impossibility.** A lag witness yields a fiber separation and forbids closed obs-only decision regimes **in the formal sense of `ObsPredictsStep`** (i.e. a decision rule that depends only on `V`; e.g. `LagEvent → ¬ ObsPredictsStep`; see `COFRS/Dynamics.lean`, theorem `not_obsPredictsStep_of_lagEvent`).
+- **From diagonal obstruction to system-level impossibility.** A lag witness yields a fiber separation and forbids closed obs-only decision regimes **in the formal sense of `ObsPredictsStep`** (i.e. a decision rule depending only on `V`) (e.g. `LagEvent → ¬ ObsPredictsStep`; see `COFRS/Dynamics.lean`, theorem `not_obsPredictsStep_of_lagEvent`).
 - **Forced factorization through a finite mediator.** The amount of hidden information needed for recovery is quantified by compatibility dimension (`CompatDimEq n`), made canonical via the equivalence `CompatDimLe … n ↔ RefiningLift … n`, with witness `RefiningLiftData` and finite mediator `Fin n` on the observable fiber (`COFRS/Dynamics.lean`).
 - **Causality as the testable signature of forced mediation.** When a separating step is paired with a forced mediator (notably `Fin 2` in the diagonal instance), intervention-style effects (permutation/ablation) become provable consequences, packaged as `CausalSignature2` (`COFRS/Examples/DiagonalizationMediationCausalityThesis.lean`).
 
@@ -24,17 +24,17 @@ In this repository, _diagonalization_ is used as a general adversarial pattern: 
 
 The paper-level reading splits into three statements. The Lean development makes each of them explicit.
 
-1) **Destruction of the static regime.**
+1. **Destruction of the static regime.**
 
 If there exist `x ≠ x'` with `obs x = obs x'` while the relevant future property distinguishes them (formalized by compatibility along a chosen step, i.e. `Compatible … step` holds for one but not the other), then no obs-only rule in the sense of `ObsPredictsStep` can be correct on both. Operationally, this is exactly the meaning of the implication `LagEvent → ¬ ObsPredictsStep` (see `COFRS/Dynamics.lean`, theorem `not_obsPredictsStep_of_lagEvent`).
 
-2) **Forced factorization through a mediator.**
+2. **Forced factorization through a mediator.**
 
 To surpass this ceiling, any correct policy must depend on additional information that is not contained in `obs` at the critical time. In witnesses, this additional information is carried by an internal state `z` (cue / memory / latent) that summarizes the relevant history; the decision therefore factorizes through a mediator of the form `history → z → decision`, rather than `obs → decision`.
 
 In the code, this is captured by compatibility dimension (`CompatDimLe`, `CompatDimEq`) and by the canonical mediation witness `RefiningLiftData`: compatibility on the observable fiber factors through a finite supplement `Fin n`, with an exactness/minimality statement when using `CompatDimEq n`.
 
-3) **Causality as a testable signature.**
+3. **Causality as a testable signature.**
 
 The factorization is not treated as a metaphor: it is testable by interventions. If success truly depends on the mediator `z`, then (i) ablating `z` must break correctness, and (ii) permuting `z` between examples must cause decisions to “follow” the mediator, all else equal. This is the experimental form of the statement “the mediator is load-bearing”, and it prevents confusing genuine mediation with shortcut behavior.
 
@@ -260,3 +260,7 @@ The repo is designed to remain constructive:
 - no `Quot.sound`
 
 Relevant `.lean` files contain a final `AXIOM_AUDIT` block (`#print axioms …`).
+
+## Collaboration note
+
+This `Project` was written mainly in collaboration with **ChatGPT Codex** (OpenAI).
