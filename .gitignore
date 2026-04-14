@@ -1,0 +1,23 @@
+# Lake build artifacts
+.lake/
+build/
+
+# Compiled Lean files
+*.olean
+*.ilean
+*.trace
+*.hash
+
+# C intermediates
+*.c.o
+*.c
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python artifacts
+__pycache__/
+*.pyc
+Python/runs/
+Descriptive/Python/private/aslmt/runs/

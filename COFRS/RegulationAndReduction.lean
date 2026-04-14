@@ -1,294 +1,21 @@
-import Mathlib.Data.Set.Basic
-import Mathlib.Data.Set.Lattice
-import Mathlib.Data.Set.Finite.Basic
-import Mathlib.Logic.Relation
+import COFRS.Dynamics
 
 /-!
-# Primitive Holonomy: The 2-Geometry before Quotient
+# Primitive Holonomy: Regulation and Reduction
 
-Formalization of `docs/PRIMITIVE_HOLONOMY.md`.
-Strictly constructive (no `noncomputable`, no `classical`).
+Gauges, corrected transport/holonomy, obstruction/auto-regulation, and the reduction/probe layer.
 -/
 
 universe u v w uQ
-
-/--
-## 1. The Primitive: 2-Category of Histories (H₂)
-
-We define a minimal 2-structure for histories given by:
-- Objects `P`: Prefixes of histories.
-- 1-Morphisms `Path`: Totals/Schedulings.
-- 2-Morphisms `Deformation`: Admissible commutations/moves.
-
-Note: We do not enforce category laws unless necessary.
--/
-class HistoryGraph (P : Type u) where
-  Path : P → P → Type v
-  Deformation : {h k : P} → Path h k → Path h k → Prop
-  idPath (h : P) : Path h h
-  compPath {h k l : P} : Path h k → Path k l → Path h l
 
 namespace PrimitiveHolonomy
 
 variable {P : Type u}
 
-/--
-## 2. Non-Inversible Semantics: Relational Domain
-
-Target domain: Rel(S).
--/
-def Relation (A : Type u) (B : Type v) := A → B → Prop
-
-/-- Pointwise equivalence of relations (axiom-free stand-in for relation equality). -/
-def RelEq {A : Type u} {B : Type v} (R S : Relation A B) : Prop :=
-  ∀ x y, R x y ↔ S x y
-
-def relComp {A : Type u} {B : Type v} {C : Type w} (R : Relation A B) (S : Relation B C) : Relation A C :=
-  fun a c ↦ ∃ b, R a b ∧ S b c
-
-def relId {A : Type u} : Relation A A :=
-  fun x y ↦ x = y
-
-def relConverse {A : Type u} {B : Type v} (R : Relation A B) : Relation B A :=
-  fun b a ↦ R a b
-
-structure Semantics (P : Type u) [HistoryGraph P] (S : Type w) where
-  /-- Transition relation for each scheduling. -/
-  sem : {h k : P} → HistoryGraph.Path h k → Relation S S
-  sem_id : ∀ h, RelEq (sem (HistoryGraph.idPath h)) relId
-  sem_comp : ∀ {h k l} (p : HistoryGraph.Path h k) (q : HistoryGraph.Path k l),
-    RelEq (sem (HistoryGraph.compPath p q)) (relComp (sem p) (sem q))
-
-
-
-/-- Fiber of ambiguity above `h` (relative to the observable). -/
-def Fiber {S V : Type w} (obs : S → V) (target_obs : P → V) (h : P) : Set S :=
-  { x | obs x = target_obs h }
-
-/-- The type of points in the fiber above `h`. -/
-abbrev FiberPt {S V : Type w} (obs : S → V) (target_obs : P → V) (h : P) : Type w :=
-  { x : S // x ∈ Fiber (P := P) obs target_obs h }
-
-/-- Fiber diagonal Δ_{F(h)}. -/
-def FiberIdentity {S V : Type w} (obs : S → V) (target_obs : P → V) (h : P) :
-    Relation (FiberPt (P := P) obs target_obs h) (FiberPt (P := P) obs target_obs h) :=
-  relId
-
-structure LagState (Y B : Type w) where
-  visible : Y
-  hidden : B
-
-def lagObs {Y B : Type w} : LagState Y B → Y := LagState.visible
-
-theorem hidden_ne_of_ne {Y B : Type w} {target_obs : P → Y} {h : P}
-    {x x' : FiberPt (P := P) (obs := (lagObs (Y := Y) (B := B))) target_obs h} (hx : x ≠ x') :
-    x.1.hidden ≠ x'.1.hidden :=
-by
-  intro hhidden
-  apply hx
-  apply Subtype.ext
-  cases x with
-  | mk xs hxmem =>
-    cases x' with
-    | mk xs' hxmem' =>
-      cases xs with
-      | mk vis hid =>
-        cases xs' with
-        | mk vis' hid' =>
-          have hvis : vis = vis' := hxmem.trans hxmem'.symm
-          cases hvis
-          cases hhidden
-          rfl
-
 section WithHistoryGraph
 
 variable [HistoryGraph P]
 
-/-- Transport restricted to fibers. -/
-def Transport {S : Type w} {V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h k : P} (p : HistoryGraph.Path h k) :
-    Relation (FiberPt (P := P) obs target_obs h) (FiberPt (P := P) obs target_obs k) :=
-  fun x y ↦ sem.sem p x.1 y.1
-
-/-- Transport written in the "document style": a relation on the ambient `S`, explicitly restricted to fibers. -/
-def TransportDoc {S : Type w} {V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h k : P} (p : HistoryGraph.Path h k) : Relation S S :=
-  fun x y ↦ sem.sem p x y ∧ obs x = target_obs h ∧ obs y = target_obs k
-
-theorem transport_eq_transportDoc {S : Type w} {V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h k : P} (p : HistoryGraph.Path h k)
-    (x : FiberPt (P := P) obs target_obs h) (y : FiberPt (P := P) obs target_obs k) :
-  Transport sem obs target_obs p x y ↔ TransportDoc sem obs target_obs p x.1 y.1 :=
-by
-  -- `x.2` and `y.2` are exactly the fiber equalities.
-  simpa [Transport, TransportDoc, Fiber, FiberPt] using
-    (show sem.sem p x.1 y.1 ↔ sem.sem p x.1 y.1 ∧ obs x.1 = target_obs h ∧ obs y.1 = target_obs k from
-      ⟨fun hp ↦ ⟨hp, x.2, y.2⟩, fun hdoc ↦ hdoc.1⟩)
-
-/-- Defines holonomy relative to a 2-cell. -/
-def HolonomyRel {S : Type w} {V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h k : P} {p q : HistoryGraph.Path h k} (_α : HistoryGraph.Deformation p q) :
-    Relation (FiberPt (P := P) obs target_obs h) (FiberPt (P := P) obs target_obs h) :=
-  relComp (Transport sem obs target_obs p) (relConverse (Transport sem obs target_obs q))
-
-theorem holonomy_congr {S : Type w} {V : Type w}
-    (sem₁ sem₂ : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h k : P} {p q : HistoryGraph.Path h k} (α : HistoryGraph.Deformation p q)
-    (Hp : Transport sem₁ obs target_obs p = Transport sem₂ obs target_obs p)
-    (Hq : Transport sem₁ obs target_obs q = Transport sem₂ obs target_obs q) :
-    HolonomyRel sem₁ obs target_obs α = HolonomyRel sem₂ obs target_obs α := by
-  unfold HolonomyRel
-  rw [← Hp, ← Hq]
-
-theorem holonomy_def {S : Type w} {V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h k : P} {p q : HistoryGraph.Path h k} (α : HistoryGraph.Deformation p q)
-    (x x' : FiberPt (P := P) obs target_obs h) :
-  HolonomyRel sem obs target_obs α x x' ↔
-  ∃ y : FiberPt (P := P) obs target_obs k,
-    Transport sem obs target_obs p x y ∧ Transport sem obs target_obs q x' y :=
-by rfl
-
-/-!
-## 5. "Lag" (Delayed Repercussion)
--/
-/-- `x` is compatible with the observed value at `k` along `p` iff `p` can reach the fiber at `k` from `x`. -/
-def Compatible {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h k : P} (p : HistoryGraph.Path h k)
-    (x : FiberPt (P := P) obs target_obs h) : Prop :=
-  ∃ y : FiberPt (P := P) obs target_obs k, Transport sem obs target_obs p x y
-
-/-- Lag event: two distinct states are related by holonomy now, but only one stays compatible later. -/
-def LagEvent {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h k k' : P} {p q : HistoryGraph.Path h k} (α : HistoryGraph.Deformation p q)
-    (step : HistoryGraph.Path h k') : Prop :=
-  ∃ x x' : FiberPt (P := P) obs target_obs h,
-    x ≠ x' ∧ HolonomyRel sem obs target_obs α x x' ∧
-    Compatible sem obs target_obs step x ∧ ¬ Compatible sem obs target_obs step x'
-
-theorem lag_of_witness {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h k k' : P} {p q : HistoryGraph.Path h k} (α : HistoryGraph.Deformation p q)
-    (step : HistoryGraph.Path h k')
-    (x x' : FiberPt (P := P) obs target_obs h)
-    (hx : x ≠ x')
-    (hHol : HolonomyRel sem obs target_obs α x x')
-    (hstep : Compatible sem obs target_obs step x ∧ ¬ Compatible sem obs target_obs step x') :
-    LagEvent sem obs target_obs α step :=
-by
-  refine ⟨x, x', hx, hHol, hstep.1, hstep.2⟩
-
-/-!
-### 5.1 Positive use: compatibility signatures (universal property)
-
-`Compatible` already captures “what stays possible in the future from a micro-state”. The most
-direct *positive* invariant for predicting future compatibility is the signature that maps each
-future step to its compatibility truth value.
-
-This section packages two facts:
-
-1. `Sig` is a complete invariant for “compatibility prediction” along a chosen family of steps.
-2. Any predictor that factors through a 1D summary `σ` forces `σ` to separate any pair that has
-   different compatibility along some step (so you can *prove what extra information is required*).
--/
-
-/-- The type of “future steps” starting at a fixed prefix `h` (endpoint varies). -/
-def Future (h : P) := Σ k : P, HistoryGraph.Path h k
-
-/-- Compatibility along a dependent future step. -/
-def CompatibleFuture {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h : P} (step : Future (P := P) h) (x : FiberPt (P := P) obs target_obs h) : Prop :=
-  Compatible sem obs target_obs step.2 x
-
-/-- Full compatibility signature: for each future step, whether `x` remains compatible. -/
-def Sig {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h : P} (x : FiberPt (P := P) obs target_obs h) : Future (P := P) h → Prop :=
-  fun step => CompatibleFuture (P := P) sem obs target_obs step x
-
-theorem sig_iff_of_summary_correct
-    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h : P}
-    {Q : Type uQ} (σ : FiberPt (P := P) obs target_obs h → Q)
-    (pred : Q → Future (P := P) h → Prop)
-    (Hcorr : ∀ x step, pred (σ x) step ↔ CompatibleFuture (P := P) sem obs target_obs step x)
-    {x x' : FiberPt (P := P) obs target_obs h}
-    (hσ : σ x = σ x') :
-    ∀ step, Sig (P := P) sem obs target_obs x step ↔ Sig (P := P) sem obs target_obs x' step :=
-by
-  intro step
-  have hx : pred (σ x) step ↔ pred (σ x') step := by simp [hσ]
-  exact (Hcorr x step).symm.trans (hx.trans (Hcorr x' step))
-
-theorem summary_separates_compatible_witness
-    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h : P}
-    {Q : Type uQ} (σ : FiberPt (P := P) obs target_obs h → Q)
-    (pred : Q → Future (P := P) h → Prop)
-    (Hcorr : ∀ x step, pred (σ x) step ↔ CompatibleFuture (P := P) sem obs target_obs step x)
-    {x x' : FiberPt (P := P) obs target_obs h}
-    (step : Future (P := P) h)
-    (hx : CompatibleFuture (P := P) sem obs target_obs step x)
-    (hx' : ¬ CompatibleFuture (P := P) sem obs target_obs step x') :
-    σ x ≠ σ x' :=
-by
-  intro hσ
-  have hsig :
-      ∀ s, Sig (P := P) sem obs target_obs x s ↔ Sig (P := P) sem obs target_obs x' s :=
-    sig_iff_of_summary_correct (P := P) sem obs target_obs σ pred Hcorr hσ
-  have hEq : CompatibleFuture (P := P) sem obs target_obs step x ↔
-      CompatibleFuture (P := P) sem obs target_obs step x' := by
-    simpa [Sig, CompatibleFuture] using hsig step
-  exact hx' (hEq.mp hx)
-
-theorem lagEvent_gives_summary_witness
-    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
-    {h k k' : P} {p q : HistoryGraph.Path h k} (α : HistoryGraph.Deformation p q)
-    (step : HistoryGraph.Path h k')
-    {Q : Type uQ} (σ : FiberPt (P := P) obs target_obs h → Q)
-    (hσ : ∃ f : V → Q, ∀ x, σ x = f (obs x.1))
-    (Hlag : LagEvent (P := P) sem obs target_obs α step) :
-    ∃ x x' : FiberPt (P := P) obs target_obs h,
-      σ x = σ x' ∧ Compatible (P := P) sem obs target_obs step x ∧ ¬ Compatible (P := P) sem obs target_obs step x' :=
-by
-  rcases Hlag with ⟨x, x', hxne, hHol, hx, hx'⟩
-  rcases hσ with ⟨f, hf⟩
-  have hobs : obs x.1 = obs x'.1 := by
-    -- both lie in the same fiber over `h`
-    have hx0 : obs x.1 = target_obs h := x.2
-    have hx'0 : obs x'.1 = target_obs h := x'.2
-    exact hx0.trans hx'0.symm
-  have hσxx' : σ x = σ x' := by
-    calc
-      σ x = f (obs x.1) := hf x
-      _ = f (obs x'.1) := by rw [hobs]
-      _ = σ x' := (hf x').symm
-  exact ⟨x, x', hσxx', hx, hx'⟩
-
-/--
-Step-dependence on the hidden component (product scenario `X = Y×B`, `O(y,b)=y`):
-two states in the same fiber with different `hidden` values cannot both remain compatible
-with the same observed next step.
--/
-def StepDependsOnHidden {Y B : Type w} (sem : Semantics P (LagState Y B))
-    (target_obs : P → Y) {h k : P} (step : HistoryGraph.Path h k) : Prop :=
-  ∀ x x' : FiberPt (P := P) (obs := (lagObs (Y := Y) (B := B))) target_obs h,
-    x.1.hidden ≠ x'.1.hidden →
-      ¬ (Compatible sem lagObs target_obs step x ∧ Compatible sem lagObs target_obs step x')
-
-theorem lag_of_twist_and_hidden_step
-    {Y B : Type w} (sem : Semantics P (LagState Y B)) (target_obs : P → Y)
-    {h k k' : P} {p q : HistoryGraph.Path h k} (α : HistoryGraph.Deformation p q)
-    (step : HistoryGraph.Path h k')
-    (hDep : StepDependsOnHidden (P := P) sem target_obs step)
-    (x x' : FiberPt (P := P) (obs := (lagObs (Y := Y) (B := B))) target_obs h)
-    (hx : x ≠ x')
-    (hHol : HolonomyRel sem lagObs target_obs α x x')
-    (hCompat : Compatible sem lagObs target_obs step x) :
-    LagEvent sem lagObs target_obs α step :=
-by
-  have hHidden : x.1.hidden ≠ x'.1.hidden := hidden_ne_of_ne (P := P) (x := x) (x' := x') hx
-  have hNotCompat : ¬ Compatible sem lagObs target_obs step x' := by
-    intro hx'
-    exact (hDep x x' hHidden) ⟨hCompat, hx'⟩
-  exact lag_of_witness (P := P) sem lagObs target_obs α step x x' hx hHol ⟨hCompat, hNotCompat⟩
 
 /--
 ## 6. Auto-Regulation "Cofinal"
@@ -330,6 +57,225 @@ def CorrectedHolonomy {S : Type w} {V : Type w} (sem : Semantics P S) (obs : S �
     Relation (FiberPt (P := P) obs target_obs h) (FiberPt (P := P) obs target_obs h) :=
   relComp (CorrectedTransport sem obs target_obs gauge p)
           (relConverse (CorrectedTransport sem obs target_obs gauge q))
+
+/-- If two gauges agree pointwise, `CorrectedHolonomy` is invariant. -/
+theorem correctedHolonomy_gauge_iff {S : Type w} {V : Type w}
+    (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h k : P} (φ₁ φ₂ : Gauge (P := P) obs target_obs)
+    {p q : HistoryGraph.Path h k} (α : HistoryGraph.Deformation p q)
+    (hφ : ∀ {h' k' : P} (p' : HistoryGraph.Path h' k')
+          (y y' : FiberPt (P := P) obs target_obs k'),
+          φ₁ p' y y' ↔ φ₂ p' y y')
+    (x x' : FiberPt (P := P) obs target_obs h) :
+    CorrectedHolonomy sem obs target_obs φ₁ α x x' ↔
+      CorrectedHolonomy sem obs target_obs φ₂ α x x' := by
+  constructor
+  · intro ⟨z, ⟨w, hw, hg1⟩, w', hw', hg1'⟩
+    exact ⟨z, ⟨w, hw, (hφ p w z).mp hg1⟩, w', hw', (hφ q w' z).mp hg1'⟩
+  · intro ⟨z, ⟨w, hw, hg2⟩, w', hw', hg2'⟩
+    exact ⟨z, ⟨w, hw, (hφ p w z).mpr hg2⟩, w', hw', (hφ q w' z).mpr hg2'⟩
+
+
+/-!
+### 6.1 Invariance under re-labeling of observables (gauges / corrected holonomy)
+
+If we postcompose both `obs : S → V` and `target_obs : P → V` by an equivalence `e : V ≃ V'`,
+then the fiber types are canonically equivalent (via `fiberPtPostMap`), and the gauge / corrected
+transport / corrected holonomy notions transport without changing truth.
+
+These lemmas are used to show that `AutoRegulatedWrt` / `ObstructionWrt` are invariant under
+observable re-labeling.
+-/
+
+section ObservableEquivGauge
+
+variable {S : Type w} {V V' : Type w}
+
+/-- Push a gauge forward along an equivalence of observables (`V ≃ V'`). -/
+def gaugePost
+    (obs : S → V) (target_obs : P → V) (e : Equiv V V')
+    (φ : Gauge (P := P) obs target_obs) :
+    Gauge (P := P) (obsPost e obs) (targetObsPost e target_obs) :=
+  fun {h k : P} (p : HistoryGraph.Path h k) =>
+    fun y y' =>
+      φ (h := h) (k := k) p
+        (fiberPtPostMapInv (P := P) e obs target_obs y)
+        (fiberPtPostMapInv (P := P) e obs target_obs y')
+
+/-- Pull a gauge back along an equivalence of observables (`V ≃ V'`). -/
+def gaugePostInv
+    (obs : S → V) (target_obs : P → V) (e : Equiv V V')
+    (φ' : Gauge (P := P) (obsPost e obs) (targetObsPost e target_obs)) :
+    Gauge (P := P) obs target_obs :=
+  fun {h k : P} (p : HistoryGraph.Path h k) =>
+    fun y y' =>
+      φ' (h := h) (k := k) p
+        (fiberPtPostMap (P := P) e obs target_obs y)
+        (fiberPtPostMap (P := P) e obs target_obs y')
+
+omit [HistoryGraph P] in
+@[simp] theorem fiberPtPostMapInv_map
+    (obs : S → V) (target_obs : P → V) (e : Equiv V V') {h : P}
+    (x : FiberPt (P := P) obs target_obs h) :
+    fiberPtPostMapInv (P := P) e obs target_obs (fiberPtPostMap (P := P) e obs target_obs x) = x := by
+  apply Subtype.ext
+  rfl
+
+omit [HistoryGraph P] in
+@[simp] theorem fiberPtPostMap_mapInv
+    (obs : S → V) (target_obs : P → V) (e : Equiv V V') {h : P}
+    (x : FiberPt (P := P) (obsPost e obs) (targetObsPost e target_obs) h) :
+    fiberPtPostMap (P := P) e obs target_obs (fiberPtPostMapInv (P := P) e obs target_obs x) = x := by
+  apply Subtype.ext
+  rfl
+
+omit [HistoryGraph P] in
+theorem fiberPtPostMap_injective
+    (obs : S → V) (target_obs : P → V) (e : Equiv V V') {h : P} :
+    Function.Injective (fiberPtPostMap (P := P) e obs target_obs (h := h)) := by
+  intro x x' hxx'
+  -- apply the explicit inverse map and simplify
+  have := congrArg (fiberPtPostMapInv (P := P) e obs target_obs) hxx'
+  simpa using this
+
+theorem gaugePostInv_gaugePost
+    (obs : S → V) (target_obs : P → V) (e : Equiv V V')
+    (φ : Gauge (P := P) obs target_obs)
+    {h k : P} (p : HistoryGraph.Path h k)
+    (y y' : FiberPt (P := P) obs target_obs k) :
+    gaugePostInv (P := P) obs target_obs e (gaugePost (P := P) obs target_obs e φ) p y y' ↔
+      φ p y y' := by
+  dsimp [gaugePostInv, gaugePost]
+  constructor
+  · intro hg
+    have h1 := fiberPtPostMapInv_map (P := P) obs target_obs e y
+    have h2 := fiberPtPostMapInv_map (P := P) obs target_obs e y'
+    rwa [h1, h2] at hg
+  · intro hg
+    have h1 := fiberPtPostMapInv_map (P := P) obs target_obs e y
+    have h2 := fiberPtPostMapInv_map (P := P) obs target_obs e y'
+    rwa [h1, h2]
+
+theorem gaugePost_gaugePostInv
+    (obs : S → V) (target_obs : P → V) (e : Equiv V V')
+    (φ' : Gauge (P := P) (obsPost e obs) (targetObsPost e target_obs))
+    {h k : P} (p : HistoryGraph.Path h k)
+    (y y' : FiberPt (P := P) (obsPost e obs) (targetObsPost e target_obs) k) :
+    gaugePost (P := P) obs target_obs e (gaugePostInv (P := P) obs target_obs e φ') p y y' ↔
+      φ' p y y' := by
+  dsimp [gaugePost, gaugePostInv]
+  constructor
+  · intro hg
+    have h1 := fiberPtPostMap_mapInv (P := P) obs target_obs e y
+    have h2 := fiberPtPostMap_mapInv (P := P) obs target_obs e y'
+    rwa [h1, h2] at hg
+  · intro hg
+    have h1 := fiberPtPostMap_mapInv (P := P) obs target_obs e y
+    have h2 := fiberPtPostMap_mapInv (P := P) obs target_obs e y'
+    rwa [h1, h2]
+
+theorem gaugeRefl_congr_postObsEquiv
+    (obs : S → V) (target_obs : P → V) (e : Equiv V V')
+    (φ : Gauge (P := P) obs target_obs) :
+    GaugeRefl (P := P) obs target_obs φ ↔
+      GaugeRefl (P := P) (obsPost e obs) (targetObsPost e target_obs)
+        (gaugePost (P := P) obs target_obs e φ) := by
+  constructor
+  · intro hRefl h k p y
+    -- unfold and use reflexivity on the pulled-back point
+    simpa [gaugePost] using hRefl p (fiberPtPostMapInv (P := P) e obs target_obs y)
+  · intro hRefl h k p y
+    -- use reflexivity in the postcomposed world, then simplify
+    have :
+        gaugePost (P := P) obs target_obs e φ p
+            (fiberPtPostMap (P := P) e obs target_obs y)
+            (fiberPtPostMap (P := P) e obs target_obs y) :=
+      hRefl p (fiberPtPostMap (P := P) e obs target_obs y)
+    simpa [gaugePost] using this
+
+theorem gaugeTotal_congr_postObsEquiv
+    (obs : S → V) (target_obs : P → V) (e : Equiv V V')
+    (φ : Gauge (P := P) obs target_obs) :
+    GaugeTotal (P := P) obs target_obs φ ↔
+      GaugeTotal (P := P) (obsPost e obs) (targetObsPost e target_obs)
+        (gaugePost (P := P) obs target_obs e φ) := by
+  constructor
+  · intro hTot h k p y
+    rcases hTot p (fiberPtPostMapInv (P := P) e obs target_obs y) with ⟨y', hy'⟩
+    refine ⟨fiberPtPostMap (P := P) e obs target_obs y', ?_⟩
+    simpa [gaugePost] using hy'
+  · intro hTot h k p y
+    rcases hTot p (fiberPtPostMap (P := P) e obs target_obs y) with ⟨y', hy'⟩
+    refine ⟨fiberPtPostMapInv (P := P) e obs target_obs y', ?_⟩
+    -- simplify using the map/inv simp lemma
+    simpa [gaugePost] using hy'
+
+theorem correctedTransport_congr_postObsEquiv
+    (sem : Semantics P S) (obs : S → V) (target_obs : P → V) (e : Equiv V V')
+    (φ : Gauge (P := P) obs target_obs)
+    {h k : P} (p : HistoryGraph.Path h k)
+    (x : FiberPt (P := P) obs target_obs h) (y : FiberPt (P := P) obs target_obs k) :
+    CorrectedTransport (P := P) sem obs target_obs φ p x y ↔
+      CorrectedTransport (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+        (gaugePost (P := P) obs target_obs e φ) p
+        (fiberPtPostMap (P := P) e obs target_obs x)
+        (fiberPtPostMap (P := P) e obs target_obs y) := by
+  constructor
+  · rintro ⟨z, hzT, hzG⟩
+    refine ⟨fiberPtPostMap (P := P) e obs target_obs z, ?_, ?_⟩
+    · -- transport is unchanged on underlying points
+      simpa [CorrectedTransport, Transport] using hzT
+    · simpa [CorrectedTransport, gaugePost] using hzG
+  · rintro ⟨z, hzT, hzG⟩
+    refine ⟨fiberPtPostMapInv (P := P) e obs target_obs z, ?_, ?_⟩
+    · simpa [CorrectedTransport, Transport] using hzT
+    · -- unfold gaugePost, then simplify the map/inv compositions
+      simpa [CorrectedTransport, gaugePost] using hzG
+
+theorem correctedHolonomy_congr_postObsEquiv
+    (sem : Semantics P S) (obs : S → V) (target_obs : P → V) (e : Equiv V V')
+    (φ : Gauge (P := P) obs target_obs)
+    {h k : P} {p q : HistoryGraph.Path h k} (α : HistoryGraph.Deformation p q)
+    (x x' : FiberPt (P := P) obs target_obs h) :
+    CorrectedHolonomy (P := P) sem obs target_obs φ α x x' ↔
+      CorrectedHolonomy (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+        (gaugePost (P := P) obs target_obs e φ) α
+        (fiberPtPostMap (P := P) e obs target_obs x)
+        (fiberPtPostMap (P := P) e obs target_obs x') := by
+  constructor
+  · intro hHol
+    -- unfold as a relComp witness and map it
+    unfold CorrectedHolonomy at hHol
+    rcases hHol with ⟨y, hy1, hy2⟩
+    refine ⟨fiberPtPostMap (P := P) e obs target_obs y, ?_, ?_⟩
+    · -- corrected transport along p
+      have := (correctedTransport_congr_postObsEquiv (P := P) sem obs target_obs e φ p x y).1 hy1
+      simpa using this
+    · -- corrected transport along q
+      have := (correctedTransport_congr_postObsEquiv (P := P) sem obs target_obs e φ q x' y).1 hy2
+      simpa using this
+  · intro hHol
+    unfold CorrectedHolonomy at hHol
+    rcases hHol with ⟨y, hy1, hy2⟩
+    let y0 : FiberPt (P := P) obs target_obs k :=
+      fiberPtPostMapInv (P := P) e obs target_obs y
+    refine ⟨y0, ?_, ?_⟩
+    · have hy1' :
+        CorrectedTransport (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+          (gaugePost (P := P) obs target_obs e φ) p
+          (fiberPtPostMap (P := P) e obs target_obs x)
+          (fiberPtPostMap (P := P) e obs target_obs y0) := by
+        simpa [y0] using hy1
+      exact (correctedTransport_congr_postObsEquiv (P := P) sem obs target_obs e φ p x y0).2 hy1'
+    · have hy2' :
+        CorrectedTransport (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+          (gaugePost (P := P) obs target_obs e φ) q
+          (fiberPtPostMap (P := P) e obs target_obs x')
+          (fiberPtPostMap (P := P) e obs target_obs y0) := by
+        simpa [y0] using hy2
+      exact (correctedTransport_congr_postObsEquiv (P := P) sem obs target_obs e φ q x' y0).2 hy2'
+
+end ObservableEquivGauge
 
 /-!
 ### A small but important monotonicity fact
@@ -410,7 +356,7 @@ def CellLivesIn {P : Type u} [HistoryGraph P] (J : Set P) (c : Cell (P := P)) : 
 
 /-- Set of 2-cells whose endpoints lie in `J`. -/
 def CellsOver (C : Set P) : Set (Cell (P := P)) :=
-  { c | CellSrc c ∈ C ∧ CellTgt c ∈ C }
+  fun c => CellSrc c ∈ C ∧ CellTgt c ∈ C
 
 /-- Holonomy is weak iff Δ ⊆ Hol. -/
 def WeakHolonomy {S : Type w} {V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
@@ -529,6 +475,188 @@ def ObstructionWrt {S : Type w} {V : Type w} (sem : Semantics P S) (obs : S → 
       ∃ x x' : FiberPt (P := P) obs target_obs h,
         x ≠ x' ∧ CorrectedHolonomy sem obs target_obs φ α x x'
 
+
+
+/-!
+### 6.1b Invariance: obstruction / auto-regulation under observable re-labeling
+
+The admissible-gauge variants (`Wrt`) are intended to be *invariant under re-labeling* of observable
+values. Concretely, postcomposing both `obs : S → V` and `target_obs : P → V` by an equivalence
+`e : V ≃ V'` should not change whether a given cell set is auto-regulated / obstructed.
+-/
+
+section ObservableEquivRegulation
+
+variable {S : Type w} {V V' : Type w}
+
+theorem autoRegulatedWrt_gaugeRefl_congr_postObsEquiv
+    (sem : Semantics P S) (obs : S → V) (target_obs : P → V) (e : Equiv V V')
+    (J : Set (Cell (P := P))) :
+    AutoRegulatedWrt (P := P) sem obs target_obs
+      (fun φ => GaugeRefl (P := P) obs target_obs φ) J ↔
+    AutoRegulatedWrt (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+      (fun φ => GaugeRefl (P := P) (obsPost e obs) (targetObsPost e target_obs) φ) J := by
+  constructor
+  · rintro ⟨φ, hRefl, hflat⟩
+    refine
+      ⟨gaugePost (P := P) obs target_obs e φ,
+        (gaugeRefl_congr_postObsEquiv (P := P) obs target_obs e φ).1 hRefl, ?_⟩
+    intro c hc
+    rcases c with ⟨h, k, p, q, ⟨α⟩⟩
+    intro x₁ x₁'
+    let x : FiberPt (P := P) obs target_obs h :=
+      fiberPtPostMapInv (P := P) e obs target_obs x₁
+    let x' : FiberPt (P := P) obs target_obs h :=
+      fiberPtPostMapInv (P := P) e obs target_obs x₁'
+    have hOrig : CorrectedHolonomy (P := P) sem obs target_obs φ α x x' ↔ x = x' := by
+      simpa [x, x'] using (hflat (⟨h, k, p, q, ⟨α⟩⟩) hc x x')
+    have hHol :
+        CorrectedHolonomy (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+          (gaugePost (P := P) obs target_obs e φ) α x₁ x₁' ↔
+        CorrectedHolonomy (P := P) sem obs target_obs φ α x x' := by
+      simpa [x, x'] using
+        (correctedHolonomy_congr_postObsEquiv (P := P) sem obs target_obs e φ
+            (p := p) (q := q) (α := α) x x').symm
+    have hEq : x = x' ↔ x₁ = x₁' := by
+      constructor
+      · intro hxx
+        have := congrArg (fiberPtPostMap (P := P) e obs target_obs) hxx
+        simpa [x, x'] using this
+      · intro hxx
+        have := congrArg (fiberPtPostMapInv (P := P) e obs target_obs) hxx
+        simpa [x, x'] using this
+    calc
+      CorrectedHolonomy (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+          (gaugePost (P := P) obs target_obs e φ) α x₁ x₁'
+          ↔ CorrectedHolonomy (P := P) sem obs target_obs φ α x x' := hHol
+      _ ↔ x = x' := hOrig
+      _ ↔ x₁ = x₁' := hEq
+  · rintro ⟨φ', hRefl', hflat'⟩
+    let φ : Gauge (P := P) obs target_obs :=
+      gaugePostInv (P := P) obs target_obs e φ'
+    have hRefl : GaugeRefl (P := P) obs target_obs φ := by
+      intro h k p y
+      -- unfold the pulled-back gauge and use reflexivity on the pushed-forward point
+      simpa [φ, gaugePostInv] using
+        hRefl' (p := p) (y := fiberPtPostMap (P := P) e obs target_obs y)
+    refine ⟨φ, hRefl, ?_⟩
+    intro c hc
+    rcases c with ⟨h, k, p, q, ⟨α⟩⟩
+    intro x x'
+    let x₁ : FiberPt (P := P) (obsPost e obs) (targetObsPost e target_obs) h :=
+      fiberPtPostMap (P := P) e obs target_obs x
+    let x₁' : FiberPt (P := P) (obsPost e obs) (targetObsPost e target_obs) h :=
+      fiberPtPostMap (P := P) e obs target_obs x'
+    have hGaugeIff : ∀ {h' k' : P} (p' : HistoryGraph.Path h' k')
+        (y y' : FiberPt (P := P) (obsPost e obs) (targetObsPost e target_obs) k'),
+        gaugePost (P := P) obs target_obs e φ p' y y' ↔ φ' p' y y' := by
+      intro h' k' p' y y'
+      exact gaugePost_gaugePostInv (P := P) obs target_obs e φ' p' y y'
+    have hPost :
+        CorrectedHolonomy (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+          φ' α x₁ x₁' ↔
+          x₁ = x₁' := by
+      simpa [x₁, x₁'] using (hflat' (⟨h, k, p, q, ⟨α⟩⟩) hc x₁ x₁')
+    have hHol :
+        CorrectedHolonomy (P := P) sem obs target_obs φ α x x' ↔
+          CorrectedHolonomy (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+            (gaugePost (P := P) obs target_obs e φ) α x₁ x₁' := by
+      simpa [x₁, x₁'] using
+        (correctedHolonomy_congr_postObsEquiv (P := P) sem obs target_obs e φ
+            (p := p) (q := q) (α := α) x x')
+    have hEq : x₁ = x₁' ↔ x = x' := by
+      constructor
+      · intro hxx
+        have := congrArg (fiberPtPostMapInv (P := P) e obs target_obs) hxx
+        simpa [x₁, x₁'] using this
+      · intro hxx
+        have := congrArg (fiberPtPostMap (P := P) e obs target_obs) hxx
+        simpa [x₁, x₁'] using this
+    have hHol' :
+        CorrectedHolonomy (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+          (gaugePost (P := P) obs target_obs e φ) α x₁ x₁' ↔ x = x' := by
+      have hCorrGaugeEq :=
+        correctedHolonomy_gauge_iff (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+          (gaugePost (P := P) obs target_obs e φ) φ' α
+          (fun p' y y' => hGaugeIff p' y y') x₁ x₁'
+      exact hCorrGaugeEq.trans (hPost.trans hEq)
+    show CorrectedHolonomy (P := P) sem obs target_obs φ α x x' ↔ x = x'
+    exact hHol.trans hHol'
+
+theorem obstructionWrt_gaugeRefl_congr_postObsEquiv
+    (sem : Semantics P S) (obs : S → V) (target_obs : P → V) (e : Equiv V V')
+    (J : Set (Cell (P := P))) :
+    ObstructionWrt (P := P) sem obs target_obs
+      (fun φ => GaugeRefl (P := P) obs target_obs φ) J ↔
+    ObstructionWrt (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+      (fun φ => GaugeRefl (P := P) (obsPost e obs) (targetObsPost e target_obs) φ) J := by
+  constructor
+  · intro hObs φ' hRefl'
+    let φ : Gauge (P := P) obs target_obs :=
+      gaugePostInv (P := P) obs target_obs e φ'
+    have hRefl : GaugeRefl (P := P) obs target_obs φ := by
+      intro h k p y
+      simpa [φ, gaugePostInv] using
+        hRefl' (p := p) (y := fiberPtPostMap (P := P) e obs target_obs y)
+    rcases hObs φ hRefl with ⟨c, hcJ, hw⟩
+    refine ⟨c, hcJ, ?_⟩
+    rcases c with ⟨h, k, p, q, ⟨α⟩⟩
+    rcases hw with ⟨x, x', hxne, hHol⟩
+    let x₁ : FiberPt (P := P) (obsPost e obs) (targetObsPost e target_obs) h :=
+      fiberPtPostMap (P := P) e obs target_obs x
+    let x₁' : FiberPt (P := P) (obsPost e obs) (targetObsPost e target_obs) h :=
+      fiberPtPostMap (P := P) e obs target_obs x'
+    refine ⟨x₁, x₁', ?_, ?_⟩
+    · intro hEq
+      apply hxne
+      have := congrArg (fiberPtPostMapInv (P := P) e obs target_obs) hEq
+      simpa [x₁, x₁'] using this
+    · have hHolPost :
+          CorrectedHolonomy (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+            (gaugePost (P := P) obs target_obs e φ) α x₁ x₁' :=
+        (correctedHolonomy_congr_postObsEquiv (P := P) sem obs target_obs e φ
+            (p := p) (q := q) (α := α) x x').1 hHol
+      have hGaugeIff : ∀ {h' k' : P} (p' : HistoryGraph.Path h' k')
+          (y y' : FiberPt (P := P) (obsPost e obs) (targetObsPost e target_obs) k'),
+          gaugePost (P := P) obs target_obs e φ p' y y' ↔ φ' p' y y' := by
+        intro h' k' p' y y'
+        exact gaugePost_gaugePostInv (P := P) obs target_obs e φ' p' y y'
+      have hHolPostEta :
+          CorrectedHolonomy (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+            φ' α x₁ x₁' :=
+        (correctedHolonomy_gauge_iff (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+          (gaugePost (P := P) obs target_obs e φ) φ' α
+          (fun p' y y' => hGaugeIff p' y y') x₁ x₁').mp hHolPost
+      simpa using hHolPostEta
+  · intro hObs φ hRefl
+    have hRefl' :
+        GaugeRefl (P := P) (obsPost e obs) (targetObsPost e target_obs)
+          (gaugePost (P := P) obs target_obs e φ) :=
+      (gaugeRefl_congr_postObsEquiv (P := P) obs target_obs e φ).1 hRefl
+    rcases hObs (gaugePost (P := P) obs target_obs e φ) hRefl' with ⟨c, hcJ, hw⟩
+    refine ⟨c, hcJ, ?_⟩
+    rcases c with ⟨h, k, p, q, ⟨α⟩⟩
+    rcases hw with ⟨x₁, x₁', hxne, hHol⟩
+    let x : FiberPt (P := P) obs target_obs h :=
+      fiberPtPostMapInv (P := P) e obs target_obs x₁
+    let x' : FiberPt (P := P) obs target_obs h :=
+      fiberPtPostMapInv (P := P) e obs target_obs x₁'
+    refine ⟨x, x', ?_, ?_⟩
+    · intro hEq
+      apply hxne
+      have := congrArg (fiberPtPostMap (P := P) e obs target_obs) hEq
+      simpa [x, x'] using this
+    · have hHol' :
+          CorrectedHolonomy (P := P) sem (obsPost e obs) (targetObsPost e target_obs)
+            (gaugePost (P := P) obs target_obs e φ) α
+            (fiberPtPostMap (P := P) e obs target_obs x)
+            (fiberPtPostMap (P := P) e obs target_obs x') := by
+        simpa [x, x'] using hHol
+      exact
+        (correctedHolonomy_congr_postObsEquiv (P := P) sem obs target_obs e φ
+            (p := p) (q := q) (α := α) x x').2 hHol'
+
+end ObservableEquivRegulation
 /-!
 ### Decisive structural laws (monotonicity)
 
@@ -649,7 +777,9 @@ theorem obstructionWrt_singleton_of_twistedHolonomy_of_gaugeRefl
         (fun φ => GaugeRefl (P := P) obs target_obs φ)
         (Set.singleton (⟨h, k, p, q, ⟨α⟩⟩ : Cell (P := P))) := by
   intro hTw φ hφ
-  refine ⟨⟨h, k, p, q, ⟨α⟩⟩, by simp [Set.singleton], ?_⟩
+  refine ⟨(⟨h, k, p, q, ⟨α⟩⟩ : Cell (P := P)), ?_, ?_⟩
+  · dsimp [Set.singleton]
+    rfl
   change
     ∃ x x' : FiberPt (P := P) obs target_obs h,
       x ≠ x' ∧ CorrectedHolonomy (P := P) sem obs target_obs φ α x x'
@@ -670,6 +800,28 @@ theorem not_autoRegulatedWrt_singleton_of_twistedHolonomy_of_gaugeRefl
       (OK := fun φ => GaugeRefl (P := P) obs target_obs φ)
       (J := Set.singleton (⟨h, k, p, q, ⟨α⟩⟩ : Cell (P := P)))
       (obstructionWrt_singleton_of_twistedHolonomy_of_gaugeRefl (P := P) sem obs target_obs α hTw)
+
+/--
+A compact “dynamic no-go” package: twist + lag forces both compression failure and admissible obstruction.
+
+This does **not** claim an external novelty; it is an internal classification interface.
+-/
+structure DiagonalDynamicClass {S V : Type w}
+    (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h k k' : P} {p q : HistoryGraph.Path h k} (α : HistoryGraph.Deformation p q)
+    (step : HistoryGraph.Path h k') : Prop where
+  twisted : TwistedHolonomy sem obs target_obs α
+  lag : LagEvent sem obs target_obs α step
+  noVisiblePredictor : ¬ VisiblePredictsStep sem obs target_obs step
+  obstructedRefl :
+    ObstructionWrt sem obs target_obs
+      (fun φ => GaugeRefl obs target_obs φ)
+      (Set.singleton (⟨h, k, p, q, ⟨α⟩⟩ : Cell))
+  notAutoRegulatedRefl :
+    ¬ AutoRegulatedWrt sem obs target_obs
+      (fun φ => GaugeRefl obs target_obs φ)
+      (Set.singleton (⟨h, k, p, q, ⟨α⟩⟩ : Cell))
+
 
 /-- Cofinal obstruction: there exists a cofinal future where every gauge fails (with a witness). -/
 def ObstructionCofinal {S : Type w} {V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V) : Prop :=
@@ -894,12 +1046,10 @@ theorem locallyAutoRegulatedWrt_iff_goodGaugeForCell_nonempty
   constructor
   · intro hLocal c hcJ
     rcases hLocal c hcJ with ⟨φ, hOK, hFlat⟩
-    refine ⟨φ, hOK, ?_⟩
-    simpa [GoodGaugeForCellWrt, FlatOnCell] using hFlat
+    exact ⟨φ, ⟨hOK, hFlat⟩⟩
   · intro hGood c hcJ
-    rcases hGood c hcJ with ⟨φ, hOK, hFlat⟩
-    refine ⟨φ, hOK, ?_⟩
-    simpa [GoodGaugeForCellWrt, FlatOnCell] using hFlat
+    rcases hGood c hcJ with ⟨φ, ⟨hOK, hFlat⟩⟩
+    exact ⟨φ, hOK, hFlat⟩
 
 theorem autoRegulatedWrt_iff_exists_goodGaugeForAllCells
     {S : Type w} {V : Type w}
@@ -912,16 +1062,10 @@ theorem autoRegulatedWrt_iff_exists_goodGaugeForAllCells
   constructor
   · intro hAuto
     rcases hAuto with ⟨φ, hOK, hFlatAll⟩
-    refine ⟨φ, hOK, ?_⟩
-    intro c hcJ
-    refine ⟨hOK, ?_⟩
-    simpa [GoodGaugeForCellWrt, FlatOnCell] using hFlatAll c hcJ
+    exact ⟨φ, hOK, fun c hcJ => ⟨hOK, hFlatAll c hcJ⟩⟩
   · intro h
     rcases h with ⟨φ, hOK, hGood⟩
-    refine ⟨φ, hOK, ?_⟩
-    intro c hcJ
-    have hFlat : FlatOnCell (P := P) sem obs target_obs φ c := (hGood c hcJ).2
-    simpa [FlatOnCell] using hFlat
+    exact ⟨φ, hOK, fun c hcJ => (hGood c hcJ).2⟩
 
 theorem autoRegulatedWrt_iff_goodGaugeIntersection_nonempty
     {S : Type w} {V : Type w}
@@ -933,14 +1077,10 @@ theorem autoRegulatedWrt_iff_goodGaugeIntersection_nonempty
   constructor
   · intro hAuto
     rcases hAuto with ⟨φ, hOK, hFlatAll⟩
-    refine ⟨φ, hOK, ?_⟩
-    intro c hcJ
-    simpa [FlatOnCell] using hFlatAll c hcJ
+    exact ⟨φ, hOK, hFlatAll⟩
   · intro hI
     rcases hI with ⟨φ, hOK, hAll⟩
-    refine ⟨φ, hOK, ?_⟩
-    intro c hcJ
-    simpa [FlatOnCell] using (hAll c hcJ)
+    exact ⟨φ, hOK, hAll⟩
 
 theorem obstructionWrt_iff_twistedOnCell
     {S : Type w} {V : Type w}
@@ -953,12 +1093,10 @@ theorem obstructionWrt_iff_twistedOnCell
   constructor
   · intro hObs φ hOK
     rcases hObs φ hOK with ⟨c, hcJ, hw⟩
-    refine ⟨c, hcJ, ?_⟩
-    simpa [TwistedOnCell] using hw
+    exact ⟨c, hcJ, hw⟩
   · intro hObs φ hOK
     rcases hObs φ hOK with ⟨c, hcJ, hTw⟩
-    refine ⟨c, hcJ, ?_⟩
-    simpa [TwistedOnCell] using hTw
+    exact ⟨c, hcJ, hTw⟩
 
 theorem twistedOnCell_not_goodGaugeForCellWrt
     {S : Type w} {V : Type w}
@@ -985,8 +1123,7 @@ theorem obstructionWrt_implies_exists_cell_not_goodGauge
         ∃ c, c ∈ J ∧ ¬ GoodGaugeForCellWrt (P := P) sem obs target_obs OK c φ := by
   intro hObs φ hOK
   rcases hObs φ hOK with ⟨c, hcJ, hw⟩
-  have hTw : TwistedOnCell (P := P) sem obs target_obs φ c := by
-    simpa [TwistedOnCell] using hw
+  have hTw : TwistedOnCell (P := P) sem obs target_obs φ c := hw
   exact ⟨c, hcJ, twistedOnCell_not_goodGaugeForCellWrt (P := P) sem obs target_obs OK hTw⟩
 
 /-- Paradigm statement: locally flat but globally obstructed on the same cofinal future. -/
@@ -1024,33 +1161,8 @@ theorem not_autoRegulatedWrt_of_localFlatButObstructedCofinalWrt
   exact not_AutoRegulatedWrt_of_ObstructionWrt (P := P) sem obs target_obs OK
     (J := CellsOver (P := P) C) hObs
 
+
 end WithHistoryGraph
-
-end PrimitiveHolonomy
-
-
-
-#print axioms PrimitiveHolonomy.holonomy_congr
-#print axioms PrimitiveHolonomy.holonomy_def
-#print axioms PrimitiveHolonomy.lag_of_witness
-#print axioms PrimitiveHolonomy.Compatible
-#print axioms PrimitiveHolonomy.hidden_ne_of_ne
-#print axioms PrimitiveHolonomy.StepDependsOnHidden
-#print axioms PrimitiveHolonomy.lag_of_twist_and_hidden_step
-#print axioms PrimitiveHolonomy.Transport
-#print axioms PrimitiveHolonomy.LagEvent
-#print axioms PrimitiveHolonomy.AutoRegulated
-#print axioms PrimitiveHolonomy.Reach
-#print axioms PrimitiveHolonomy.Cofinal
-#print axioms PrimitiveHolonomy.Scheduling
-#print axioms PrimitiveHolonomy.AutoRegulatedCofinal
-#print axioms PrimitiveHolonomy.Obstruction
-#print axioms PrimitiveHolonomy.ObstructionCofinal
-#print axioms PrimitiveHolonomy.not_AutoRegulated_of_Obstruction
-#print axioms PrimitiveHolonomy.LocallyAutoRegulated
-#print axioms PrimitiveHolonomy.locallyAutoRegulated_of_AutoRegulated
-
-namespace PrimitiveHolonomy
 
 /-- 1D shot: compress each total/scheduling `p : Path h k` into a code in `Q`. -/
 abbrev Summary {P : Type u} [HistoryGraph P] (Q : Type uQ) :=
@@ -1082,7 +1194,7 @@ def TimeShot.toSummary {P : Type u} [HistoryGraph P] {A : Type uQ} [Preorder A]
 /-- Shadow-future set of indices at a prefix: indices whose stage is reachable from `h`. -/
 def shadowFuture {P : Type u} [HistoryGraph P] {A : Type uQ} [Preorder A]
     (s : Scheduling (P := P) A) (h : P) : Set A :=
-  { i | Reach (P := P) h (s.c i) }
+  fun i => Reach (P := P) h (s.c i)
 
 /-- Constructively, `Scheduling` induces a canonical set-valued summary (no choice needed). -/
 def shadowSummary {P : Type u} [HistoryGraph P] {A : Type uQ} [Preorder A]
@@ -1314,7 +1426,7 @@ def ProbeSetoidOn {P : Type u} [HistoryGraph P] {S V : Type w}
 ## Probe budgets: finitary stability vs. global indistinguishability
 
 This is the quotient-free “LLN core” for probe semantics: how information refines as the
-available probe family grows. Everything here is constructive: no `Classical`, no `propext`,
+available probe family grows. Everything here is constructive: no classical axioms, no propositional extensionality,
 no witness extraction from negations.
 -/
 
@@ -1405,27 +1517,63 @@ theorem probeObstruction_forces_no_finite_stabilization :
   exact not_stableAt_of_indist_and_not_univ (P := P) (C := C) (fam := fam) (obs := obs)
     (target_obs := target_obs) (h := h) (C0 := C0) hC0xy hUniv
 
+
+theorem probeObstruction_strict_chain_of_injectiveSeq
+    {a : Nat → C.Obj} (ha : Function.Injective a)
+    (hRangeFinite : ∀ n : Nat, (Set.range (fun i : Fin n => a i)).Finite)
+    (hObs : ProbeObstruction (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h)) :
+    ∃ x y : FiberPt (P := P) obs target_obs h,
+      (∀ n : Nat,
+        let Cn : Set C.Obj := Set.range (fun i : Fin n => a i)
+        let Cn' : Set C.Obj := Set.range (fun i : Fin (n + 1) => a i)
+        Cn.Finite ∧
+        Cn ⊆ Cn' ∧
+        (a n ∈ Cn' ∧ a n ∉ Cn) ∧
+        ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) Cn x y ∧
+        ¬ StableAt (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) Cn x y) ∧
+      ¬ ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) Set.univ x y := by
+  rcases hObs with ⟨x, y, hFin, hUniv⟩
+  refine ⟨x, y, ?_, hUniv⟩
+  intro n
+  let Cn : Set C.Obj := Set.range (fun i : Fin n => a i)
+  let Cn' : Set C.Obj := Set.range (fun i : Fin (n + 1) => a i)
+  have hCnFinite : Cn.Finite := hRangeFinite n
+  have hsub : Cn ⊆ Cn' := by
+    intro c hc
+    rcases hc with ⟨i, rfl⟩
+    exact ⟨Fin.castSucc i, rfl⟩
+  have hmem_succ : a n ∈ Cn' := by
+    exact ⟨⟨n, Nat.lt_succ_self n⟩, rfl⟩
+  have hnot_mem : a n ∉ Cn := by
+    intro hmem
+    rcases hmem with ⟨i, hi⟩
+    have hEq : (i : Nat) = n := ha hi
+    have hlt : n < n := by
+      have hlt' : (i : Nat) < n := i.isLt
+      exact hEq.rec (motive := fun t _ => t < n) hlt'
+    exact (Nat.lt_irrefl n) hlt
+  have hCn_xy : ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) Cn x y :=
+    hFin Cn hCnFinite
+  have hNotStable :
+      ¬ StableAt (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) Cn x y :=
+    not_stableAt_of_indist_and_not_univ (P := P) (C := C) (fam := fam) (obs := obs)
+      (target_obs := target_obs) (h := h) (C0 := Cn) hCn_xy hUniv
+  refine ⟨hCnFinite, hsub, ⟨hmem_succ, hnot_mem⟩, hCn_xy, hNotStable⟩
+
+
 end ProbeBudget
 
 /-!
-## Probe quotient (two layers)
+## Probe “quotient” (setoid-only)
 
-We separate two layers:
+This development is intentionally **setoid-only**: the probe “quotient” is the canonical
+setoid `ProbeSetoid ...` on the fiber, and it is **terminal / greatest** among all fiber setoids
+whose equivalence relation is holonomy-compatible.
 
-1. A **quotient-free, setoid-only** characterization: the probe “quotient” is the canonical
-   setoid `ProbeSetoid ...` on the fiber, and it is **terminal / greatest** among all
-   fiber setoids whose equivalence relation is holonomy-compatible.
-
-2. A **`Quot` realization**: define `FiberQuot := Quot (ProbeSetoid ...)` and state the usual
-   universal properties (existence/uniqueness of factorization) plus terminality among
-   holonomy-compatible quotients. This layer explicitly depends on the kernel axiom
-   `Quot.sound` and is moved to `RevHalt/Theory/PrimitiveHolonomy/QuotRealization.lean`.
-
-Important: `Quot.sound` is **not** a classical axiom (no choice, no excluded middle); it is the
-primitive soundness principle for quotient types in Lean.
+No quotient type realization is used anywhere in this repository.
 -/
 
-section ProbeQuotientSetoidOnly
+section ProbeSetoidOnly
 
 variable {P : Type u} [HistoryGraph P]
 variable {S V : Type w}
@@ -1487,22 +1635,7 @@ theorem probeSetoid_terminal_holonomyCompatible
     probeIndistinguishable_of_holonomyCompatibleSetoid
       (P := P) (C := C) fam obs target_obs (h := h) R hR hxy
 
-end ProbeQuotientSetoidOnly
-
-/-!
-## Quotient realization (separate file)
-
-This development is **setoid-first**: the probe “quotient” is presented as the canonical
-setoid `ProbeSetoid ...` together with its maximality/terminality property among
-holonomy-compatible setoids.
-
-If one accepts Lean's primitive quotient type `Quot`, then one can *realize* this setoid as
-an actual quotient type and recover the usual “maps of types” universal properties
-(`Quot.lift`, terminality among holonomy-compatible quotients, …). That realization
-layer depends on the kernel axiom `Quot.sound` and is moved to:
-
-`RevHalt/Theory/PrimitiveHolonomy/QuotRealization.lean`.
--/
+end ProbeSetoidOnly
 
 /-- Cofinality in coefficients: every coefficient maps to some coefficient in `C0`. -/
 def CoeffCofinal (C : CoeffCat) (C0 : Set C.Obj) : Prop :=
@@ -1624,149 +1757,71 @@ theorem probeIndistinguishable_iff_probeIndistinguishableOn_of_coeffCovers
   · exact probeIndistinguishable_of_probeIndistinguishableOn_of_coeffCovers
       (P := P) C fam C0 obs target_obs h hCover
 
-end PrimitiveHolonomy
-
-#print axioms PrimitiveHolonomy.factors_eq_of_codes
-#print axioms PrimitiveHolonomy.witness_no_factor
-#print axioms PrimitiveHolonomy.NonReducibleHolonomy
-
-namespace PrimitiveHolonomy
-
-section ConcreteMathInstance
-
-/-!
-Concrete non-physical instance for the coefficient/probe layer:
-- one-prefix history graph;
-- boolean micro-states with constant observable;
-- two coefficient objects with unique morphisms;
-- identity push on probe relations.
-
-This section instantiates and validates the full structural chain:
-`CoeffCofinal + HolonomyNatural + PushConservativeOnHolonomy
-  => CoeffCovers => probe reduction`.
+/--
+If `C0` covered all coefficients, then any global distinction would already appear on `C0`.
 -/
+theorem not_probeIndistinguishableOn_of_coeffCovers_and_not_probeIndistinguishable
+    {P : Type u} [HistoryGraph P] {S V : Type w}
+    (C : CoeffCat) (fam : SemFamily C P S) (C0 : Set C.Obj)
+    (obs : S → V) (target_obs : P → V) (h : P)
+    (hCover : CoeffCovers (P := P) C fam C0 obs target_obs)
+    {x y : FiberPt (P := P) obs target_obs h} :
+    ¬ ProbeIndistinguishable (P := P) C fam obs target_obs h x y →
+      ¬ ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h x y := by
+  intro hNot hOn
+  exact hNot
+    ((probeIndistinguishable_iff_probeIndistinguishableOn_of_coeffCovers
+      (P := P) C fam C0 obs target_obs h hCover x y).2 hOn)
 
-inductive MathPrefix where
-  | base
-  deriving DecidableEq
-
-instance : HistoryGraph MathPrefix where
-  Path _ _ := Unit
-  Deformation {_ _} _ _ := True
-  idPath _ := ()
-  compPath _ _ := ()
-
-def mathObs : Bool → Unit := fun _ => ()
-
-def mathTargetObs : MathPrefix → Unit := fun _ => ()
-
-def mathSemantics : Semantics MathPrefix Bool where
-  sem := by
-    intro _h _k _p
-    exact relId
-  sem_id := by
-    intro h x y
-    rfl
-  sem_comp := by
-    intro h k l p q x y
-    constructor
-    · intro hxy
-      refine ⟨x, ?_, ?_⟩
-      · rfl
-      · exact hxy
-    · rintro ⟨b, hb1, hb2⟩
-      exact hb1.trans hb2
-
-inductive MathCoeffObj where
-  | c0
-  | c1
-  deriving DecidableEq
-
-def MathCoeffCat : CoeffCat where
-  Obj := MathCoeffObj
-  Hom _ _ := Unit
-  id _ := ()
-  comp _ _ := ()
-
-def mathSemFamily : SemFamily MathCoeffCat MathPrefix Bool where
-  sem _ := mathSemantics
-
-def mathPush :
-    FiberRelPush (P := MathPrefix) (S := Bool) (V := Unit)
-      MathCoeffCat mathObs mathTargetObs where
-  push := by
-    intro _c _d _f _h R
-    exact R
-  push_id := by
-    intro c h R x y
-    rfl
-  push_comp := by
-    intro a b d f g h R x y
-    rfl
-
-/-- Chosen covering subfamily: one coefficient object only. -/
-def mathC0 : Set MathCoeffObj := {MathCoeffObj.c0}
-
-/-- The chosen subfamily is proper (`c1` is excluded). -/
-theorem mathC0_proper : MathCoeffObj.c1 ∉ mathC0 := by
-  intro hmem
-  have hEq : MathCoeffObj.c1 = MathCoeffObj.c0 := by
-    -- `mathC0` is a singleton set.
-    dsimp [mathC0] at hmem
-    exact hmem
-  have hne : MathCoeffObj.c1 ≠ MathCoeffObj.c0 := by
-    decide
-  exact hne hEq
-
-theorem mathCoeffCofinal : CoeffCofinal MathCoeffCat mathC0 := by
-  intro c
-  refine ⟨MathCoeffObj.c0, ?_, ⟨()⟩⟩
-  -- Membership in the singleton set is definitional.
-  dsimp [mathC0]
-  rfl
-
-theorem mathHolonomyNatural :
-    HolonomyNatural (P := MathPrefix)
-      MathCoeffCat mathSemFamily mathObs mathTargetObs mathPush := by
-  intro c d f cell
-  rcases cell with ⟨h, k, p, q, ⟨α⟩⟩
-  intro x y
-  rfl
-
-theorem mathPushConservative :
-    PushConservativeOnHolonomy (P := MathPrefix)
-      MathCoeffCat mathSemFamily mathObs mathTargetObs mathPush := by
-  intro c d f cell
-  rcases cell with ⟨h, k, p, q, ⟨α⟩⟩
-  intro x y
-  rfl
-
-theorem mathCoeffCovers :
-    CoeffCovers (P := MathPrefix)
-      MathCoeffCat mathSemFamily mathC0 mathObs mathTargetObs := by
+/--
+Witness form of probe insufficiency: if a pair is still indistinguishable on `C0` but
+distinguishable globally, then `C0` cannot cover all coefficients.
+-/
+theorem not_coeffCovers_of_probeIndistinguishableOn_and_not_probeIndistinguishable
+    {P : Type u} [HistoryGraph P] {S V : Type w}
+    (C : CoeffCat) (fam : SemFamily C P S) (C0 : Set C.Obj)
+    (obs : S → V) (target_obs : P → V) (h : P)
+    {x y : FiberPt (P := P) obs target_obs h}
+    (hOn : ProbeIndistinguishableOn (P := P) C fam C0 obs target_obs h x y)
+    (hNot : ¬ ProbeIndistinguishable (P := P) C fam obs target_obs h x y) :
+    ¬ CoeffCovers (P := P) C fam C0 obs target_obs := by
+  intro hCover
   exact
-    coeffCovers_of_coeffCofinal_of_holonomyNatural_of_pushConservativeOnHolonomy
-      (P := MathPrefix)
-      MathCoeffCat mathSemFamily mathC0 mathObs mathTargetObs mathPush
-      mathCoeffCofinal mathHolonomyNatural mathPushConservative
+    (not_probeIndistinguishableOn_of_coeffCovers_and_not_probeIndistinguishable
+      (P := P) C fam C0 obs target_obs h hCover hNot) hOn
 
-theorem mathProbeReduction
-    (x y : FiberPt (P := MathPrefix) mathObs mathTargetObs MathPrefix.base) :
-    ProbeIndistinguishable
-      (P := MathPrefix) MathCoeffCat mathSemFamily mathObs mathTargetObs MathPrefix.base x y
-      ↔
-    ProbeIndistinguishableOn
-      (P := MathPrefix) MathCoeffCat mathSemFamily mathC0
-      mathObs mathTargetObs MathPrefix.base x y := by
-  exact
-    probeIndistinguishable_iff_probeIndistinguishableOn_of_coeffCovers
-      (P := MathPrefix)
-      MathCoeffCat mathSemFamily mathC0 mathObs mathTargetObs MathPrefix.base
-      mathCoeffCovers x y
+/--
+Under a probe obstruction, no finite coefficient family can already cover the full probe power:
+the same witness pair stays indistinguishable on every finite budget, but not for the full family.
+-/
+theorem probeObstruction_forces_no_finite_coeffCover
+    {P : Type u} [HistoryGraph P] {S V : Type w}
+    (C : CoeffCat) (fam : SemFamily C P S)
+    (obs : S → V) (target_obs : P → V) (h : P) :
+    ProbeObstruction (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) →
+      ∃ x y : FiberPt (P := P) obs target_obs h,
+        ∀ C0 : Set C.Obj, Set.Finite C0 →
+          ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h) C0 x y
+          ∧ ¬ CoeffCovers (P := P) C fam C0 obs target_obs := by
+  rintro ⟨x, y, hFin, hUniv⟩
+  refine ⟨x, y, ?_⟩
+  intro C0 hC0
+  refine ⟨hFin C0 hC0, ?_⟩
+  intro hCover
+  have hAll :
+      ProbeIndistinguishable (P := P) C fam obs target_obs h x y :=
+    probeIndistinguishable_of_probeIndistinguishableOn_of_coeffCovers
+      (P := P) C fam C0 obs target_obs h hCover (hFin C0 hC0)
+  have hOnUniv :
+      ProbeIndist (P := P) (C := C) (fam := fam) (obs := obs) (target_obs := target_obs) (h := h)
+        Set.univ x y :=
+    probeIndistinguishableOn_of_probeIndistinguishable
+      (P := P) C fam Set.univ obs target_obs h hAll
+  exact hUniv hOnUniv
 
-end ConcreteMathInstance
 
-section QuotientOperational
+
+section ProbeOperational
 
 variable {P : Type u} [HistoryGraph P]
 variable {S V : Type w}
@@ -1810,336 +1865,82 @@ theorem holonomyRel_respects_probeSetoidOn
       (hy.2 c hc k p q α x').mpr hx'y'
     exact (hx.1 c hc k p q α y).mpr hx'y
 
-end QuotientOperational
+end ProbeOperational
 
-section NontrivialCombinatorialInstance
-
-/-!
-Concrete nontrivial mathematical instance:
-- one-prefix history graph with five nontrivial path codes;
-- relational semantics on `Bool`;
-- explicit twisted holonomy witness;
-- explicit lag witness.
--/
-
-inductive ComboPrefix where
-  | base
-  deriving DecidableEq
-
-inductive ComboPath where
-  | id
-  | all
-  | step
-  | fromFalse
-  | toFalse
-  deriving DecidableEq
-
-def comboComp : ComboPath → ComboPath → ComboPath
-  | ComboPath.id, r => r
-  | r, ComboPath.id => r
-  | ComboPath.all, ComboPath.all => ComboPath.all
-  | ComboPath.all, ComboPath.step => ComboPath.toFalse
-  | ComboPath.all, ComboPath.fromFalse => ComboPath.all
-  | ComboPath.all, ComboPath.toFalse => ComboPath.toFalse
-  | ComboPath.step, ComboPath.all => ComboPath.fromFalse
-  | ComboPath.step, ComboPath.step => ComboPath.step
-  | ComboPath.step, ComboPath.fromFalse => ComboPath.fromFalse
-  | ComboPath.step, ComboPath.toFalse => ComboPath.step
-  | ComboPath.fromFalse, ComboPath.all => ComboPath.fromFalse
-  | ComboPath.fromFalse, ComboPath.step => ComboPath.step
-  | ComboPath.fromFalse, ComboPath.fromFalse => ComboPath.fromFalse
-  | ComboPath.fromFalse, ComboPath.toFalse => ComboPath.step
-  | ComboPath.toFalse, ComboPath.all => ComboPath.all
-  | ComboPath.toFalse, ComboPath.step => ComboPath.toFalse
-  | ComboPath.toFalse, ComboPath.fromFalse => ComboPath.all
-  | ComboPath.toFalse, ComboPath.toFalse => ComboPath.toFalse
-
-instance : HistoryGraph ComboPrefix where
-  Path _ _ := ComboPath
-  Deformation {_ _} _ _ := True
-  idPath _ := ComboPath.id
-  compPath := comboComp
-
-def comboObs : Bool → Unit := fun _ => ()
-
-def comboTargetObs : ComboPrefix → Unit := fun _ => ()
-
-def comboRel : ComboPath → Relation Bool Bool
-  | ComboPath.id => relId
-  | ComboPath.all => fun _ _ => True
-  | ComboPath.step => fun a b => a = false ∧ b = false
-  | ComboPath.fromFalse => fun a _ => a = false
-  | ComboPath.toFalse => fun _ b => b = false
-
-instance instDecidableComboRel (p : ComboPath) (a b : Bool) : Decidable (comboRel p a b) := by
-  cases p
-  · simpa [comboRel, relId] using (inferInstance : Decidable (a = b))
-  · simpa [comboRel] using (inferInstance : Decidable True)
-  · simpa [comboRel] using (inferInstance : Decidable (a = false ∧ b = false))
-  · simpa [comboRel] using (inferInstance : Decidable (a = false))
-  · simpa [comboRel] using (inferInstance : Decidable (b = false))
-
-instance instDecidableRelCompCombo (p q : ComboPath) (x y : Bool) :
-    Decidable (relComp (comboRel p) (comboRel q) x y) := by
-  unfold relComp
-  infer_instance
-
-theorem combo_sem_comp_bool (p q : ComboPath) (x y : Bool) :
-    comboRel (comboComp p q) x y ↔ relComp (comboRel p) (comboRel q) x y := by
-  cases p <;> cases q <;> cases x <;> cases y <;> decide
-
-def comboSemantics : Semantics ComboPrefix Bool where
-  sem := by
-    intro _h _k p
-    exact comboRel p
-  sem_id := by
-    intro h x y
-    rfl
-  sem_comp := by
-    intro h k l p q x y
-    simpa using combo_sem_comp_bool p q x y
-
-def comboX0 : FiberPt (P := ComboPrefix) comboObs comboTargetObs ComboPrefix.base := ⟨false, rfl⟩
-
-def comboX1 : FiberPt (P := ComboPrefix) comboObs comboTargetObs ComboPrefix.base := ⟨true, rfl⟩
-
-theorem comboX0_ne_comboX1 : comboX0 ≠ comboX1 := by
-  intro h
-  exact Bool.false_ne_true (congrArg Subtype.val h)
-
-theorem combo_holonomy_all_id
-    (x y : FiberPt (P := ComboPrefix) comboObs comboTargetObs ComboPrefix.base) :
-    HolonomyRel (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-      (h := ComboPrefix.base) (k := ComboPrefix.base)
-      (p := ComboPath.all) (q := ComboPath.id) (by trivial) x y := by
-  unfold HolonomyRel relComp relConverse Transport
-  refine ⟨y, ?_, ?_⟩
-  · simp [comboSemantics, comboRel]
-  · rfl
-
-theorem combo_holonomy_all_id_iff_true
-    (x y : FiberPt (P := ComboPrefix) comboObs comboTargetObs ComboPrefix.base) :
-    HolonomyRel (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-      (h := ComboPrefix.base) (k := ComboPrefix.base)
-      (p := ComboPath.all) (q := ComboPath.id) (by trivial) x y ↔ True := by
-  constructor
-  · intro _h
-    trivial
-  · intro _h
-    exact combo_holonomy_all_id x y
-
-theorem combo_holonomy_id_id_iff_eq
-    (x y : FiberPt (P := ComboPrefix) comboObs comboTargetObs ComboPrefix.base) :
-    HolonomyRel (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-      (h := ComboPrefix.base) (k := ComboPrefix.base)
-      (p := ComboPath.id) (q := ComboPath.id) (by trivial) x y ↔ x = y := by
-  constructor
-  · intro hHol
-    unfold HolonomyRel relComp relConverse Transport at hHol
-    rcases hHol with ⟨z, hx, hy⟩
-    cases x with
-    | mk xv hxmem =>
-      cases y with
-      | mk yv hymem =>
-        cases z with
-        | mk zv hzmem =>
-          change Subtype.mk xv hxmem = Subtype.mk yv hymem
-          change comboRel ComboPath.id xv zv at hx
-          change comboRel ComboPath.id yv zv at hy
-          change xv = zv at hx
-          change yv = zv at hy
-          have hv : xv = yv := hx.trans hy.symm
-          cases hv
-          cases hxmem
-          cases hymem
-          rfl
-  · intro hxy
-    subst hxy
-    unfold HolonomyRel relComp relConverse Transport
-    refine ⟨x, ?_, ?_⟩
-    · change comboRel ComboPath.id x.1 x.1
-      change x.1 = x.1
-      rfl
-    · change comboRel ComboPath.id x.1 x.1
-      change x.1 = x.1
-      rfl
-
-theorem combo_twistedHolonomy :
-    TwistedHolonomy (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-      (h := ComboPrefix.base) (k := ComboPrefix.base)
-      (p := ComboPath.all) (q := ComboPath.id)
-      (show HistoryGraph.Deformation (P := ComboPrefix) ComboPath.all ComboPath.id from trivial) := by
-  refine ⟨comboX0, comboX1, comboX0_ne_comboX1, ?_⟩
-  exact combo_holonomy_all_id comboX0 comboX1
-
-theorem combo_compatible_step_x0 :
-    Compatible (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-      (h := ComboPrefix.base) (k := ComboPrefix.base) ComboPath.step comboX0 := by
-  refine ⟨comboX0, ?_⟩
-  change comboRel ComboPath.step comboX0.1 comboX0.1
-  change comboX0.1 = false ∧ comboX0.1 = false
-  exact ⟨rfl, rfl⟩
-
-theorem combo_not_compatible_step_x1 :
-    ¬ Compatible (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-      (h := ComboPrefix.base) (k := ComboPrefix.base) ComboPath.step comboX1 := by
-  intro hC
-  rcases hC with ⟨y, hy⟩
-  change comboRel ComboPath.step comboX1.1 y.1 at hy
-  change comboX1.1 = false ∧ y.1 = false at hy
-  cases hy.1
-
-theorem combo_lagEvent :
-    LagEvent (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-      (h := ComboPrefix.base) (k := ComboPrefix.base) (k' := ComboPrefix.base)
-      (p := ComboPath.all) (q := ComboPath.id)
-      (show HistoryGraph.Deformation (P := ComboPrefix) ComboPath.all ComboPath.id from trivial)
-      ComboPath.step := by
-  refine lag_of_witness (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-    (h := ComboPrefix.base) (k := ComboPrefix.base) (k' := ComboPrefix.base)
-    (p := ComboPath.all) (q := ComboPath.id)
-    (α := (show HistoryGraph.Deformation (P := ComboPrefix) ComboPath.all ComboPath.id from trivial))
-    (step := ComboPath.step)
-    comboX0 comboX1 comboX0_ne_comboX1 ?_ ?_
-  · exact combo_holonomy_all_id comboX0 comboX1
-  · exact ⟨combo_compatible_step_x0, combo_not_compatible_step_x1⟩
-
-/-- For `(id,id)`, `comboX0` and `comboX1` are not holonomy-related. -/
-theorem combo_not_holonomy_id_id_x0_x1 :
-    ¬ HolonomyRel (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-      (h := ComboPrefix.base) (k := ComboPrefix.base)
-      (p := ComboPath.id) (q := ComboPath.id)
-      (show HistoryGraph.Deformation (P := ComboPrefix) ComboPath.id ComboPath.id from trivial)
-      comboX0 comboX1 := by
-  intro hHol
-  rcases hHol with ⟨y, hy0, hy1⟩
-  have hy0' : comboX0.1 = y.1 := by
-    simpa [Transport, comboSemantics, comboRel, relId] using hy0
-  have hy1' : comboX1.1 = y.1 := by
-    simpa [Transport, comboSemantics, comboRel, relId] using hy1
-  have h01 : comboX0.1 = comboX1.1 := hy0'.trans hy1'.symm
-  exact Bool.false_ne_true h01
-
-/-- The two holonomies `(all,id)` and `(id,id)` are extensionally different. -/
-theorem combo_holonomy_all_id_ne_holonomy_id_id :
-    ¬ RelEq
-      (HolonomyRel (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-        (h := ComboPrefix.base) (k := ComboPrefix.base)
-        (p := ComboPath.all) (q := ComboPath.id)
-        (show HistoryGraph.Deformation (P := ComboPrefix) ComboPath.all ComboPath.id from trivial))
-      (HolonomyRel (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-        (h := ComboPrefix.base) (k := ComboPrefix.base)
-        (p := ComboPath.id) (q := ComboPath.id)
-        (show HistoryGraph.Deformation (P := ComboPrefix) ComboPath.id ComboPath.id from trivial)) := by
-  intro hEq
-  have hAll :
-      HolonomyRel (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-        (h := ComboPrefix.base) (k := ComboPrefix.base)
-        (p := ComboPath.all) (q := ComboPath.id)
-        (show HistoryGraph.Deformation (P := ComboPrefix) ComboPath.all ComboPath.id from trivial)
-        comboX0 comboX1 := combo_holonomy_all_id comboX0 comboX1
-  have hId :
-      HolonomyRel (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-        (h := ComboPrefix.base) (k := ComboPrefix.base)
-        (p := ComboPath.id) (q := ComboPath.id)
-        (show HistoryGraph.Deformation (P := ComboPrefix) ComboPath.id ComboPath.id from trivial)
-        comboX0 comboX1 := (hEq comboX0 comboX1).1 hAll
-  exact combo_not_holonomy_id_id_x0_x1 hId
-
-/-- This instance cannot factor holonomy through any time-shot summary. -/
-theorem combo_not_factorsHolonomyTime
-    {A : Type uQ} [Preorder A] (t : TimeShot (P := ComboPrefix) A) :
-    ¬ FactorsHolonomy (P := ComboPrefix) comboSemantics comboObs comboTargetObs (t.toSummary) := by
-  have hp :
-      t.toSummary (h := ComboPrefix.base) (k := ComboPrefix.base) ComboPath.all =
-        t.toSummary (h := ComboPrefix.base) (k := ComboPrefix.base) ComboPath.id := rfl
-  have hq :
-      t.toSummary (h := ComboPrefix.base) (k := ComboPrefix.base) ComboPath.id =
-        t.toSummary (h := ComboPrefix.base) (k := ComboPrefix.base) ComboPath.id := rfl
-  exact witness_no_factor (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-    (q := t.toSummary)
-    (h := ComboPrefix.base) (k := ComboPrefix.base)
-    (α₁ := (show HistoryGraph.Deformation (P := ComboPrefix) ComboPath.all ComboPath.id from trivial))
-    (α₂ := (show HistoryGraph.Deformation (P := ComboPrefix) ComboPath.id ComboPath.id from trivial))
-    hp hq combo_holonomy_all_id_ne_holonomy_id_id
-
-/-- Rich witness: the combo instance is non-reducible for every time-shot summary. -/
-theorem combo_nonReducibleHolonomyTime :
-    NonReducibleHolonomyTime (P := ComboPrefix) comboSemantics comboObs comboTargetObs := by
-  intro A _ t
-  exact combo_not_factorsHolonomyTime t
-
-theorem combo_not_autoRegulatedWrt_singleton_gaugeRefl :
-    ¬ AutoRegulatedWrt (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-      (fun φ => GaugeRefl (P := ComboPrefix) comboObs comboTargetObs φ)
-      (Set.singleton
-        (⟨ComboPrefix.base, ComboPrefix.base, ComboPath.all, ComboPath.id, ⟨by trivial⟩⟩ :
-          Cell (P := ComboPrefix))) := by
-  intro hAuto
-  rcases hAuto with ⟨φ, hRefl, hFlatAll⟩
-  let c0 : Cell (P := ComboPrefix) :=
-    ⟨ComboPrefix.base, ComboPrefix.base, ComboPath.all, ComboPath.id, ⟨by trivial⟩⟩
-  have hDiag :
-      ∀ x x' : FiberPt (P := ComboPrefix) comboObs comboTargetObs ComboPrefix.base,
-        CorrectedHolonomy (P := ComboPrefix) comboSemantics comboObs comboTargetObs φ
-          (show HistoryGraph.Deformation (P := ComboPrefix) (h := ComboPrefix.base) (k := ComboPrefix.base)
-            ComboPath.all ComboPath.id from trivial)
-          x x' ↔ x = x' :=
-    hFlatAll c0 (by exact Set.mem_singleton c0)
-  have hHol :
-      HolonomyRel (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-        (show HistoryGraph.Deformation (P := ComboPrefix) (h := ComboPrefix.base) (k := ComboPrefix.base)
-          ComboPath.all ComboPath.id from trivial)
-        comboX0 comboX1 :=
-    combo_holonomy_all_id comboX0 comboX1
-  have hCHol :
-      CorrectedHolonomy (P := ComboPrefix) comboSemantics comboObs comboTargetObs φ
-        (show HistoryGraph.Deformation (P := ComboPrefix) (h := ComboPrefix.base) (k := ComboPrefix.base)
-          ComboPath.all ComboPath.id from trivial)
-        comboX0 comboX1 :=
-    correctedHolonomy_of_holonomy_of_gaugeRefl
-      (P := ComboPrefix) comboSemantics comboObs comboTargetObs φ hRefl
-      (show HistoryGraph.Deformation (P := ComboPrefix) (h := ComboPrefix.base) (k := ComboPrefix.base)
-        ComboPath.all ComboPath.id from trivial)
-      comboX0 comboX1 hHol
-  exact comboX0_ne_comboX1 ((hDiag comboX0 comboX1).1 hCHol)
-
-/-- Compact "no-discussion" package of the four core phenomena on the combo instance. -/
-theorem combo_rich_witness :
-    TwistedHolonomy (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-      (h := ComboPrefix.base) (k := ComboPrefix.base)
-      (p := ComboPath.all) (q := ComboPath.id)
-      (show HistoryGraph.Deformation (P := ComboPrefix) ComboPath.all ComboPath.id from trivial)
-    ∧ LagEvent (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-        (h := ComboPrefix.base) (k := ComboPrefix.base) (k' := ComboPrefix.base)
-        (p := ComboPath.all) (q := ComboPath.id)
-        (show HistoryGraph.Deformation (P := ComboPrefix) ComboPath.all ComboPath.id from trivial)
-        ComboPath.step
-    ∧ ¬ AutoRegulatedWrt (P := ComboPrefix) comboSemantics comboObs comboTargetObs
-        (fun φ => GaugeRefl (P := ComboPrefix) comboObs comboTargetObs φ)
-        (Set.singleton
-          (⟨ComboPrefix.base, ComboPrefix.base, ComboPath.all, ComboPath.id, ⟨by trivial⟩⟩ :
-            Cell (P := ComboPrefix)))
-    ∧ NonReducibleHolonomyTime (P := ComboPrefix) comboSemantics comboObs comboTargetObs := by
-  refine ⟨combo_twistedHolonomy, combo_lagEvent, combo_not_autoRegulatedWrt_singleton_gaugeRefl, ?_⟩
-  exact combo_nonReducibleHolonomyTime
-
-end NontrivialCombinatorialInstance
 
 end PrimitiveHolonomy
 
+/- AXIOM_AUDIT_BEGIN -/
+/-!
+## Axiom audit
+Auto-generated: `#print axioms` for each non-private `theorem`/`lemma` in this file.
+-/
+#print axioms PrimitiveHolonomy.fiberPtPostMapInv_map
+#print axioms PrimitiveHolonomy.fiberPtPostMap_mapInv
+#print axioms PrimitiveHolonomy.fiberPtPostMap_injective
+#print axioms PrimitiveHolonomy.gaugePostInv_gaugePost
+#print axioms PrimitiveHolonomy.gaugePost_gaugePostInv
+#print axioms PrimitiveHolonomy.gaugeRefl_congr_postObsEquiv
+#print axioms PrimitiveHolonomy.gaugeTotal_congr_postObsEquiv
+#print axioms PrimitiveHolonomy.correctedTransport_congr_postObsEquiv
+#print axioms PrimitiveHolonomy.correctedHolonomy_congr_postObsEquiv
+#print axioms PrimitiveHolonomy.correctedTransport_of_transport_of_gaugeRefl
+#print axioms PrimitiveHolonomy.correctedHolonomy_of_holonomy_of_gaugeRefl
+#print axioms PrimitiveHolonomy.not_correctedTransport_emptyGauge
+#print axioms PrimitiveHolonomy.not_correctedHolonomy_emptyGauge
+#print axioms PrimitiveHolonomy.is_constructive
+#print axioms PrimitiveHolonomy.reach_refl
+#print axioms PrimitiveHolonomy.reach_trans
+#print axioms PrimitiveHolonomy.cofinal_range_of_scheduling
+#print axioms PrimitiveHolonomy.autoRegulatedWrt_gaugeRefl_congr_postObsEquiv
+#print axioms PrimitiveHolonomy.obstructionWrt_gaugeRefl_congr_postObsEquiv
+#print axioms PrimitiveHolonomy.obstruction_mono_J
+#print axioms PrimitiveHolonomy.obstructionWrt_mono_J
+#print axioms PrimitiveHolonomy.autoRegulated_anti_J
+#print axioms PrimitiveHolonomy.autoRegulatedWrt_anti_J
+#print axioms PrimitiveHolonomy.autoRegulatedWrt_mono_OK
+#print axioms PrimitiveHolonomy.obstructionWrt_anti_OK
+#print axioms PrimitiveHolonomy.not_Obstruction_of_emptyGauge
+#print axioms PrimitiveHolonomy.not_AutoRegulatedWrt_of_ObstructionWrt
+#print axioms PrimitiveHolonomy.not_ObstructionWrt_of_AutoRegulatedWrt
+#print axioms PrimitiveHolonomy.obstructionWrt_singleton_of_twistedHolonomy_of_gaugeRefl
+#print axioms PrimitiveHolonomy.not_autoRegulatedWrt_singleton_of_twistedHolonomy_of_gaugeRefl
+#print axioms PrimitiveHolonomy.autoRegulatedCofinal_of_autoRegulatedAlong
+#print axioms PrimitiveHolonomy.obstructionCofinal_of_obstructionAlong
+#print axioms PrimitiveHolonomy.autoRegulatedCofinalWrt_of_autoRegulatedAlongWrt
+#print axioms PrimitiveHolonomy.obstructionCofinalWrt_of_obstructionAlongWrt
+#print axioms PrimitiveHolonomy.not_AutoRegulated_of_Obstruction
+#print axioms PrimitiveHolonomy.not_Obstruction_of_AutoRegulated
+#print axioms PrimitiveHolonomy.not_AutoRegulatedAlong_of_ObstructionAlong
+#print axioms PrimitiveHolonomy.not_ObstructionAlong_of_AutoRegulatedAlong
+#print axioms PrimitiveHolonomy.locallyAutoRegulated_of_AutoRegulated
+#print axioms PrimitiveHolonomy.locallyAutoRegulatedWrt_of_autoRegulatedWrt
+#print axioms PrimitiveHolonomy.locallyAutoRegulatedWrt_iff_goodGaugeForCell_nonempty
+#print axioms PrimitiveHolonomy.autoRegulatedWrt_iff_exists_goodGaugeForAllCells
+#print axioms PrimitiveHolonomy.autoRegulatedWrt_iff_goodGaugeIntersection_nonempty
+#print axioms PrimitiveHolonomy.obstructionWrt_iff_twistedOnCell
+#print axioms PrimitiveHolonomy.twistedOnCell_not_goodGaugeForCellWrt
+#print axioms PrimitiveHolonomy.obstructionWrt_implies_exists_cell_not_goodGauge
+#print axioms PrimitiveHolonomy.localAndNotAutoRegulatedWrt_of_localFlatButObstructedCofinalWrt
+#print axioms PrimitiveHolonomy.not_autoRegulatedWrt_of_localFlatButObstructedCofinalWrt
+#print axioms PrimitiveHolonomy.factors_eq_of_codes
+#print axioms PrimitiveHolonomy.witness_no_factor
+#print axioms PrimitiveHolonomy.probeIndist_anti_mono
+#print axioms PrimitiveHolonomy.not_stableAt_of_indist_and_not_univ
+#print axioms PrimitiveHolonomy.probeObstruction_not_finitaryCompactness
+#print axioms PrimitiveHolonomy.finitaryCompactness_not_probeObstruction
+#print axioms PrimitiveHolonomy.probeObstruction_forces_no_finite_stabilization
+#print axioms PrimitiveHolonomy.probeObstruction_strict_chain_of_injectiveSeq
+#print axioms PrimitiveHolonomy.holonomyCompatible_probeSetoid
+#print axioms PrimitiveHolonomy.probeIndistinguishable_of_holonomyCompatibleSetoid
+#print axioms PrimitiveHolonomy.probeSetoid_terminal_holonomyCompatible
+#print axioms PrimitiveHolonomy.coeffCovers_of_coeffCofinal_of_holonomyNatural_of_pushConservativeOnHolonomy
+#print axioms PrimitiveHolonomy.probeIndistinguishableOn_of_probeIndistinguishable
+#print axioms PrimitiveHolonomy.probeIndistinguishable_of_probeIndistinguishableOn_of_coeffCovers
+#print axioms PrimitiveHolonomy.probeIndistinguishable_iff_probeIndistinguishableOn_of_coeffCovers
+#print axioms PrimitiveHolonomy.not_probeIndistinguishableOn_of_coeffCovers_and_not_probeIndistinguishable
+#print axioms PrimitiveHolonomy.not_coeffCovers_of_probeIndistinguishableOn_and_not_probeIndistinguishable
+#print axioms PrimitiveHolonomy.probeObstruction_forces_no_finite_coeffCover
 #print axioms PrimitiveHolonomy.holonomyRel_respects_probeSetoid
 #print axioms PrimitiveHolonomy.holonomyRel_respects_probeSetoidOn
-#print axioms PrimitiveHolonomy.combo_holonomy_all_id_iff_true
-#print axioms PrimitiveHolonomy.combo_holonomy_id_id_iff_eq
-#print axioms PrimitiveHolonomy.combo_twistedHolonomy
-#print axioms PrimitiveHolonomy.combo_lagEvent
-#print axioms PrimitiveHolonomy.combo_holonomy_all_id_ne_holonomy_id_id
-#print axioms PrimitiveHolonomy.combo_not_factorsHolonomyTime
-#print axioms PrimitiveHolonomy.combo_nonReducibleHolonomyTime
-#print axioms PrimitiveHolonomy.combo_not_autoRegulatedWrt_singleton_gaugeRefl
-#print axioms PrimitiveHolonomy.combo_rich_witness
-#print axioms PrimitiveHolonomy.HolonomyCompatibleSetoid
-#print axioms PrimitiveHolonomy.probeIndistinguishable_of_holonomyCompatibleSetoid
-#print axioms PrimitiveHolonomy.holonomyCompatible_probeSetoid
-#print axioms PrimitiveHolonomy.probeSetoid_terminal_holonomyCompatible
+/- AXIOM_AUDIT_END -/
