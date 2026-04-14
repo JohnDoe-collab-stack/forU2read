@@ -1,0 +1,35 @@
+{
+  "bundle_hash": "ec5fdeec7e43e520d33ca905fcceeda4f04266c809e60ef75e30f5e7f27d591f",
+  "bundle_hash_short": "ec5fdeec7e43",
+  "files": [
+    {
+      "name": "aslmt_campaign_vN3b_minlift_double_barrier_pair_oodrequired.py",
+      "sha256": "55dacd71bf2baa68cb731e549cb11393b648da1738b4394a754a4fd02471b63b"
+    },
+    {
+      "name": "aslmt_env_vN3b_minlift_double_barrier.py",
+      "sha256": "f21f03e08eab30ab9cbf52e10a5761929854c9de9224117d0eff2f5db96ea8c3"
+    },
+    {
+      "name": "render_vN3b_paired_ctx.py",
+      "sha256": "e9c6476da3e0e3d7d70cb7fdd5a6a90cdf2d4d0db28c6da1f3657a9b7e2afcf0"
+    },
+    {
+      "name": "aslmt_model_vN3b_minlift_double_barrier.py",
+      "sha256": "f0205c2cf8b54c872bdf7de08f2390d508a7729f0c099287f7cfb7120a3dc5bc"
+    },
+    {
+      "name": "aslmt_train_vN3b_minlift_double_barrier_seeded_pair_trainood.py",
+      "sha256": "6e62fa8b76737f8afd28ac99576a7354dd3ffdbdd412195d68b8540a1f19b6ce"
+    },
+    {
+      "name": "verify_aslmt_vN3b_minlift_double_barrier_pair_oodrequired.py",
+      "sha256": "849efcd4379473d4efff89838860669cd009a3d3aa69a2586fc2e8cb4f8a393d"
+    }
+  ],
+  "kind": "aslmt_vN3b_minlift_snapshot",
+  "snapshot_dir": "/mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/snapshots/aslmt_vN3b_minlift_20260414_210647_ec5fdeec7e43",
+  "train_script_name": "aslmt_train_vN3b_minlift_double_barrier_seeded_pair_trainood.py",
+  "ts": "20260414_210647",
+  "verify_script_name": "verify_aslmt_vN3b_minlift_double_barrier_pair_oodrequired.py"
+}

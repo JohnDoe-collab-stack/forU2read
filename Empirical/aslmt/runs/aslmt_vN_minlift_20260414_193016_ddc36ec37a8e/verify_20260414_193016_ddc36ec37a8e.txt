@@ -1,0 +1,9 @@
+CMD: /home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/snapshots/aslmt_vN_minlift_20260414_193016_ddc36ec37a8e/verify_aslmt_vN_minlift_double_barrier_pair_oodrequired.py --master-jsonl /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/aslmt_vN_minlift_20260414_193016_ddc36ec37a8e/vN_master_20260414_193016_ddc36ec37a8e.jsonl --n-classes 4 --profile solid
+[vN-REF] z=4 seeds=[0, 1, 2, 3, 4] n_rows=5 iid(A_img_min=0.1875, A_cue_min=1.0000, abl_img_max=0.0000, swap_follow_min=0.1875, swap_orig_max=0.0625) ood(A_img_min=0.1875, A_cue_min=1.0000, abl_img_max=0.0000, swap_follow_min=0.1875, swap_orig_max=0.0781)
+[vN-<n] z=3 seeds=[0, 1, 2, 3, 4] iid_A_img_min=0.0000 ood_A_img_min=0.0000
+
+[FAIL] vN minlift checks did not pass:
+ - ref iid A_img_min=0.1875 < 1.0000
+ - ref ood A_img_min=0.1875 < 1.0000
+ - ref iid swap_follow_min=0.1875 < 1.0000
+ - ref ood swap_follow_min=0.1875 < 1.0000

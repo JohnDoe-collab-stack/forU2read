@@ -1,0 +1,18 @@
+CMD: /home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/snapshots/aslmt_v8_pair_oodrequired_causalgate_20260414_174655_217093f0f527/aslmt_train_v8_double_barrier_hidden_target_seeded_pair_trainood_causalgate.py --snapshot-tag aslmt_v8_pair_oodrequired_causalgate_20260414_174655_217093f0f527 --seed 0 --steps 3000 --batch-size 128 --lr 0.001 --w-jepa 0.1 --train-ood-ratio 0.5 --device cuda --out-jsonl /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/aslmt_v8_pair_oodrequired_causalgate_20260414_174655_217093f0f527/v8_master_20260414_174655_217093f0f527.jsonl
+Starting Training (V8 pair-grade OOD-required + causal gates, train_ood_ratio=0.50, steps=3000, seed=0, device=cuda)...
+[0] A_seg=0.7137 (JEPA 0.6482) | B_img=0.7150 | B_cue=0.7083
+[250] A_seg=0.1615 (JEPA -0.8018) | B_img=0.1634 | B_cue=0.1707
+[500] A_seg=0.1131 (JEPA -0.7775) | B_img=0.1187 | B_cue=0.1628
+[750] A_seg=0.0979 (JEPA -0.6924) | B_img=0.1038 | B_cue=0.1729
+[1000] A_seg=0.0832 (JEPA -0.7789) | B_img=0.0857 | B_cue=0.1535
+[1250] A_seg=0.0453 (JEPA -0.7789) | B_img=0.0887 | B_cue=0.1453
+[1500] A_seg=0.0236 (JEPA -0.7987) | B_img=0.0823 | B_cue=0.1111
+[1750] A_seg=0.0145 (JEPA -0.8019) | B_img=0.0796 | B_cue=0.1019
+[2000] A_seg=0.0084 (JEPA -0.8183) | B_img=0.0749 | B_cue=0.0929
+[2250] A_seg=0.0078 (JEPA -0.7873) | B_img=0.0758 | B_cue=0.0887
+[2500] A_seg=0.0057 (JEPA -0.7651) | B_img=0.0766 | B_cue=0.0886
+[2750] A_seg=0.0038 (JEPA -0.8189) | B_img=0.0675 | B_cue=0.0771
+
+--- PAIR EVAL (causal-gated) ---
+IID -> {'n_ctx': 64, 'ood': False, 'obs_image_barrier_ok': True, 'obs_cue_barrier_ok': True, 'A_both_image_pair_rate': 1.0, 'A_both_cue_pair_rate': 1.0, 'B_image_only_both_rate': 0.0, 'B_cue_only_both_rate': 0.0, 'A_ablated_both_image_pair_rate': 0.0, 'A_swap_follow_image_pair_rate': 1.0, 'A_swap_orig_both_image_pair_rate': 0.0, 'seed': 0}
+OOD -> {'n_ctx': 64, 'ood': True, 'obs_image_barrier_ok': True, 'obs_cue_barrier_ok': True, 'A_both_image_pair_rate': 1.0, 'A_both_cue_pair_rate': 1.0, 'B_image_only_both_rate': 0.0, 'B_cue_only_both_rate': 0.0, 'A_ablated_both_image_pair_rate': 0.0, 'A_swap_follow_image_pair_rate': 1.0, 'A_swap_orig_both_image_pair_rate': 0.0, 'seed': 0}

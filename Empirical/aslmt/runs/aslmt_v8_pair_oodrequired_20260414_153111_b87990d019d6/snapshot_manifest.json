@@ -1,0 +1,31 @@
+{
+  "bundle_hash": "b87990d019d6e50305fe74705c3dd31ccf53aedf8533c4fb9faf5ef703c0d595",
+  "bundle_hash_short": "b87990d019d6",
+  "files": [
+    {
+      "name": "aslmt_env_v8_double_barrier_hidden_target.py",
+      "sha256": "b1bbc04c49d367144282d984ab8bc5c0580edc6f14e16e8d3bb2c9f25bf633ee"
+    },
+    {
+      "name": "aslmt_model_v8_double_barrier_jepa.py",
+      "sha256": "6d4f6f4b16dda827487a09e8147d1b22835d9c54e22383585e155078365a1151"
+    },
+    {
+      "name": "aslmt_train_v8_double_barrier_hidden_target_seeded_pair_trainood.py",
+      "sha256": "38baa6443f46d8628687388370e5146d457b2bee4fe47a3f28020d62259765a3"
+    },
+    {
+      "name": "render_v8_paired_ctx.py",
+      "sha256": "9b8025732a35265f01677ffbd7eaa3f5d6d0c0de27c8b55d765386686e2773ad"
+    },
+    {
+      "name": "verify_aslmt_v8_double_barrier_hidden_target_pair_oodrequired.py",
+      "sha256": "2ecc4cdd9299d4f039af49a14c7f9ec51d973408a405b3d5d3361a83c4d190a1"
+    }
+  ],
+  "kind": "aslmt_v8_pair_oodrequired_snapshot",
+  "snapshot_dir": "/mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/snapshots/aslmt_v8_pair_oodrequired_20260414_153111_b87990d019d6",
+  "train_script_name": "aslmt_train_v8_double_barrier_hidden_target_seeded_pair_trainood.py",
+  "ts": "20260414_153111",
+  "verify_script_name": "verify_aslmt_v8_double_barrier_hidden_target_pair_oodrequired.py"
+}

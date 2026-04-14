@@ -1,0 +1,22 @@
+CMD: /home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/snapshots/aslmt_vN3_minlift_20260414_205200_6f77582e2e59/aslmt_train_vN3_minlift_double_barrier_seeded_pair_trainood.py --seed 0 --steps 300 --batch-size 64 --lr 0.001 --w-z 5.0 --train-ood-ratio 0.5 --pair-n-ctx 32 --n-classes 4 --z-classes 3 --device cuda --out-jsonl /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/aslmt_vN3_minlift_20260414_205200_6f77582e2e59/vN3_master_20260414_205200_6f77582e2e59.jsonl
+Starting Training (vN3 minlift, n_classes=4, z_classes=3, train_ood_ratio=0.50, steps=300, seed=0, device=cuda)...
+[0] A_seg=0.8879 A_z=1.2056 | B_img=0.8705 | B_cue=0.8838
+[25] A_seg=9.9845 A_z=1.0638 | B_img=0.3293 | B_cue=0.5251
+[50] A_seg=0.2982 A_z=1.1168 | B_img=0.2704 | B_cue=0.4224
+[75] A_seg=0.2657 A_z=0.9828 | B_img=0.2268 | B_cue=0.3958
+[100] A_seg=0.2782 A_z=1.0838 | B_img=0.2392 | B_cue=0.4188
+[125] A_seg=0.2752 A_z=1.0455 | B_img=0.2223 | B_cue=0.4261
+[150] A_seg=0.2359 A_z=1.0360 | B_img=0.1932 | B_cue=0.3920
+[175] A_seg=0.2822 A_z=1.0374 | B_img=0.2123 | B_cue=0.4495
+[200] A_seg=0.2411 A_z=1.0551 | B_img=0.1523 | B_cue=0.3950
+[225] A_seg=0.2219 A_z=1.0751 | B_img=0.1238 | B_cue=0.3708
+[250] A_seg=0.2416 A_z=1.0251 | B_img=0.1350 | B_cue=0.3894
+[275] A_seg=0.2423 A_z=1.1257 | B_img=0.1197 | B_cue=0.3839
+
+--- EVALUATION (diagnostic IoU) ---
+IID -> A_IoU=0.2790 | B_img_IoU=0.4427 | B_cue_IoU=0.1572
+OOD -> A_IoU=0.2398 | B_img_IoU=0.4719 | B_cue_IoU=0.1966
+
+--- PAIR EVAL (barriers + causal gates) ---
+IID -> img_barrier=True cue_barrier=True A_img=0.0000 A_cue=0.0000 A_abl_img=0.0000 A_swap_follow_img=0.0000 A_swap_orig_img=0.0000 B_img=0.0000 B_cue=0.0000
+OOD -> img_barrier=True cue_barrier=True A_img=0.0000 A_cue=0.0312 A_abl_img=0.0000 A_swap_follow_img=0.0000 A_swap_orig_img=0.0000 B_img=0.0000 B_cue=0.0000

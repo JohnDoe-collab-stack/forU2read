@@ -1,0 +1,4 @@
+CMD: /home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/snapshots/aslmt_vN3_minlift_20260414_205200_6f77582e2e59/verify_aslmt_vN3_minlift_double_barrier_pair_oodrequired.py --master-jsonl /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/aslmt_vN3_minlift_20260414_205200_6f77582e2e59/vN3_master_20260414_205200_6f77582e2e59.jsonl --n-classes 4 --profile smoke
+[vN3-REF] z=4 seeds=[0] n_rows=1 iid(A_img_min=0.0312, A_cue_min=0.0000, abl_img_max=0.0000, swap_follow_min=0.0312, swap_orig_max=0.0312) ood(A_img_min=0.0625, A_cue_min=0.0000, abl_img_max=0.0000, swap_follow_min=0.0625, swap_orig_max=0.0000)
+
+[OK] vN3 minlift checks passed.

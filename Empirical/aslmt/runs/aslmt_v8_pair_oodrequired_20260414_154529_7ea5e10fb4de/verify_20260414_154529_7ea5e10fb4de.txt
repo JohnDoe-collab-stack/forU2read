@@ -1,0 +1,9 @@
+[V8 Pair-Grade OOD-Required] iid(n_ctx_min=64, img_barrier_ok=True, cue_barrier_ok=True, A_img_min=0.2969, A_cue_min=0.2969, B_img_max=0.0000, B_cue_max=0.0000) | ood(n_ctx_min=64, img_barrier_ok=True, cue_barrier_ok=True, A_img_min=0.5000, A_cue_min=0.5938, B_img_max=0.0000, B_cue_max=0.0000)
+
+[FAIL] V8 pair-grade OOD-required checks did not pass:
+ - pair_eval.iid.A_both_image_pair_rate min=0.2969 < 1.0000
+ - pair_eval.iid.A_both_cue_pair_rate min=0.2969 < 1.0000
+ - pair_eval.ood.A_both_image_pair_rate min=0.5000 < 1.0000
+ - pair_eval.ood.A_both_cue_pair_rate min=0.5938 < 1.0000
+CMD: /home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/snapshots/aslmt_v8_pair_oodrequired_20260414_154529_7ea5e10fb4de/verify_aslmt_v8_double_barrier_hidden_target_pair_oodrequired.py --master-jsonl /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/aslmt_v8_pair_oodrequired_20260414_154529_7ea5e10fb4de/v8_master_20260414_154529_7ea5e10fb4de.jsonl
+

@@ -1,0 +1,35 @@
+{
+  "bundle_hash": "6f77582e2e596dc79ea9c85f417502e105456eee1bf2a9803cf2ce1289d530ca",
+  "bundle_hash_short": "6f77582e2e59",
+  "files": [
+    {
+      "name": "aslmt_campaign_vN3_minlift_double_barrier_pair_oodrequired.py",
+      "sha256": "a62ddef4b1ae4b6795ba275cf38874937d256dd7de0f4d6aef42d5712d75097a"
+    },
+    {
+      "name": "aslmt_env_vN3_minlift_double_barrier.py",
+      "sha256": "ac91e55af69a42f68b04ba550535741ac670534df68ddf71e9812df8a48fc124"
+    },
+    {
+      "name": "render_vN3_paired_ctx.py",
+      "sha256": "233fc0132274ec7fcd163470253e6acf3e4fa5f76487845f7344a9d50680e37a"
+    },
+    {
+      "name": "aslmt_model_vN3_minlift_double_barrier.py",
+      "sha256": "234f009a9d7cf3547818cb33450848143001824267032466300e435934386bde"
+    },
+    {
+      "name": "aslmt_train_vN3_minlift_double_barrier_seeded_pair_trainood.py",
+      "sha256": "99b92b9ed464acc911b1ea8e52537d1e5b794b491756c18ce4b5f43da1240f46"
+    },
+    {
+      "name": "verify_aslmt_vN3_minlift_double_barrier_pair_oodrequired.py",
+      "sha256": "45f4781753e86f01255b19b0c9509e10b79875bf80bc493a6b262fcbb5452627"
+    }
+  ],
+  "kind": "aslmt_vN3_minlift_snapshot",
+  "snapshot_dir": "/mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt/runs/snapshots/aslmt_vN3_minlift_20260414_205200_6f77582e2e59",
+  "train_script_name": "aslmt_train_vN3_minlift_double_barrier_seeded_pair_trainood.py",
+  "ts": "20260414_205200",
+  "verify_script_name": "verify_aslmt_vN3_minlift_double_barrier_pair_oodrequired.py"
+}
