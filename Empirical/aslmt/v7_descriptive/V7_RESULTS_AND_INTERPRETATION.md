@@ -1,8 +1,8 @@
 # v7 (Perfect Amodal Hidden-Target) — Conclusions Et Interpretation (Protocol-Grade)
 
 Ce document fixe les conclusions et l'interpretation **protocol-grade** de `ASLMT v7`, en cohérence avec
-`Descriptive/Docs/PLAN_UNIVERSAL_OBS_ONLY_NO_GO_AND_MIN_LIFT.md` et la note de conformite
-`Descriptive/Docs/V7_CONFORMITY_TO_COFRS.md`.
+`Empirical/aslmt/v7_descriptive/Docs/PLAN_UNIVERSAL_OBS_ONLY_NO_GO_AND_MIN_LIFT.md` et la note de conformite
+`Empirical/aslmt/v7_descriptive/Docs/V7_CONFORMITY_TO_COFRS.md`.
 
 Le but est d'avoir une lecture stable, audit-able et non ambiguë de ce que v7 établit, de ce que les runs montrent,
 et de ce que cela implique pour la theorie COFRS et la gouvernance experimentale.
@@ -70,7 +70,7 @@ v7 ferme experimentalement deux objets distincts:
 
 ## 3) Resultats (Etat Des Runs)
 
-Les runs "reference" sont consignés dans `Descriptive/Docs/V7_CONFORMITY_TO_COFRS.md`.
+Les runs "reference" sont consignés dans `Empirical/aslmt/v7_descriptive/Docs/V7_CONFORMITY_TO_COFRS.md`.
 Ici on fixe la lecture des deux regimes experimentaux observes dans la campagne `oodrequired`.
 
 ### 3.0 Cartographie IID/OOD (Sweep `train_ood_ratio`, verdict du verifier strict)
@@ -81,7 +81,7 @@ avec la discipline suivante:
 - `B_both_correct_rate = 0.0` est un attendu structurel (no-go obs-only) dès que `obs_barrier_ok=True`.
 - La variable discriminante est donc uniquement: **est-ce que A ferme IID ∪ OOD** (`A_both_correct_rate=1.0` sur les deux) ?
 
-Table synthèse (représentants auditables dans `Python/private/aslmt/runs/`):
+Table synthèse (représentants auditables dans `Empirical/aslmt/runs/`):
 
 | `train_ood_ratio` | Seeds observés | Verdict strict | Côté qui casse quand FAIL | Run dir représentant |
 | --- | --- | --- | --- | --- |
@@ -113,11 +113,11 @@ Constat experimental:
 
 Artefacts (seeds 0..4, tous `[OK]`):
 
-- seed 0: `Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_001810_63a03389b935/`
-- seed 1: `Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_002055_63a03389b935/`
-- seed 2: `Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_002349_63a03389b935/`
-- seed 3: `Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_002645_63a03389b935/`
-- seed 4: `Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_002942_63a03389b935/`
+- seed 0: `Empirical/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_001810_63a03389b935/`
+- seed 1: `Empirical/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_002055_63a03389b935/`
+- seed 2: `Empirical/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_002349_63a03389b935/`
+- seed 3: `Empirical/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_002645_63a03389b935/`
+- seed 4: `Empirical/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_002942_63a03389b935/`
 
 Interpretation:
 
@@ -147,7 +147,7 @@ diagnostic `pair_eval.iid.A_fail_ctxs` (ignore par le verifier strict) qui liste
 
 Sur le run ctx-audit OOD-only (exemple le plus net):
 
-- Run dir: `Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260412_235206_63a03389b935/`
+- Run dir: `Empirical/aslmt/runs/aslmt_v7_pair_oodrequired_20260412_235206_63a03389b935/`
 - Master: `.../v7_master_20260412_235206_63a03389b935.jsonl`
 - `pair_eval.iid.A_both_correct_rate = 0.796875` donc **13 échecs** sur 64.
 
@@ -173,7 +173,7 @@ Interpretation theorique:
 
 Le run `train_ood_ratio=0.0` (IID-only) casse en OOD, et les `A_fail_ctxs` montrent un pattern dual:
 
-- Run dir: `Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260412_233112_63a03389b935/`
+- Run dir: `Empirical/aslmt/runs/aslmt_v7_pair_oodrequired_20260412_233112_63a03389b935/`
 - Master: `.../v7_master_20260412_233112_63a03389b935.jsonl`
 - `pair_eval.ood.A_both_correct_rate = 0.703125` donc **19 échecs** sur 64.
 - Les échecs sont concentrés sur les gros occluders OOD (`occ_half ∈ {7,8,9}`) et surtout sur `t=4`.
@@ -264,8 +264,8 @@ Objectif: passer d'un diagnostic ("casse sur la frontiere") à une condition min
 
 Le test "frontier injection" est implémenté comme une **variante** d'entraînement (nouveau fichier, aucun script historique modifié) :
 
-- train script : `Python/private/aslmt/v7_descriptive/variants/pair/aslmt_train_v7_perfect_amodal_hidden_target_seeded_pair_trainood_ctxaudit_frontier_inject.py`
-- campaign runner : `Python/private/aslmt/v7_descriptive/aslmt_campaign_v7_perfect_amodal_hidden_target_pair_oodrequired_v2_frontier_inject.py`
+- train script : `Empirical/aslmt/v7_descriptive/variants/pair/aslmt_train_v7_perfect_amodal_hidden_target_seeded_pair_trainood_ctxaudit_frontier_inject.py`
+- campaign runner : `Empirical/aslmt/v7_descriptive/aslmt_campaign_v7_perfect_amodal_hidden_target_pair_oodrequired_v2_frontier_inject.py`
 
 Le principe est strict :
 
@@ -280,16 +280,16 @@ Critère de succès : obtenir `[OK]` sous le même vérificateur strict, avec `t
 
 Des runs de référence montrent que l'injection frontière ferme effectivement la perfection IID ∪ OOD sous le même vérificateur strict:
 
-- run dir : `Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_164749_c43988f1e2d0/`
+- run dir : `Empirical/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_164749_c43988f1e2d0/`
 - protocole: `train_ood_ratio=1.0`, `frontier_frac=0.002`, `steps=3000`, `seed=0`, `device=cuda`
 - verdict verifier (pair-grade OOD-required) : `[OK]` avec `A_both=1.0000` en IID et en OOD, `B_both=0.0000`, `obs_barrier_ok=True`
 
 Stabilisation protocole-grade (multi-seeds) : la même variante ferme aussi sur seeds 1..4 :
 
-- seed 1 : `Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_180707_c43988f1e2d0/`
-- seed 2 : `Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_181044_c43988f1e2d0/`
-- seed 3 : `Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_181405_c43988f1e2d0/`
-- seed 4 : `Python/private/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_181741_c43988f1e2d0/`
+- seed 1 : `Empirical/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_180707_c43988f1e2d0/`
+- seed 2 : `Empirical/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_181044_c43988f1e2d0/`
+- seed 3 : `Empirical/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_181405_c43988f1e2d0/`
+- seed 4 : `Empirical/aslmt/runs/aslmt_v7_pair_oodrequired_20260413_181741_c43988f1e2d0/`
 
 Interprétation minimale: la couverture IID nécessaire pour fermer IID ∪ OOD n'a pas besoin d'être un mélange IID/OOD massif; un epsilon ciblé sur la frontiere suffit (au moins dans ce witness et à ce budget d'entrainement).
 
@@ -297,15 +297,15 @@ Interprétation minimale: la couverture IID nécessaire pour fermer IID ∪ OOD 
 
 Canonique (OOD-required, verifier strict):
 
-- `Python/private/aslmt/v7_descriptive/aslmt_campaign_v7_perfect_amodal_hidden_target_pair_oodrequired_v2.py`
-- `Python/private/aslmt/v7_descriptive/aslmt_train_v7_perfect_amodal_hidden_target_seeded_pair_trainood.py`
-- `Python/private/aslmt/v7_descriptive/verify_aslmt_v7_perfect_amodal_hidden_target_pair_oodrequired.py`
+- `Empirical/aslmt/v7_descriptive/aslmt_campaign_v7_perfect_amodal_hidden_target_pair_oodrequired_v2.py`
+- `Empirical/aslmt/v7_descriptive/aslmt_train_v7_perfect_amodal_hidden_target_seeded_pair_trainood.py`
+- `Empirical/aslmt/v7_descriptive/verify_aslmt_v7_perfect_amodal_hidden_target_pair_oodrequired.py`
 
 Ctx-audit (diagnostic supplémentaire, sans changer le verifier):
 
-- `Python/private/aslmt/v7_descriptive/variants/pair/aslmt_train_v7_perfect_amodal_hidden_target_seeded_pair_trainood_ctxaudit.py`
+- `Empirical/aslmt/v7_descriptive/variants/pair/aslmt_train_v7_perfect_amodal_hidden_target_seeded_pair_trainood_ctxaudit.py`
 
 Conformite docs:
 
-- `Descriptive/Docs/V7_CONFORMITY_TO_COFRS.md`
-- `Descriptive/Docs/COFRS_UNIFIED_STATEMENT.md`
+- `Empirical/aslmt/v7_descriptive/Docs/V7_CONFORMITY_TO_COFRS.md`
+- `Empirical/aslmt/v7_descriptive/Docs/COFRS_UNIFIED_STATEMENT.md`

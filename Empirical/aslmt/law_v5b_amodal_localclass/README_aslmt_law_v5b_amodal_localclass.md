@@ -24,7 +24,7 @@ Claim scope:
 
 Smoke (writes to `runs/*_smoke_*`):
 ```bash
-cd /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt
+cd /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt
 /home/frederick/.venvs/cofrs-gpu/bin/python3 -u law_v5b_amodal_localclass/aslmt_campaign_law_v5b_amodal_localclass_family.py --profile smoke --seed 0 --device cuda
 RUN_DIR="$(ls -td runs/aslmt_law_v5b_amodal_localclass_smoke_* | head -1)"
 MASTER="$(ls "$RUN_DIR"/master_*.jsonl | head -1)"
@@ -33,7 +33,7 @@ MASTER="$(ls "$RUN_DIR"/master_*.jsonl | head -1)"
 
 Solid multi-seeds:
 ```bash
-cd /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt
+cd /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt
 /home/frederick/.venvs/cofrs-gpu/bin/python3 -u law_v5b_amodal_localclass/aslmt_campaign_law_v5b_amodal_localclass_family.py --profile solid --seed-from 0 --seed-to 4 --device cuda
 RUN_DIR="$(ls -td runs/aslmt_law_v5b_amodal_localclass_* | head -1)"
 MASTER="$(ls "$RUN_DIR"/master_*.jsonl | head -1)"

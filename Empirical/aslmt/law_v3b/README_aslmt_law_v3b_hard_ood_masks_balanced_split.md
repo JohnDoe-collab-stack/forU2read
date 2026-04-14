@@ -29,7 +29,7 @@ Split note (why v3b exists):
 ### Run (solid, seeds 0..4, CUDA)
 
 ```bash
-cd /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt
+cd /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt
 
 /home/frederick/.venvs/cofrs-gpu/bin/python3 -u law_v3b/aslmt_campaign_law_v3b_hard_ood_masks_query_pomdp_family_balanced_split.py \
   --profile solid --seed-from 0 --seed-to 4 --device cuda

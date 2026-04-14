@@ -38,7 +38,7 @@ Optional / diagnostic:
 ## Run
 
 ```bash
-cd /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt
+cd /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt
 /home/frederick/.venvs/cofrs-gpu/bin/python3 -u v7_descriptive/aslmt_campaign_v7_perfect_amodal_hidden_target_pair_oodrequired_v2.py \
   --train-script aslmt_train_v7_perfect_amodal_hidden_target_seeded_pair_trainood.py \
   --train-ood-ratio 0.5 \
@@ -53,7 +53,7 @@ This produces the usual `v7_master_*.jsonl` plus a list of the IID contexts wher
 `pair_eval.iid.A_fail_ctxs`.
 
 ```bash
-cd /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt
+cd /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt
 /home/frederick/.venvs/cofrs-gpu/bin/python3 -u v7_descriptive/aslmt_campaign_v7_perfect_amodal_hidden_target_pair_oodrequired_v2.py \
   --train-script variants/pair/aslmt_train_v7_perfect_amodal_hidden_target_seeded_pair_trainood_ctxaudit.py \
   --train-ood-ratio 1.0 \
@@ -81,7 +81,7 @@ Goal: find the largest `train_ood_ratio` that still yields `[OK]` under the stri
 Recommended sweep (each point produces a snapshot+hash run dir and runs the strict verifier):
 
 ```bash
-cd /mnt/c/Users/frederick/Documents/Compatibility_Obstructions_in_Fibered_Relational_Systems/Python/private/aslmt
+cd /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt
 
 for r in 0.50 0.75 0.90 0.95 0.99 1.00; do
   /home/frederick/.venvs/cofrs-gpu/bin/python3 -u v7_descriptive/aslmt_campaign_v7_perfect_amodal_hidden_target_pair_oodrequired_v2.py \
