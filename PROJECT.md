@@ -1,251 +1,300 @@
-# Project explanation (COFRS / compat_obstructions)
+# Project explanation (`COFRS` / `compat_obstructions`)
 
-This file explains what the repository is doing **mathematically**, how the pieces fit together, and how to read the code.
+This file explains what the repository is doing mathematically, how the pieces fit together, and how to read the code.
 
-The short thesis sentence the development is built to make _checkable_ is:
+The short thesis sentence the development is built to make checkable is:
 
 > Diagonalization destroys the static regime of closed global decisions, forces their factorization through a mediator, and makes causality the testable signature of that forced factorization.
 
-The entire development is intended to remain **constructive** (no `Classical`, no axioms), with per-file `AXIOM_AUDIT` blocks.
+The entire development is intended to remain constructive: no `Classical`, no axioms, with per-file `AXIOM_AUDIT` blocks.
 
-## Problem Solved
+## Problem solved
 
-When a diagonalization exhibits that the observable interface `obs : S → V` is insufficient to decide a dynamic truth—future compatibility along a chosen `step` (formalized as `Compatible sem obs target_obs step x`)—the repository resolves three sub-problems end-to-end:
+When a diagonalization shows that the observable interface `obs : S → V` is insufficient to decide a dynamic truth, namely future compatibility along a chosen `step` as formalized by `Compatible sem obs target_obs step x`, the repository resolves three problems in one formal chain:
 
-1. **certify the failure of any obs-only rule** (in the precise sense of `ObsPredictsStep`, i.e. a decision rule depending only on `V`);
-2. **identify and quantify the minimal missing information** as a finite supplement `Fin n` (compatibility dimension on the observable fiber);
-3. **provide an intervention-testable signature** that the decision truly depends on this supplement (causal mediation, not mere correlation).
+1. it certifies the failure of any `obs`-only decision rule, in the precise sense of `ObsPredictsStep`;
+2. it identifies and quantifies the minimal missing information as a finite supplement `Fin n` on the observable fiber;
+3. it provides an intervention-testable signature showing that the decision genuinely depends on this supplement, as causal mediation rather than mere correlation.
 
-## Resolution in the repository (Lean names)
+## Resolution in the repository
 
-- **Obstruction (intra-fiber diagonalization).** A witness `LagEvent` exhibits two states that are indistinguishable by `obs` yet separated by the targeted dynamic truth; the development derives `LagEvent → ¬ ObsPredictsStep` (see `COFRS/Dynamics.lean`, `PrimitiveHolonomy.not_obsPredictsStep_of_lagEvent`).
-- **Minimal finite mediator (capacity).** The required extra information is measured by `CompatDimLe n` / `CompatDimEq n` and realized canonically by a mediation witness `RefiningLiftData`/`RefiningLift`, with the central equivalence `CompatDimLe … n ↔ RefiningLift … n` (see `COFRS/Dynamics.lean`, `PrimitiveHolonomy.compatDimLe_iff_refiningLift`). The proven “minimality” is a minimality of **dimension/capacity** (size of `Fin n`), not ontological uniqueness of a latent.
-- **Testable causal signature (ablation + permutation).** Mediation is not treated as mere factorization: it is made intervention-testable via `CausalSignature2`, linked to intra-fiber separation together with the existence of a finite lift (see `COFRS/Examples/DiagonalizationMediationCausalityThesis.lean`, notably `causalSignature2_of_stepSeparatesFiber_of_refiningLift2` and `diagonalization_yields_causalSignature2`).
-- **Terminology.** Here, “diagonalization” means: “against any visible-only rule in the sense of `ObsPredictsStep`, exhibit a fiber where it fails”. The “diagonalization by code” instance is handled separately in `COFRS/Examples/GodelByCode.lean`.
+The formal resolution is organized by three linked ingredients.
 
-## Chain (quick reading)
+- **Obstruction by intra-fiber diagonalization.** A witness `LagEvent` exhibits two states that are indistinguishable by `obs` yet separated by the targeted dynamic truth. From this, the development derives `LagEvent → ¬ ObsPredictsStep`; see `COFRS/Dynamics.lean`, theorem `PrimitiveHolonomy.not_obsPredictsStep_of_lagEvent`.
+
+- **Minimal finite mediator.** The missing information is measured by `CompatDimLe n` and `CompatDimEq n`, and realized canonically by `RefiningLiftData` and `RefiningLift`. The central equivalence is `CompatDimLe … n ↔ RefiningLift … n`; see `COFRS/Dynamics.lean`, theorem `PrimitiveHolonomy.compatDimLe_iff_refiningLift`. The minimality proved here is a minimality of dimension or capacity, that is, the size of `Fin n`, not an ontological uniqueness claim about a latent variable.
+
+- **Testable causal signature.** Mediation is not treated as a mere factorization statement. It is made intervention-testable through `CausalSignature2`, linked to intra-fiber separation together with the existence of a finite lift; see `COFRS/Examples/DiagonalizationMediationCausalityThesis.lean`, especially `causalSignature2_of_stepSeparatesFiber_of_refiningLift2` and `diagonalization_yields_causalSignature2`.
+
+Throughout this document, “diagonalization” means: against any visible-only rule in the sense of `ObsPredictsStep`, exhibit a fiber where it fails. The separate “diagonalization by code” instance is handled in `COFRS/Examples/GodelByCode.lean`.
+
+## Chain of results
+
+The repository’s central chain is:
 
 `LagEvent` → `¬ ObsPredictsStep` → `CompatDim* n` → `RefiningLift* n` → `CausalSignature2`
 
----
+This should be read as the structural spine of the development: diagonal obstruction yields visible impossibility; visible impossibility is overcome only by a finite mediator; and, in the binary case, this forced mediation acquires an intervention-testable causal signature.
 
-## 0. The core idea in one paragraph
+In short:
 
-The development models “histories” as a minimal 2-dimensional combinatorial structure (prefixes, paths, and admissible commutations), and interprets paths by a **relational** semantics on a state space `S`. An **observable** `obs : S → V` induces fibers of microstates that are indistinguishable at a given prefix `h`. A _lag event_ (`LagEvent`) is a witness that two distinct microstates in the same fiber are holonomy-related now, but diverge on future compatibility along a chosen step. This single witness is strong enough to forbid any “obs-only” predictor. The key step is that the repository then **quantifies** the amount of extra information needed to recover predictability via a finite mediator `Fin n` (`CompatDim` / `RefiningLift`), and turns that forced mediation into a **testable intervention signature** (permutation/ablation) on the mediator.
+**diagonalization → no obs-only prediction → minimal finite mediation → causal intervention signature**
 
----
+## Impact
 
-## 1. The framework (Primitive Holonomy)
+The thesis of the repository is realized as a concrete three-level pipeline:
 
-### 1.1 Minimal 2-structure of histories
+- **From diagonal obstruction to system-level impossibility.** A lag witness yields a fiber separation and forbids any closed `obs`-only decision regime in the formal sense of `ObsPredictsStep`; see `COFRS/Dynamics.lean`, notably `not_obsPredictsStep_of_lagEvent`.
+
+- **From impossibility to forced factorization through a finite mediator.** The amount of hidden information required for recovery is quantified by `CompatDimEq n`, and made canonical by the equivalence `CompatDimLe … n ↔ RefiningLift … n`, with explicit witness `RefiningLiftData` and finite mediator `Fin n` on the observable fiber; see `COFRS/Dynamics.lean`.
+
+- **From forced mediation to causal testability.** When a separating step is paired with a forced mediator, notably `Fin 2` in the diagonal instance, intervention-style effects become provable consequences and are packaged as `CausalSignature2`; see `COFRS/Examples/DiagonalizationMediationCausalityThesis.lean`.
+
+## Diagonalization, factorization, and causal mediation
+
+In this repository, diagonalization is used as a general adversarial pattern: for any candidate rule claiming to close a decision at the level of a given observable interface, a counter-construction produces a point, typically a fiber point, where that rule fails. Concretely, the critical interface is a projection `obs : S → V`. The diagonal pattern produces a situation in which the same visible value supports multiple internal states that cannot simultaneously satisfy the targeted dynamic truth.
+
+The mathematical reading of the repository is organized by three statements, each made explicit in Lean.
+
+### 1. Destruction of the static regime
+
+If there exist `x ≠ x'` with `obs x = obs x'` while the relevant future property distinguishes them, formalized by compatibility along a chosen step, then no `obs`-only rule in the sense of `ObsPredictsStep` can be correct on both. Operationally, this is exactly the content of `LagEvent → ¬ ObsPredictsStep`.
+
+This is the precise sense in which diagonalization destroys the static regime of closed global decisions.
+
+### 2. Forced factorization through a mediator
+
+To go beyond this obstruction, any correct policy must depend on information not contained in `obs` at the critical stage. At the level of interpretation, this extra information is carried by an internal state `z`, understood as cue, memory, or latent state, that summarizes the relevant hidden differentiation. In this reading, the decision factorizes through a mediator of the form
+
+`history → z → decision`
+
+rather than
+
+`obs → decision`.
+
+In the formal development, this is captured by `CompatDimLe`, `CompatDimEq`, and `RefiningLiftData`: compatibility on the observable fiber factors through a finite supplement `Fin n`, with exactness and minimality when `CompatDimEq n` is available.
+
+### 3. Causality as a testable signature
+
+The factorization is not treated as a metaphor. If success genuinely depends on the mediator, then two intervention principles must hold: ablating the mediator must destroy correctness, and permuting the mediator between examples must make the decision follow the mediator. This is the experimental form of the claim that the mediator is load-bearing, and it prevents confusion between genuine mediation and shortcut behavior.
+
+In the code, this is packaged as `CausalSignature2`.
+
+## Core idea in one paragraph
+
+The development models histories as a minimal two-dimensional combinatorial structure of prefixes, paths, and admissible commutations, and interprets paths by a relational semantics on a state space `S`. An observable `obs : S → V` induces fibers of microstates that are indistinguishable at a given prefix. A `LagEvent` witnesses that two distinct microstates in the same fiber are holonomy-related now but diverge on future compatibility along a chosen step. This is enough to forbid any `obs`-only predictor. The decisive move is then to quantify the extra information required to recover predictability by a finite mediator `Fin n`, via `CompatDim` and `RefiningLift`, and to turn that forced mediation into a testable intervention signature, via permutation and ablation, on the mediator itself.
+
+## 1. Formal framework
+
+### 1.1 Histories as a minimal 2-structure
 
 A history world is given by `HistoryGraph`:
 
-- objects `P` (prefixes),
-- 1-morphisms `Path : P → P → Type` (schedules/paths),
-- 2-morphisms `Deformation` witnessing admissible commutations,
+- objects `P`, interpreted as prefixes;
+- 1-morphisms `Path : P → P → Type`, interpreted as schedules or paths;
+- 2-morphisms `Deformation`, witnessing admissible commutations;
 - identity and composition of paths.
 
-This is deliberately _not_ a full-blown category-theory development: it is a minimal interface tuned to what the rest of the project needs.
+This is a minimal interface tailored to the development. It is not a full category-theoretic formalization.
 
 ### 1.2 Relational semantics
 
 A `Semantics P S` assigns to each path a binary relation on states:
 
 - `sem : Path h k → (S → S → Prop)`,
-- plus compatibility with identity/composition (as _relational equalities_).
+- together with compatibility with identity and composition as relational equalities.
 
-The choice of relations (not functions) is essential: it naturally supports nondeterminism and partial information.
+The use of relations rather than functions is essential: it supports nondeterminism and partial information directly.
 
-### 1.3 Observation, fibers, and holonomy
+### 1.3 Observation, fibers, transport, holonomy
 
-Given an observation map `obs : S → V` and a target observation `target_obs : P → V`, the **fiber** above a prefix `h` is:
+Given an observation map `obs : S → V` and a target observation `target_obs : P → V`, the observable fiber above `h` is
 
-- `FiberPt obs target_obs h := { x : S // obs x = target_obs h }`.
+`FiberPt obs target_obs h := { x : S // obs x = target_obs h }`.
 
-Transport along a path is simply the semantics restricted to fibers. Holonomy is defined from a deformation witness by composing transport along one path with the converse transport along the other.
+Transport along a path is the semantics restricted to fibers. Holonomy is defined from a deformation witness by composing transport along one path with the converse transport along the other.
 
-**Where:** `COFRS/Foundations.lean`.
+This framework is developed in `COFRS/Foundations.lean`.
 
----
+## 2. Dynamics: compatibility, lag, and no-go for `obs`-only prediction
 
-## 2. Dynamics: compatibility, lag, and no-go for obs-only prediction
+### 2.1 Compatibility as the dynamic truth
 
-### 2.1 Compatibility
+For a future step `step : Path h k` and a microstate `x` in the fiber at `h`,
 
-For a future step `step : Path h k`, and a microstate `x` in the fiber at `h`,
+`Compatible sem obs target_obs step x`
 
-- `Compatible sem obs target_obs step x` means: there exists a fiber point at `k` reachable from `x` via transport along `step`.
+means that there exists a fiber point at `k` reachable from `x` along `step`.
 
-This is a deliberately local notion: compatibility is defined **per microstate on a fiber**, not as a global predicate.
+Compatibility is deliberately local: it is defined per microstate on a given observable fiber.
 
-### 2.2 LagEvent (the obstruction witness)
+### 2.2 `LagEvent` as obstruction witness
 
-A `LagEvent` packages the key obstruction:
+A `LagEvent` packages the obstruction that drives the theory:
 
-- two distinct microstates `x ≠ x'` in the same fiber at `h`,
-- related by holonomy now,
-- but only one remains compatible along a chosen future step.
+- two distinct microstates `x ≠ x'` in the same fiber at `h`;
+- related by holonomy at the present stage;
+- but differing in future compatibility along a chosen step.
 
-From a `LagEvent` one obtains `StepSeparatesFiber` for that step.
+Equivalently, the same visible value supports multiple internal states with incompatible futures. From a `LagEvent`, the development derives `StepSeparatesFiber`.
 
-### 2.3 No visible predictor (and no obs-only predictor)
+### 2.3 No visible predictor and no `obs`-only predictor
 
-Two notions of “predictor” are defined for a fixed future step:
+Two notions of prediction are defined for a fixed future step:
 
-- `VisiblePredictsStep`: there exists some summary `σ` that factors through `obs` (i.e. depends only on visible data) and predicts compatibility.
-- `ObsPredictsStep`: the strongest special case where the predictor is a predicate directly on `V`.
+- `VisiblePredictsStep`: there exists a summary `σ` factoring through `obs` that predicts compatibility;
+- `ObsPredictsStep`: the special case in which the predictor is directly a predicate on `V`.
 
-Main no-go chain:
+The main no-go chain is:
 
-- `LagEvent → ¬ VisiblePredictsStep` (via `StepSeparatesFiber`).
-- `LagEvent → ¬ ObsPredictsStep` (since `ObsPredictsStep → VisiblePredictsStep`).
+- `LagEvent → ¬ VisiblePredictsStep`,
+- `LagEvent → ¬ ObsPredictsStep`.
 
-**Where:** `COFRS/Dynamics.lean` (notably theorems `not_visiblePredictsStep_of_lagEvent` and `not_obsPredictsStep_of_lagEvent`).
+The corresponding results are proved in `COFRS/Dynamics.lean`, notably `not_visiblePredictsStep_of_lagEvent` and `not_obsPredictsStep_of_lagEvent`.
 
-Intuitively: any summary that factors through `obs` is constant on the fiber, so it cannot predict a property that genuinely varies inside a single fiber.
+The point is exact: any rule depending only on the observable interface is constant on the fiber, and therefore cannot decide a property that varies inside a single fiber.
 
----
+## 3. Forced factorization through a finite mediator
 
-## 3. Forced factorization through a finite mediator (CompatDim / RefiningLift)
+The development does not stop at impossibility. It quantifies the hidden information required to recover correct decision.
 
-The project does not stop at a no-go statement. It introduces an internal, quantitative notion of forced mediation.
+### 3.1 Compatibility dimension
 
-### 3.1 Internal (not visible) compatibility dimension
+`CompatDimLe sem obs target_obs step n` asserts that there exist:
 
-`CompatDimLe sem obs target_obs step n` says:
+- a finite index `σ : fiber(h) → Fin n`,
+- a predicate on `Fin n`,
 
-- there exists a finite index `σ : fiber(h) → Fin n` and a predicate on `Fin n` such that
-- `Compatible step x` depends only on `σ x`.
+such that `Compatible ... step x` depends only on `σ x`.
 
-Crucially, `CompatDimLe` does _not_ require factoring through `obs`; it measures hidden information needed to decide compatibility.
+This is an internal notion: it does not require factoring through `obs`. It measures the finite amount of hidden information needed to decide compatibility correctly.
 
-`CompatDimEq` / `CompatDimEqTwo` package **exactness/minimality**.
+`CompatDimEq` and `CompatDimEqTwo` package exactness and minimality.
 
-### 3.2 Canonical lift: RefiningLiftData
+### 3.2 Canonical mediation witness
 
-A `RefiningLiftData` is an explicit witness living **on the fiber**:
+A `RefiningLiftData` is an explicit witness on the observable fiber:
 
 - `extObs : fiber(h) → V × Fin n`,
-- it refines the visible observation on the first component,
-- and compatibility factors only through the `Fin n` component.
+- whose first component refines the visible observation,
+- and whose `Fin n` component carries exactly the information through which compatibility factors.
 
-There is a key canonical equivalence:
+The central theorem is the equivalence
 
-- `CompatDimLe … n ↔ RefiningLift … n`.
+`CompatDimLe … n ↔ RefiningLift … n`.
 
-This is the repository’s formal notion of:
+This is the repository’s formal realization of factorization through a mediator: the mediator is finite, and the refined interface preserves the original visible interface.
 
-> “factorization through a mediator”
+These constructions are developed in `COFRS/Dynamics.lean`.
 
-where the mediator is finite (`Fin n`) and the refinement keeps the original visible interface intact.
+## 4. Regulation and obstruction
 
-**Where:** `COFRS/Dynamics.lean` (`CompatDimLe`, `RefiningLiftData`, `compatDimLe_iff_refiningLift`).
+`COFRS/RegulationAndReduction.lean` develops a parallel layer expressing repairability and obstruction through gauges.
 
----
+A gauge is a fiber-preserving correction applied at transport targets.
 
-## 4. Regulation and obstruction (gauges)
-
-A gauge is a fiber-preserving “repair” mechanism applied at targets of transport.
-
-- `CorrectedTransport` applies transport then gauge;
+- `CorrectedTransport` applies transport followed by a gauge;
 - `CorrectedHolonomy` is holonomy computed from corrected transports.
 
-Two key global notions are defined on sets of cells:
+Two global notions are then defined on sets of cells:
 
-- `AutoRegulatedWrt OK J`: there exists an admissible gauge (`OK φ`) such that corrected holonomy is diagonal on `J`.
-- `ObstructionWrt OK J`: every admissible gauge fails, by producing a twisted corrected holonomy witness.
+- `AutoRegulatedWrt OK J`: there exists an admissible gauge making corrected holonomy diagonal on `J`;
+- `ObstructionWrt OK J`: every admissible gauge fails, witnessed by twisted corrected holonomy.
 
-This layer is what enables expressing “repairability vs obstruction” inside the same fiber/holonomy language.
+This layer expresses repairability versus obstruction in the same fiber and holonomy language as the main development.
 
-**Where:** `COFRS/RegulationAndReduction.lean`.
+## 5. Causality as an intervention-testable signature
 
----
+In the repository, mediation is not left at the level of factorization. In the binary case, it is given an intervention-testable causal form.
 
-## 5. Causality as a testable signature (permutation + ablation)
+`COFRS/Examples/DiagonalizationMediationCausalityThesis.lean` defines `CausalSignature2`, which packages two intervention principles:
 
-The repository defines a concrete “intervention-style” signature for a forced `Fin 2` mediator:
+- **Permutation:** exchanging the two `Fin 2` classes changes the induced readout on a fiber point;
+- **Ablation:** collapsing the mediator to a constant readout cannot preserve correctness when the step separates the fiber.
 
-- **Permutation**: swapping the `Fin 2` class changes the induced readout on some fiber point.
-- **Ablation**: collapsing the mediator to a constant readout cannot remain correct if the step separates the fiber.
+The key theorem is:
 
-These are packaged as:
+`StepSeparatesFiber … step → RefiningLift … step 2 → CausalSignature2 … step`
 
-- `CausalSignature2`.
+formalized as `causalSignature2_of_stepSeparatesFiber_of_refiningLift2`.
 
-Core theorem (Lean):
+The conceptual conclusion is sharp: once a dynamically separating step forces mediation through a finite binary supplement, causality appears as the testable signature of that forced factorization.
 
-- `causalSignature2_of_stepSeparatesFiber_of_refiningLift2` proves `StepSeparatesFiber … step → RefiningLift … step 2 → CausalSignature2 … step`.
+## 6. Concrete instances and structural files
 
-So, once factorization through a finite mediator is forced (and the fiber is dynamically separated), **causality becomes the testable signature** of that forced factorization.
+### 6.1 `GodelByCode`
 
-**Where:** `COFRS/Examples/DiagonalizationMediationCausalityThesis.lean`.
-
----
-
-## 6. The diagonal-by-code instance (why `GodelByCode` exists)
-
-`COFRS/Examples/GodelByCode.lean` is a _concrete instance generator_ inside the COFRS framework.
+`COFRS/Examples/GodelByCode.lean` provides a concrete diagonal instance internal to the framework.
 
 It builds:
 
-- a minimal `HistoryGraph` on `Nat` with a single non-trivial deformation (`p ⇒ q`),
-- a relational semantics on states `LagState Nat Bool`,
-- two explicit diagonal fiber points `x` and `x'` (same visible, different hidden bit),
-- and then proves:
-  - a diagonal lag witness `lagEvent_at_diag`,
-  - an internal dimension upper bound `diag_compatDimLe_two_step`,
-  - and exactness `diag_compatDimEqTwo_step`.
+- a minimal `HistoryGraph` on `Nat` with one non-trivial deformation, written `p ⇒ q`;
+- a relational semantics on `LagState Nat Bool`;
+- two explicit diagonal fiber points with the same visible value and different hidden bit.
 
-This instance is then used by the “thesis spine” to derive:
+It then proves:
 
-- `diagonalization_yields_causalSignature2`.
+- `lagEvent_at_diag`,
+- `diag_compatDimLe_two_step`,
+- `diag_compatDimEqTwo_step`.
 
-The point is not “classical Gödel logic”; it is to realize, inside the project’s holonomy/fiber semantics, a diagonal mechanism that **forces**:
+This instance is used by the thesis spine to derive `diagonalization_yields_causalSignature2`.
 
-- no obs-only decision regime,
-- a minimal finite mediator (exactly `Fin 2`),
-- and therefore the causal signature.
+The point is not classical Gödel logic as an external excursus. The point is to realize, inside the holonomy and fiber semantics of the repository itself, a diagonal mechanism that forces:
 
----
+- failure of any `obs`-only decision regime;
+- a minimal finite mediator of size `2`;
+- and therefore the binary causal signature.
 
-## 7. Independence: geometry vs dynamics
+### 6.2 `DynamicCompatDimN`
 
-`COFRS/Examples/GeometryDynamicsIndependence.lean` demonstrates that:
+`COFRS/Examples/DynamicCompatDimN.lean` develops a parametric family in arbitrary finite dimension. It shows how compatibility dimension behaves uniformly in `n`, and supplies the scalable counterpart to the binary diagonal instance.
 
-- “geometric coherence” (existence of a non-trivial holonomy witness), and
-- “dynamic truth” (visible predictability of compatibility)
+### 6.3 `Synthesis`
+
+`COFRS/Synthesis.lean` packages the main results into synthetic profiles, making the core theorem chain easier to reuse and read at a higher level.
+
+### 6.4 `FinCompression`
+
+`COFRS/Combinatorics/FinCompression.lean` provides constructive combinatorial tools on finite types that support the finite-mediator layer of the development.
+
+### 6.5 Geometry versus dynamics
+
+`COFRS/Examples/GeometryDynamicsIndependence.lean` proves that:
+
+- geometric coherence, understood as the existence of non-trivial holonomy structure;
+- dynamic truth, understood as visible predictability of compatibility,
 
 are logically independent in this framework.
 
-This isolates an important message: geometric alignment proxies do not imply dynamic correctness, and dynamic correctness can occur without non-trivial holonomy.
+This isolates an important consequence: geometric alignment does not imply dynamic correctness, and dynamic correctness can occur without non-trivial holonomy.
 
----
+## 7. Reading guide
 
-## 8. How to read the repository
+A good order of reading is:
 
-Recommended order:
+1. `COFRS/Foundations.lean` — framework: fibers, transport, holonomy
+2. `COFRS/Dynamics.lean` — lag/no-go, compatibility dimension, refining lift
+3. `COFRS/RegulationAndReduction.lean` — gauges, regulation, obstruction
+4. `COFRS/Synthesis.lean` — synthetic profiles of the main chain
+5. `COFRS/Examples/DynamicCompatDimN.lean` — parametric finite-mediator family
+6. `COFRS/Examples/DiagonalizationMediationCausalityThesis.lean` — causal signature
+7. `COFRS/Examples/GodelByCode.lean` — diagonal instance
+8. `COFRS/Examples/GeometryDynamicsIndependence.lean` — independence
 
-1. `COFRS/Foundations.lean` (framework: fibers, transport, holonomy)
-2. `COFRS/Dynamics.lean` (lag/no-go, compat dimension, refining lift)
-3. `COFRS/RegulationAndReduction.lean` (gauges, regulation/obstruction)
-4. `COFRS/Examples/DiagonalizationMediationCausalityThesis.lean` (signature causale)
-5. `COFRS/Examples/GodelByCode.lean` (diagonal instance)
-6. `COFRS/Examples/GeometryDynamicsIndependence.lean` (independence)
+This order moves from framework, to dynamic obstruction, to finite mediation, to causal packaging, and finally to concrete instances and independence results.
 
----
+## 8. Constructivity and axiom audit
 
-## 9. Constructivity and axiom audit
+The repository is designed to remain constructive:
 
-The repo is designed to remain constructive:
+- no `axiom`,
+- no `Classical` or `open Classical`,
+- no `propext`,
+- no `Quot.sound`.
 
-- no `axiom`
-- no `Classical` / `open Classical`
-- no `propext`
-- no `Quot.sound`
-
-Relevant `.lean` files contain a final `AXIOM_AUDIT` block (`#print axioms …`).
+Relevant `.lean` files end with an `AXIOM_AUDIT` block using `#print axioms ...`.
 
 ## Collaboration note
 
-This `Project` was written mainly in collaboration with **ChatGPT Codex** (OpenAI).
+This project was written mainly in collaboration with **ChatGPT Codex** (OpenAI).
