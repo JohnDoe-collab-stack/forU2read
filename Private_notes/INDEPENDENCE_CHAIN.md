@@ -1,4 +1,18 @@
-# Independence → Relation → Mediator: full method chain
+# Indépendance → Rapport → Médiateur : chaîne complète
+
+## Pourquoi ce n’est pas une “reformulation statique”
+
+Une vue **statique** typique se limite à constater que :
+
+- chaque marge prise seule peut être insuffisante (`A` ne détermine pas `T`, et `B` ne détermine pas `T`) ;
+- alors que le joint `⟨A,B⟩` peut suffire à décider `T`.
+
+La méthode ici n’est pas une reformulation de ce constat. Elle change l’objet et le type de conclusion :
+
+- la vérité `T` est **dynamique** (compatibilité future le long d’un `step` depuis un point de fibre), pas une cible statique ;
+- l’échec des décisions “marge-only” est **forcé** par une obstruction intra-fibre (diagonalisation), pas seulement observé ;
+- le “rapport” requis est **quantifié minimalement** (capacité finie `Fin n`) et réalisé canoniquement (factorisation) ;
+- et, dans les cas pertinents, cette médiation forcée admet une **signature interventionnelle** (swap/ablation) qui atteste qu’elle est effectivement déterminante.
 
 ## 0) Cadre (objets)
 
@@ -37,7 +51,7 @@ La diagonalisation (au sens du dépôt) produit un témoin d’obstruction (`Lag
 
 C’est la partie “destruction du régime statique” : toute décision *obs-only* échoue parce que la vérité dynamique varie dans une même fibre.
 
-## 3) Bridge : du négatif (`¬ ObsPredictsStep`) à un témoin explicite (`StepSeparatesFiber`)
+## 3) Pont (bridge) : du négatif (`¬ ObsPredictsStep`) à un témoin explicite (`StepSeparatesFiber`)
 
 Pour “sortir du conditionnel” (extraire un témoin sans choix classique), la méthode passe par une hypothèse **constructive de finitude** de la fibre + décidabilité de `Compatible` sur la fibre.
 
@@ -72,7 +86,7 @@ Le dépôt a l’équivalence centrale :
 
 - `CompatDimLe … n ↔ RefiningLift … n`.
 
-Donc la “réparation” n’est pas “rajouter du mystère”, c’est :
+Donc la “réparation” n’est pas un raffinement ad hoc, c’est :
 
 - construire un **médiateur fini** `Fin n` (supplément minimal en capacité),
 - et une interface raffinée `extObs : fiber → V × Fin n`
@@ -87,7 +101,7 @@ Dans le cas binaire (notamment `n = 2`), la méthode ajoute une couche opératio
 - `StepSeparatesFiber` + `RefiningLift 2` ⇒ `CausalSignature2`
   (ablation + permutation).
 
-Donc le “troisième terme” n’est pas seulement une factorisation descriptive : il devient **audit-able** par interventions.
+Donc le “troisième terme” n’est pas seulement une factorisation descriptive : il devient **auditable** par interventions.
 
 ## 7) Où intervient “deux indépendances” et le “rapport irréductible” ?
 
@@ -102,3 +116,7 @@ Avec deux interfaces `A` et `B`, la forme forte (“écart maximal” au sens qu
 - **Dominance** (forme “maximale”) :
   tout ce qui décide effectivement passe par `R` (au sens factorisation + signature interventionnelle).
 
+Remarque de clarification : “rapport irréductible” ne signifie pas “prendre simplement le joint `⟨A,B⟩`”.
+L’idée est qu’il existe un contenu décisif qui **n’apparaît dans aucune des deux marges** (et qui rend leurs
+décisions marginales impossibles), et que ce contenu peut ensuite être (i) isolé comme un médiateur minimal
+(`Fin n`) et (ii) validé opérationnellement via des interventions.
