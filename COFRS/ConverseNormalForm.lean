@@ -262,6 +262,39 @@ theorem compatDimEq_of_factorization_of_pairwisePropSeparated
 
 end NormalFormN
 
+/-!
+## Notes (Phase D / “getting rid of conditionals”)
+
+In this development, `CompatDimEq … step n` is a *quantitative* statement about how many finite
+classes are needed to decide the (binary) truth `Compatible … step x` on a fiber.
+
+Because `Compatible … step x` is a single proposition (true/false), there is no general way to
+force `n > 2` from “pure decidability” alone: decidability yields a canonical **binary**
+classification (compatible vs not compatible), hence the unconditional normal form
+`CompatDimLe … 2` in §`NormalFormBinary`.
+
+To obtain **exact** dimension `n` without classical choice, one must provide (and in concrete
+instances, *check*) extra structure that actually produces `n` non-collapsing classes. The
+repository follows two professional routes:
+
+1. **Witness families / barrier validity (finite, checkable).**
+   Provide an explicit family of fiber points `x : Fin n → fiber` whose compatibility propositions
+   are pairwise non-equivalent (or equivalently, provide a factorization through `Fin n` together
+   with representatives of each summary class). This is the pattern used by
+   `not_compatDimLe_of_finite_witness_family` in `COFRS/Dynamics.lean` and packaged here as the
+   conditional normal form in §`NormalFormN`.
+
+2. **Multi-step signatures (many bits, hence many classes).**
+   Instead of fixing a single `step`, use the *signature* `Sig` over a finite family of future
+   steps (or equivalently, a finite set of tests). This turns “one bit” into “many bits” and can
+   yield `n`-ary exactness by construction. This corresponds to making the “barrier” richer
+   (more separating tests) rather than asking a single proposition to carry `n` classes.
+
+Empirically, this is exactly why Phase A1 in `Empirical/aslmt/UNIVERSALITY_PLAN.md` enforces
+non-negotiable “barrier validity / anti-collisions” gates: they are the experimental analogue of
+supplying the explicit witness structure required for `n`-ary exactness.
+-/
+
 end PrimitiveHolonomy
 
 /- AXIOM_AUDIT_BEGIN -/
