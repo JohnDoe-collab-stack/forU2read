@@ -120,3 +120,22 @@ Remarque de clarification : “rapport irréductible” ne signifie pas “prend
 L’idée est qu’il existe un contenu décisif qui **n’apparaît dans aucune des deux marges** (et qui rend leurs
 décisions marginales impossibles), et que ce contenu peut ensuite être (i) isolé comme un médiateur minimal
 (`Fin n`) et (ii) validé opérationnellement via des interventions.
+
+### 7.1 Isolation de l’objet irréductible (au niveau du médiateur)
+
+La formulation la plus forte ne s’arrête pas à l’irréductibilité de **la prédiction** (“`T_joint` n’est pas lisible
+depuis `A` seul / `B` seul”). Elle isole aussi un **objet** irréductible : le *médiateur* lui-même.
+
+Dans le cadre COFRS, cet objet est la composante finie `Fin n` portée par un témoin de médiation canonique
+`RefiningLiftData` sur la fibre jointe : c’est le second composant de `extObs : fiberAB → (VA×VB) × Fin n`.
+
+Dire que cet objet est irréductible aux deux marges signifie (opérationnellement) :
+
+- **non-descente à gauche** : il n’existe pas de lecture `ρA : VA → Fin n` telle que, pour tout point de fibre
+  `x`, la classe médiatrice `(extObs x).2` soit égale à `ρA (obsA x.1)` ;
+- **non-descente à droite** : il n’existe pas de lecture `ρB : VB → Fin n` telle que `(extObs x).2 = ρB (obsB x.1)`.
+
+Cette forme “descente du médiateur” est plus forte que la simple illisibilité de `T_joint` : elle dit que même le
+supplément minimal qui répare la décision ne peut pas être reconstruit depuis un bord pris isolément. Dans la
+preuve Lean, on obtient typiquement ces non-descentes en montrant que “descente ⇒ prédiction marginale”, puis
+en détruisant la prédiction marginale par séparation intra-fibre.

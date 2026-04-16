@@ -19,6 +19,7 @@ lean_lib «CompatObstructions» where
     `COFRS.Examples.DiagonalizationMediationCausalityThesis,
     `COFRS.Examples.GeometryDynamicsIndependence,
     `COFRS.Examples.DynamicCompatDimN,
+    `COFRS.Examples.IndependenceRelationMediationChain,
     `COFRS.Combinatorics.FinCompression,
       `COFRS.Main,
     ]
