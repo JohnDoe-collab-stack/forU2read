@@ -50,6 +50,29 @@ The thesis of the repository is realized as a concrete three-level pipeline:
 
 - **From forced mediation to causal testability.** When a separating step is paired with a forced mediator, notably `Fin 2` in the diagonal instance, intervention-style effects become provable consequences and are packaged as `CausalSignature2`; see `COFRS/Examples/DiagonalizationMediationCausalityThesis.lean`.
 
+### Two-interface strengthening: an irreducible relational term
+
+The development also supports a strictly stronger pattern than “one interface is insufficient”.
+Fix two partial interfaces (two “margins”) `A : S → VA` and `B : S → VB`, and consider the joint interface `AB : S → VA × VB`.
+
+The strong situation of interest is:
+
+1. **Each margin is insufficient on its own.** One can certify `¬ ObsPredictsStep` for `obs := A` and for `obs := B`.
+2. **The joint dynamic truth is recoverable only through a finite supplement.** On the fiber of `AB`, the truth factorizes through a minimal finite mediator `Fin n` (via `CompatDimEq n` / `RefiningLift n`).
+3. **The mediator is irreducible to either margin.** Even when `A` (resp. `B`) is held fixed on the joint fiber, the joint truth is not predictable from `A` alone (resp. `B` alone); equivalently, the mediator does not “descend” to a function of `A` alone or `B` alone.
+
+This makes precise the claim that what closes the decision is not any single margin, but a genuinely relational term carried only at the joint level (and, in the binary case, audit-able by interventions).
+
+The corresponding spine is packaged and proved constructively in `COFRS/Examples/IndependenceRelationMediationChain.lean`, notably:
+
+- marginal no-go: `double_noGo_of_lagEvent`;
+- constructive extraction of separation + minimal joint lift: `double_noGo_to_separation_and_minimalJointLift`;
+- explicit “not predictable from left/right margin” forms: `LeftObsPredictsJointStep`, `RightObsPredictsJointStep` and their negations from `StepSeparatesFiber`;
+- explicit “mediator does not descend to left/right” forms: `MediatorDescendsLeft`, `MediatorDescendsRight` and their negations;
+- end-to-end wrappers: `endToEnd_joint`, `endToEnd_full`, and the binary causal closure `endToEnd_full_with_causalSignature2`.
+
+Scope note: `endToEnd_full` / `endToEnd_full_with_causalSignature2` are the “full story” wrappers that include marginal diagonal certification and constructive extraction of marginal separation; the joint-only invariant layer is isolated separately in `COFRS/Synthesis.lean` as `JointIrreducibleMediationProfile`.
+
 ## Diagonalization, factorization, and causal mediation
 
 In this repository, diagonalization is used as a general adversarial pattern: for any candidate rule claiming to close a decision at the level of a given observable interface, a counter-construction produces a point, typically a fiber point, where that rule fails. Concretely, the critical interface is a projection `obs : S → V`. The diagonal pattern produces a situation in which the same visible value supports multiple internal states that cannot simultaneously satisfy the targeted dynamic truth.

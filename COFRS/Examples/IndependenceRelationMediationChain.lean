@@ -32,16 +32,23 @@ variable (obsA : S → VA) (obsB : S → VB)
 variable (targetA : P → VA) (targetB : P → VB)
 variable {h k : P} (step : HistoryGraph.Path h k)
 
-def obsAB : S → VA × VB := fun s => (obsA s, obsB s)
+abbrev obsAB : S → VA × VB := PrimitiveHolonomy.obsAB (obsA := obsA) (obsB := obsB)
 
-def targetAB : P → VA × VB := fun p => (targetA p, targetB p)
+abbrev targetAB : P → VA × VB :=
+  PrimitiveHolonomy.targetAB (P := P) (targetA := targetA) (targetB := targetB)
 
 /-!
-## Fiber projection and comparison lemmas (same underlying dynamic truth, viewed via projections)
+## Fiber projection and comparison lemmas (joint truth projects to weaker marginal truths)
 
 For the **joint** interface `obsAB : S → VA×VB`, we can project fiber points to the marginal
-fibers for `obsA` and `obsB`. This makes explicit how the same underlying state is viewed
-through different observation interfaces.
+fibers for `obsA` and `obsB`.
+
+The key logical direction made explicit below is:
+
+* joint compatibility ⇒ marginal compatibility.
+
+In general, the converse does **not** hold: marginal compatibility can be strictly weaker than
+joint compatibility.
 -/
 
 def fiberAB_to_A :
@@ -99,21 +106,11 @@ collapses to a constant classifier on that fiber. Therefore, as soon as the step
 such predictors are impossible.
 -/
 
-def LeftObsPredictsJointStep : Prop :=
-  ∃ pred : VA → Prop,
-    ∀ x : FiberPt (P := P) (obsAB (obsA := obsA) (obsB := obsB))
-        (targetAB (targetA := targetA) (targetB := targetB)) h,
-      Compatible (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
-          (targetAB (targetA := targetA) (targetB := targetB)) step x ↔
-        pred (obsA x.1)
+abbrev LeftObsPredictsJointStep : Prop :=
+  PrimitiveHolonomy.LeftObsPredictsJointStep (P := P) sem obsA obsB targetA targetB step
 
-def RightObsPredictsJointStep : Prop :=
-  ∃ pred : VB → Prop,
-    ∀ x : FiberPt (P := P) (obsAB (obsA := obsA) (obsB := obsB))
-        (targetAB (targetA := targetA) (targetB := targetB)) h,
-      Compatible (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
-          (targetAB (targetA := targetA) (targetB := targetB)) step x ↔
-        pred (obsB x.1)
+abbrev RightObsPredictsJointStep : Prop :=
+  PrimitiveHolonomy.RightObsPredictsJointStep (P := P) sem obsA obsB targetA targetB step
 
 /-!
 ### Mediator descent (irreducibility at the mediator level)
@@ -132,17 +129,15 @@ We show:
 * therefore, any no-go for left/right predictability implies no-go for descent of the mediator itself.
 -/
 
-def MediatorDescendsLeft {n : Nat}
+abbrev MediatorDescendsLeft {n : Nat}
     (L : RefiningLiftData (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
       (targetAB (targetA := targetA) (targetB := targetB)) h step n) : Prop :=
-  ∃ ρA : VA → Fin n, ∀ x,
-    (L.extObs x).2 = ρA (obsA x.1)
+  PrimitiveHolonomy.MediatorDescendsLeft (P := P) sem obsA obsB targetA targetB step L
 
-def MediatorDescendsRight {n : Nat}
+abbrev MediatorDescendsRight {n : Nat}
     (L : RefiningLiftData (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
       (targetAB (targetA := targetA) (targetB := targetB)) h step n) : Prop :=
-  ∃ ρB : VB → Fin n, ∀ x,
-    (L.extObs x).2 = ρB (obsB x.1)
+  PrimitiveHolonomy.MediatorDescendsRight (P := P) sem obsA obsB targetA targetB step L
 
 theorem leftObsPredictsJointStep_of_mediatorDescendsLeft
     {n : Nat}
@@ -495,7 +490,7 @@ theorem endToEnd_full
   · exact hJoint.1
   · exact hJoint.2.1
 
-theorem endToEnd_full2
+theorem endToEnd_full_with_causalSignature2
     {kA kB : P}
     {pA qA : HistoryGraph.Path h kA} (αA : HistoryGraph.Deformation pA qA)
     {pB qB : HistoryGraph.Path h kB} (αB : HistoryGraph.Deformation pB qB)
@@ -538,6 +533,74 @@ theorem endToEnd_full2
       (targetA := targetA) (targetB := targetB) (h := h) (k := k) (step := step)
       hSepAB hDimAB2
 
+/-!
+## (6) Packaging as a named invariant (for synthesis / documentation)
+
+`COFRS/Synthesis.lean` defines `PrimitiveHolonomy.JointIrreducibleMediationProfile`, a lightweight
+predicate intended as a reusable **joint-level** invariant name:
+
+* it packages separation and minimal finite repairability on the joint interface `obsAB`,
+* and irreducibility of predicting the **joint** truth from either marginal projection.
+
+It is not the full narrative wrapper: in particular, it does not include marginal diagonal
+certification (`LagEvent` on each margin) nor the constructive extraction of marginal separation
+from marginal no-go statements. Those are bundled in `endToEnd_full` / `endToEnd_full_with_causalSignature2`.
+
+The lemmas below show:
+
+* how the joint spine implies the joint-level profile; and
+* how the profile yields the strongest “irreducibility” consequences used in narrative statements
+  (non-descent of the mediator to either margin, and in the binary case a causal signature).
+-/
+
+theorem jointIrreducibleMediationProfile_of_sep_and_dim
+    {n : Nat}
+    (hSepAB :
+      StepSeparatesFiber (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+        (targetAB (targetA := targetA) (targetB := targetB)) step)
+    (hDimAB : CompatDimEq (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+      (targetAB (targetA := targetA) (targetB := targetB)) step n) :
+    PrimitiveHolonomy.JointIrreducibleMediationProfile (P := P) sem obsA obsB targetA targetB step n := by
+  have hJoint :=
+    endToEnd_joint
+      (P := P) (sem := sem) (obsA := obsA) (obsB := obsB)
+      (targetA := targetA) (targetB := targetB) (h := h) (k := k) (step := step)
+      (n := n) hSepAB hDimAB
+  exact ⟨hSepAB, hJoint.1, hJoint.2.1, hDimAB⟩
+
+theorem not_mediatorDescendsLeft_of_jointIrreducibleMediationProfile
+    {n : Nat}
+    (hProf : PrimitiveHolonomy.JointIrreducibleMediationProfile (P := P) sem obsA obsB targetA targetB step n)
+    (L : RefiningLiftData (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+      (targetAB (targetA := targetA) (targetB := targetB)) h step n) :
+    ¬ MediatorDescendsLeft (P := P) (sem := sem) (obsA := obsA) (obsB := obsB)
+      (targetA := targetA) (targetB := targetB) (h := h) (k := k) step L := by
+  exact not_mediatorDescendsLeft_of_stepSeparatesJointFiber
+    (P := P) (sem := sem) (obsA := obsA) (obsB := obsB)
+    (targetA := targetA) (targetB := targetB) (h := h) (k := k) (step := step)
+    hProf.1 L
+
+theorem not_mediatorDescendsRight_of_jointIrreducibleMediationProfile
+    {n : Nat}
+    (hProf : PrimitiveHolonomy.JointIrreducibleMediationProfile (P := P) sem obsA obsB targetA targetB step n)
+    (L : RefiningLiftData (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+      (targetAB (targetA := targetA) (targetB := targetB)) h step n) :
+    ¬ MediatorDescendsRight (P := P) (sem := sem) (obsA := obsA) (obsB := obsB)
+      (targetA := targetA) (targetB := targetB) (h := h) (k := k) step L := by
+  exact not_mediatorDescendsRight_of_stepSeparatesJointFiber
+    (P := P) (sem := sem) (obsA := obsA) (obsB := obsB)
+    (targetA := targetA) (targetB := targetB) (h := h) (k := k) (step := step)
+    hProf.1 L
+
+theorem causalSignature2_of_jointIrreducibleMediationProfile2
+    (hProf : PrimitiveHolonomy.JointIrreducibleMediationProfile (P := P) sem obsA obsB targetA targetB step 2) :
+    CausalSignature2 (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+      (targetAB (targetA := targetA) (targetB := targetB)) (h := h) step := by
+  exact jointLift2_yields_causalSignature2
+    (P := P) (sem := sem) (obsA := obsA) (obsB := obsB)
+    (targetA := targetA) (targetB := targetB) (h := h) (k := k) (step := step)
+    hProf.1 hProf.2.2.2
+
 end TwoInterfaces
 
 end Examples
@@ -557,5 +620,9 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.jointLift2_yields_causalSignature2
 #print axioms PrimitiveHolonomy.Examples.endToEnd_joint
 #print axioms PrimitiveHolonomy.Examples.endToEnd_full
-#print axioms PrimitiveHolonomy.Examples.endToEnd_full2
+#print axioms PrimitiveHolonomy.Examples.endToEnd_full_with_causalSignature2
+#print axioms PrimitiveHolonomy.Examples.jointIrreducibleMediationProfile_of_sep_and_dim
+#print axioms PrimitiveHolonomy.Examples.not_mediatorDescendsLeft_of_jointIrreducibleMediationProfile
+#print axioms PrimitiveHolonomy.Examples.not_mediatorDescendsRight_of_jointIrreducibleMediationProfile
+#print axioms PrimitiveHolonomy.Examples.causalSignature2_of_jointIrreducibleMediationProfile2
 /- AXIOM_AUDIT_END -/

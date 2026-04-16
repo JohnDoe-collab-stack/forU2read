@@ -109,10 +109,18 @@ Avec deux interfaces `A` et `B`, la forme forte (“écart maximal” au sens qu
 
 - **Indépendance marginale double** :
   `¬ ObsPredictsStep` pour `obs := A` **et** `¬ ObsPredictsStep` pour `obs := B`.
+- **Séparation jointe (ingrédient propre de la forme forte)** :
+  il faut (et le spine utilise explicitement) une séparation **sur la fibre jointe** pour `obs := (A,B)` :
+  `StepSeparatesFiber` sur `AB`.  
+  Remarque importante : cette séparation jointe **ne découle pas automatiquement** de la double insuffisance
+  marginale ; elle intervient comme hypothèse/témoin spécifique de la version “maximale”.
 - **Existence d’un terme relationnel qui ferme** :
-  il existe un `R` (ou un médiateur `Fin n`) tel que `T` factorise par `R`.
-- **Irréductibilité** :
-  `R` n’est reconstructible ni depuis `A` seul ni depuis `B` seul (aucun des deux bords ne suffit à le porter).
+  opérationnellement, le dépôt ne postule pas un “`R` ontologique unique” : il exhibe une médiation **canonique**
+  sous forme d’un supplément fini `Fin n` (capacité minimale), via `CompatDimEq n` / `RefiningLiftData`.
+- **Irréductibilité (forme forte)** :
+  ni la **vérité jointe** ni le **supplément minimal** ne “descendent” à un bord isolé : la prédiction jointe est
+  impossible depuis `A` seul ou `B` seul, et (plus fort) la composante `Fin n` d’un témoin canonique de médiation
+  n’est reconstructible ni depuis `A` seul ni depuis `B` seul.
 - **Dominance** (forme “maximale”) :
   tout ce qui décide effectivement passe par `R` (au sens factorisation + signature interventionnelle).
 
@@ -120,6 +128,11 @@ Remarque de clarification : “rapport irréductible” ne signifie pas “prend
 L’idée est qu’il existe un contenu décisif qui **n’apparaît dans aucune des deux marges** (et qui rend leurs
 décisions marginales impossibles), et que ce contenu peut ensuite être (i) isolé comme un médiateur minimal
 (`Fin n`) et (ii) validé opérationnellement via des interventions.
+
+Autre remarque de précision : le symbole `R` sert ici d’intuition (rapport/couplage). Dans Lean, ce qui est
+canonique est : (a) une **capacité minimale** `n` (compatibility dimension), et (b) un **témoin de médiation**
+`RefiningLiftData` qui réalise cette capacité par un supplément fini `Fin n`, sans prétendre à une unicité
+ontologique du médiateur.
 
 ### 7.1 Isolation de l’objet irréductible (au niveau du médiateur)
 
@@ -129,7 +142,8 @@ depuis `A` seul / `B` seul”). Elle isole aussi un **objet** irréductible : le
 Dans le cadre COFRS, cet objet est la composante finie `Fin n` portée par un témoin de médiation canonique
 `RefiningLiftData` sur la fibre jointe : c’est le second composant de `extObs : fiberAB → (VA×VB) × Fin n`.
 
-Dire que cet objet est irréductible aux deux marges signifie (opérationnellement) :
+Dire que cet objet est irréductible aux deux marges signifie (opérationnellement), **pour un témoin donné**
+`L : RefiningLiftData ... n` :
 
 - **non-descente à gauche** : il n’existe pas de lecture `ρA : VA → Fin n` telle que, pour tout point de fibre
   `x`, la classe médiatrice `(extObs x).2` soit égale à `ρA (obsA x.1)` ;
@@ -139,3 +153,8 @@ Cette forme “descente du médiateur” est plus forte que la simple illisibili
 supplément minimal qui répare la décision ne peut pas être reconstruit depuis un bord pris isolément. Dans la
 preuve Lean, on obtient typiquement ces non-descentes en montrant que “descente ⇒ prédiction marginale”, puis
 en détruisant la prédiction marginale par séparation intra-fibre.
+
+Remarque de quantification : si l’on veut une conclusion indépendante du choix de `L`, on la formule
+universellement : “pour **tout** témoin `L` de médiation canonique de capacité `n`, la non-descente vaut”.
+Dans le code, les lemmes sont formulés de manière à pouvoir conclure ainsi, car `L` est arbitraire une fois
+la séparation jointe fixée.
