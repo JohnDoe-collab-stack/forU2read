@@ -1,150 +1,162 @@
-# Transformers in the COFRS sense: visible-only vs mediated (and why this is a rupture)
+# Transformers in the COFRS sense: three system classes (A/B/C) and the rupture they separate
 
-This note is written for readers who already know what a Transformer is, but who have not yet mapped that object onto the COFRS formal spine (obstruction → minimal mediation → intervention signature).
+This note is for readers who already know Transformers, but who want a precise, professional statement of what COFRS adds *as a class of systems*, not as a superficial architectural tweak.
 
-The goal is not to re-label existing ideas. The goal is to make a precise distinction:
+COFRS is built around a checkable spine:
 
-- “visible-only” is a *formal regime* (a closure claim at an interface),
-- diagonal obstruction is a *structural certificate* that this regime cannot work,
-- the repair is a *minimal finite mediator* (not “more capacity” in the usual sense),
-- and the mediator becomes *operationally auditable* via intervention-style gates.
+`diagonal obstruction` → `no interface-only closure` → `minimal finite mediator` → `intervention audit`.
 
-## 1) What “visible-only” means here (it is not a statistical claim)
+The clean way to present the rupture is to state **three classes** and then show where the repository closes the separation.
 
-In COFRS, a “visible-only decision regime” is captured by `ObsPredictsStep`:
+## 0) Minimal setup (what the class labels talk about)
 
-- you have an observable interface `obs : S → V`,
-- you have a dynamic truth to decide, expressed via `Compatible sem obs target_obs step x`,
-- and `ObsPredictsStep` means: there exists a decision rule that depends only on `V` and is correct for that dynamic truth.
+COFRS talks about *decisions at an interface*.
 
-This is not phrased in probabilistic language (no Pearson correlation, no mutual information). It is a structural claim: “the interface value `V` is sufficient to close the decision”.
+- State space: `S`.
+- Observable interface: `obs : S → V`.
+- A local dynamic truth to decide, for a chosen `step`, written in the repo as:
+  `Compatible sem obs target_obs step x`.
 
-When COFRS proves `¬ ObsPredictsStep`, it is proving: **no rule that depends only on what is visible at the interface can be correct everywhere on the relevant fiber**.
+“Interface-only” is not a probabilistic claim. It is a closure claim: *does the interface value `V` determine the correct decision?*
 
-## 2) Why standard Transformers are “visible-only” in this sense
+In Lean, that closure regime is captured by `ObsPredictsStep`.
 
-A standard Transformer (as used in typical LLM inference) is a map from a visible input to an output:
+## 1) The three classes (what distinguishes systems, not architectures)
 
-- input: tokens (plus any visible context like retrieved text, if provided),
-- output: next-token distribution or a decoded string,
-- internal activations exist, but there is no *separately modeled* mediator whose semantics are constrained and audited as part of the specification.
+### Class A — visible-only closure (the historical regime)
 
-In the COFRS reading, this places the model in a visible-only regime relative to the chosen interface:
+Definition (operational):
 
-- if `obs` is “the visible prompt/context at the decision time”, then the model’s decision is a function of `obs x`,
-- so it is attempting to behave as an `obs`-only predictor for whatever dynamic truth the task really requires.
+> A system is in Class A (for a chosen interface `obs`) if its decision depends only on the interface value `V` at the decision time, i.e. it is an `obs`-only predictor in the precise sense captured by `ObsPredictsStep`.
 
-This is exactly the regime COFRS attacks: if the dynamic truth varies inside a single `obs`-fiber, then any visible-only rule is provably doomed.
+Consequence (hard, structural):
 
-## 3) The obstruction is not “capacity”: it is intra-fiber separation
+> If the dynamic truth varies inside a single `obs`-fiber, then no Class A system can be correct everywhere on that fiber.
 
-The key certificate is a diagonal witness (`LagEvent`) that produces a separation inside a fiber:
+In the repo this is exactly the content of:
 
-- two distinct states are indistinguishable at the interface (same visible value),
-- but the dynamic truth differs (future compatibility differs along a chosen `step`).
+- `LagEvent → ¬ ObsPredictsStep` in `COFRS/Dynamics.lean` (`PrimitiveHolonomy.not_obsPredictsStep_of_lagEvent`).
 
-Formally, the development derives `LagEvent → ¬ ObsPredictsStep` in `COFRS/Dynamics.lean` (`PrimitiveHolonomy.not_obsPredictsStep_of_lagEvent`).
+This is the “destruction of the static regime”: a global closed decision rule from `V` is impossible when the truth varies at fixed `V`.
 
-Interpretation for ML: this is a rigorous “no amount of clever visible-only decoding can close the decision”, because the task’s truth is not a function of the visible interface on the relevant domain.
+Mapping to standard Transformers (why this is not an opinion):
 
-This is why the phenomenon is not “just correlation failure”. It is a *closure failure* certified by a witness.
+- Standard autoregressive inference is a function from *visible context* (tokens; plus any provided visible retrieved text) to an output.
+- Relative to the interface “what is provided to the model at decision time”, that is exactly a Class A regime: the decision is a function of `V`.
+- Internal activations exist, but there is no separately specified mediator whose semantics/capacity/irreducibility are part of the contract.
 
-## 4) The repair is a minimal finite mediator (and it is canonical)
+So the statement is not “Transformers are weak”. The statement is:
 
-COFRS does not stop at impossibility. It quantifies exactly how much additional information is required to repair the decision, via compatibility dimension:
+> **standard inference is interface-only relative to its provided interface.**
 
-- `CompatDimLe … n` / `CompatDimEq … n` measures the minimal finite capacity needed to decide the dynamic truth correctly.
+### Class B — stateful systems (memory/latent), but not certified
 
-Then it turns that measurement into an explicit mediator construction, via the central equivalence:
+Definition (operational):
 
-- `CompatDimLe … n ↔ RefiningLift … n`,
-- with witnesses `RefiningLiftData` / `RefiningLift`,
+> A system is in Class B if it carries internal state (memory, latent, cache, recurrent state, tool state), so it is not necessarily interface-only, but it is **not** accompanied by the COFRS invariants: minimal capacity, non-descend irreducibility, and intervention audit of load-bearing mediation.
 
-all in `COFRS/Dynamics.lean` (see `PrimitiveHolonomy.compatDimLe_iff_refiningLift`).
+Class B can succeed or fail; what matters is that its *success* is not characterized by the invariants that COFRS isolates.
 
-Operationally, the mediator is a finite supplement `Fin n` on the observable fiber. The “extra term” is not vague: it is a minimal-capacity supplement with a proof obligation.
+This is why “Transformer + memory” does not automatically move you to the COFRS regime. It often moves you from A to B, but B is still missing the defining closure package.
 
-This is the first rupture from the usual Transformer story:
+### Class C — mediated, minimal, irreducible, auditable (the COFRS object)
 
-- standard practice scales parameters and hopes the representation “implicitly” contains what is needed,
-- COFRS forces you to *name* the missing information as a finite mediator and prove that it is necessary and sufficient in the formal sense.
+Definition (operational):
 
-## 5) The mediator is not only sufficient: it becomes auditable (causal gates)
+> A system is in Class C if it closes a full package of invariants:
+> 1) a certified obstruction against interface-only closure (a separating witness),
+> 2) a quantified *minimal* finite mediator capacity (`Fin n` via compatibility dimension),
+> 3) irreducibility of the mediator to each marginal interface (non-descend),
+> 4) and (in the binary case) an intervention audit showing the decision follows the mediator (swap/ablation).
 
-COFRS pushes one step further: the mediator is not treated as a mere factorization artifact.
+This is the rupture: Class C is not “a stronger model”. It is a **different contract**: the repair is measured, forced, and auditable.
 
-In the binary case, the development packages an intervention-style audit (`CausalSignature2`) and proves it from:
+## 2) Where the repo closes the class separation (Lean spine)
 
-- a separating step on the fiber,
-- plus the existence of a finite lift of size `2`.
+This section is what makes the A/B/C story professional: it points to explicit declarations.
 
-See `COFRS/Examples/DiagonalizationMediationCausalityThesis.lean` (notably `causalSignature2_of_stepSeparatesFiber_of_refiningLift2` and the end-to-end derivations).
+### 2.1 Class A is killed by obstruction
 
-Interpretation for ML: if a model claims to have repaired the visible-only failure by introducing a mediator, then you can test whether that mediator is load-bearing via:
+In `COFRS/Dynamics.lean`:
 
-- ablation: collapsing the mediator breaks correctness,
-- swap/permutation: exchanging mediator classes makes the decision follow the mediator rather than the original instance.
+- `PrimitiveHolonomy.not_obsPredictsStep_of_lagEvent` proves `LagEvent → ¬ ObsPredictsStep`.
 
-This is the second rupture:
+This is the formal statement that an interface-only closure regime cannot survive a diagonal separation inside a fiber.
 
-- the architecture is not only “bigger” or “with memory”;
-- it comes with a *falsifiable audit* that distinguishes genuine mediation from shortcut behavior.
+### 2.2 Minimal mediation is quantified and made canonical
 
-## 6) The “two independences → irreducible relation” pattern (what is new in the method)
+In `COFRS/Dynamics.lean`:
 
-Many frameworks talk about combining two sources. COFRS focuses on a stronger shape:
+- missing information is quantified by `CompatDimLe` / `CompatDimEq`,
+- and realized canonically by `RefiningLiftData` / `RefiningLift`,
+- with the central equivalence:
+  `PrimitiveHolonomy.compatDimLe_iff_refiningLift` proving `CompatDimLe … n ↔ RefiningLift … n`.
 
-- each margin is insufficient (each interface is non-closing for the dynamic truth),
-- the repair requires a third term (a mediator) that is not reconstructible from either margin alone,
-- and this irreducibility can be proved (and, in the binary case, audited interventionally).
+This is not “add a latent”. It is “add exactly `Fin n` in a way that preserves the original interface and makes the decision factor through the supplement”.
 
-This is the “relation as an object” viewpoint:
+### 2.3 Binary intervention audit (causal gates)
 
-- the missing content is not contained in either margin;
-- it lives in the forced factorization through an additional term.
+In `COFRS/Examples/DiagonalizationMediationCausalityThesis.lean`:
 
-In Lean, this appears as “joint truth + marginal no-go + minimal joint lift”, and (in the strengthened form) as non-descend statements for the mediator itself (not only non-predictability of the truth from each margin).
+- `CausalSignature2` packages the swap/ablation audit,
+- and `causalSignature2_of_stepSeparatesFiber_of_refiningLift2` proves that separation + a `2`-lift entails this audit.
 
-This is the third rupture:
+This is the point where “mediation” becomes operationally testable, not just a factorization claim.
 
-- the previous view is static (“look at a margin, decide from it”),
-- the COFRS view is structural (“if the truth varies inside the fiber, the margin cannot close; the repair is a minimal mediator; the mediator is irreducible and auditable”).
+### 2.4 Two interfaces: “two insufficiencies → irreducible relation” in the strong sense
 
-## 7) What this implies for “hallucination” as a technical notion (within scope)
+The Class C story is strongest when you have **two marginal interfaces** `A : S → VA` and `B : S → VB` and you are isolating a third term that is irreducible to each margin.
 
-In this repository, “hallucination” should be read in a disciplined way:
+This is exactly the kind of spine that lives in:
 
-- a model outputs a confident decision from the visible interface,
-- but the dynamic truth it is supposed to decide is not closed by that interface,
-- so there must exist cases where any visible-only policy fails.
+- `COFRS/Examples/IndependenceRelationMediationChain.lean`
 
-The remedy, within this scope, is not “train harder”. It is:
+where the joint truth is fixed on a joint interface and then:
 
-- certify the non-closure (diagonal obstruction),
-- quantify the missing information (minimal `Fin n`),
-- build/force a mediator that carries it (refining lift),
-- audit that the decision genuinely depends on it (causal signature).
+- each marginal interface is proved insufficient (no closure),
+- a minimal joint mediator is produced (capacity),
+- and irreducibility is strengthened by **non-descend** statements about the mediator (not only “the truth is not predictable from a margin”).
 
-This is not a claim about all possible LLM errors. It is a claim about a specific, formal class of failures: closure failures at a chosen interface for a chosen dynamic truth.
+This is the precise formalization of “the relation becomes a third term”.
 
-## 8) Where to look in the repo
+## 3) Empirical mapping (protocols as witnesses of Class C)
 
-- Formal obstruction and no-go: `COFRS/Dynamics.lean` (`LagEvent → ¬ ObsPredictsStep`).
-- Minimal mediation and canonical lift: `COFRS/Dynamics.lean` (`CompatDim*` and `CompatDimLe ↔ RefiningLift`).
-- Intervention signature (binary): `COFRS/Examples/DiagonalizationMediationCausalityThesis.lean` (`CausalSignature2`).
-- Concrete diagonal instance: `COFRS/Examples/GodelByCode.lean` (a fully internal witness).
-- Parametric dimension story: `COFRS/Examples/DynamicCompatDimN.lean` (scalable, `n`-ary perspective).
+The empirical side is not “another definition”; it is an operational witness that your solver training actually instantiates the same contract.
 
-## 9) Bottom line (the precise rupture statement)
+Very compact mapping (as used in the repo’s experimental suite):
 
-The rupture is not “Transformers are bad” and it is not “we added memory”.
+- v7/v8: barrier-style obstructions + stateful solvers + intervention hooks (these witness the obstruction layer and parts of the audit, but do not yet close the full min-lift contract in `n`).
+- vN3b/v9: explicit finite mediator `z` with min-lift structure (`z = n` succeeds, `z < n` fails) plus swap/ablation gates.
+- v10 Phase A1: scaling the same closure package across `n` (Phase A1 is exactly the “stability in `n`” closure).
 
-The rupture is:
+This is what separates Class B from Class C empirically: **min-lift + gates + stability as `n` varies**.
 
-- *standard inference is a visible-only closure attempt at the chosen interface*,
-- *diagonal obstruction gives a constructive, checkable certificate that this regime must fail on the targeted dynamic truth*,
-- *the repair is a minimal finite mediator with an exact capacity statement (`Fin n`)*,
-- *and the mediator can be made operationally auditable via intervention-style gates*.
+## 4) In scope: closure failure vs repairable mediation failure
 
-That combination (obstruction certificate + minimal mediator + auditable causal signature) is what this repository is built to make checkable.
+Within this repository’s scope, the failure mode of interest is:
 
+- a system outputs a decision from an interface,
+- but the target dynamic truth is not closed by that interface,
+- so there exist states in the same fiber where any interface-only rule must fail.
+
+COFRS’s remedy in scope is not “bigger model”. It is:
+
+1) certify non-closure (obstruction witness),
+2) quantify missing information (minimal `Fin n`),
+3) enforce a mediator that carries it (refining lift),
+4) audit that the decision follows the mediator (swap/ablation in the binary case).
+
+This is a claim about a concrete closure class: it is identified, quantified, and repairable by a forced mediator with auditable dependence.
+
+## 5) Professional bottom line (the rupture statement, precisely)
+
+The rupture is not “attention vs GRU”, and it is not “we added memory”.
+
+The rupture is that Class C systems are defined and validated by a *closed package*:
+
+- diagonal obstruction that kills interface-only closure,
+- minimal finite mediation (`Fin n`) with exact capacity statements,
+- irreducibility of that mediator to the marginal interfaces (non-descend),
+- and an intervention audit (swap/ablation) that certifies the mediator is load-bearing.
+
+That package is what the repository is designed to make checkable, and it is what separates Class C from the historical visible-only regime (Class A) and from stateful-but-uncertified systems (Class B).
