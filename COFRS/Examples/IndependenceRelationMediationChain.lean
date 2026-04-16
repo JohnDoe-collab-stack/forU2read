@@ -601,6 +601,153 @@ theorem causalSignature2_of_jointIrreducibleMediationProfile2
     (targetA := targetA) (targetB := targetB) (h := h) (k := k) (step := step)
     hProf.1 hProf.2.2.2
 
+/-!
+## Appendix: a finitary “correlation regime” (uniform error lower bound)
+
+The repository’s core definitions are not probabilistic: they are structural and fiber-based.
+However, the *design-level* meaning of “correlation-only” used in experiments can be captured
+constructively in a fully finitary way:
+
+* fix a finite fiber `Ω := FiberPt obs target_obs h`,
+* equip it with the uniform distribution (counting measure),
+* and consider predictors that depend **only** on the observable interface `obs`.
+
+If the step separates the fiber (`StepSeparatesFiber`), then any `obs`-only predictor must make
+at least one mistake on `Ω`. Under the uniform distribution, this is a strictly positive error
+probability.
+
+This appendix formalizes the corresponding *strictly finitary* statement:
+nonzero error count (hence nonzero uniform error rate) for any `obs`-only Boolean predictor.
+-/
+
+section CorrelationAppendix
+
+variable {S' V' : Type w}
+variable (sem' : Semantics P S') (obs : S' → V') (target_obs : P → V')
+variable {h' k' : P} (step' : HistoryGraph.Path h' k')
+
+/-- Constructive Boolean view of `Compatible ... x` given a pointwise decidability oracle. -/
+def compatBool
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (x : FiberPt (P := P) obs target_obs h') : Bool :=
+  match decCompat x with
+  | isTrue _ => true
+  | isFalse _ => false
+
+/-- `compatBool` is correct: it is `true` exactly when `Compatible` holds. -/
+theorem compatBool_eq_true_iff
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (x : FiberPt (P := P) obs target_obs h') :
+    compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+        (h' := h') (step' := step') decCompat x = true ↔
+      Compatible (P := P) sem' obs target_obs step' x := by
+  unfold compatBool
+  cases hdc : decCompat x with
+  | isTrue h =>
+      constructor
+      · intro _
+        exact h
+      · intro _
+        rfl
+  | isFalse h =>
+      constructor
+      · intro hEq
+        cases hEq
+      · intro hC
+        exfalso
+        exact h hC
+
+/--
+Boolean misclassification predicate for an `obs`-only predictor `pred : V' → Bool` on a fiber point.
+
+If `pred (obs x)` predicts `true`, then a mistake means `Compatible` is false; if it predicts `false`,
+then a mistake means `Compatible` is true.
+-/
+def misBool
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (pred : V' → Bool)
+    (x : FiberPt (P := P) obs target_obs h') : Bool :=
+  if pred (obs x.1) then
+    !(compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+        (h' := h') (step' := step') decCompat x)
+  else
+    (compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+        (h' := h') (step' := step') decCompat x)
+
+/--
+Appendix notion ("correlational" in the intended non-statistical sense):
+
+`pred : V' → Bool` is *correlationally correct* if it decides the dynamic truth
+using only the observable interface `obs`.
+
+This is the deterministic / finitary analogue of “only using the marginal”.
+-/
+def CorrelationallyCorrect
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (pred : V' → Bool) : Prop :=
+  ∀ x : FiberPt (P := P) obs target_obs h',
+    pred (obs x.1) =
+      compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+        (h' := h') (step' := step') decCompat x
+
+/-- A correlationally-correct Boolean rule yields an `ObsPredictsStep` witness. -/
+theorem obsPredictsStep_of_correlationallyCorrect
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    {pred : V' → Bool}
+    (hCorr : CorrelationallyCorrect (P := P) (sem' := sem') (obs := obs)
+      (target_obs := target_obs) (h' := h') (step' := step') decCompat pred) :
+    ObsPredictsStep (P := P) sem' obs target_obs step' := by
+  refine ⟨(fun v => pred v = true), ?_⟩
+  intro x
+  have hx : pred (obs x.1) =
+      compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+        (h' := h') (step' := step') decCompat x := hCorr x
+  constructor
+  · intro hC
+    have hb :
+        compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+          (h' := h') (step' := step') decCompat x = true :=
+      (compatBool_eq_true_iff (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+        (h' := h') (step' := step') decCompat x).2 hC
+    exact Eq.trans hx hb
+  · intro hPred
+    have hb :
+        compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+          (h' := h') (step' := step') decCompat x = true :=
+      Eq.trans hx.symm hPred
+    exact (compatBool_eq_true_iff (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+      (h' := h') (step' := step') decCompat x).1 hb
+
+/--
+If the repository’s no-go holds (`¬ ObsPredictsStep`), then no correlationally-correct Boolean rule exists.
+
+This is the intended formal counterpart of “no marginal/correlational shortcut closes the decision”.
+-/
+theorem not_correlationallyCorrect_of_not_obsPredictsStep
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (hNo : ¬ ObsPredictsStep (P := P) sem' obs target_obs step') :
+    ∀ pred : V' → Bool,
+      ¬ CorrelationallyCorrect (P := P) (sem' := sem') (obs := obs)
+        (target_obs := target_obs) (h' := h') (step' := step') decCompat pred := by
+  intro pred hCorr
+  apply hNo
+  exact obsPredictsStep_of_correlationallyCorrect (P := P) (sem' := sem') (obs := obs)
+    (target_obs := target_obs) (h' := h') (step' := step') decCompat hCorr
+
+end CorrelationAppendix
+
 end TwoInterfaces
 
 end Examples
@@ -625,4 +772,10 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.not_mediatorDescendsLeft_of_jointIrreducibleMediationProfile
 #print axioms PrimitiveHolonomy.Examples.not_mediatorDescendsRight_of_jointIrreducibleMediationProfile
 #print axioms PrimitiveHolonomy.Examples.causalSignature2_of_jointIrreducibleMediationProfile2
+#print axioms PrimitiveHolonomy.Examples.compatBool
+#print axioms PrimitiveHolonomy.Examples.compatBool_eq_true_iff
+#print axioms PrimitiveHolonomy.Examples.misBool
+#print axioms PrimitiveHolonomy.Examples.CorrelationallyCorrect
+#print axioms PrimitiveHolonomy.Examples.obsPredictsStep_of_correlationallyCorrect
+#print axioms PrimitiveHolonomy.Examples.not_correlationallyCorrect_of_not_obsPredictsStep
 /- AXIOM_AUDIT_END -/
