@@ -1,4 +1,4 @@
-# Transformers in the COFRS sense: three system classes (A/B/C) and the rupture they separate
+# Transformers in the COFRS sense: three closure classes (A/B/C) and the rupture they separate
 
 This note is for readers who already know Transformers, but who want a precise, professional statement of what COFRS adds *as a class of systems*, not as a superficial architectural tweak.
 
@@ -6,7 +6,11 @@ COFRS is built around a checkable spine:
 
 `diagonal obstruction` → `no interface-only closure` → `minimal finite mediator` → `intervention audit`.
 
-The clean way to present the rupture is to state **three classes** and then show where the repository closes the separation.
+The clean way to present the rupture is to state **three closure classes** and then show where the repository closes the separation.
+
+Crucially, the classification is **relative**:
+
+> **A/B/C are always relative to a chosen decision interface `obs : S → V` and a chosen local dynamic truth (a fixed `step` and the associated `Compatible … step`).**
 
 ## 0) Minimal setup (what the class labels talk about)
 
@@ -41,9 +45,9 @@ This is the “destruction of the static regime”: a global closed decision rul
 
 Mapping to standard Transformers (why this is not an opinion):
 
-- Standard autoregressive inference is a function from *visible context* (tokens; plus any provided visible retrieved text) to an output.
-- Relative to the interface “what is provided to the model at decision time”, that is exactly a Class A regime: the decision is a function of `V`.
-- Internal activations exist, but there is no separately specified mediator whose semantics/capacity/irreducibility are part of the contract.
+- Standard autoregressive inference is a function from *visible context* (tokens; plus any visible retrieved text, if provided) to an output.
+- Relative to the interface “what is provided to the model at decision time”, that is a Class A regime: correctness is still contracted as a function of `V`.
+- Internal activations exist, but they are not exposed as *contract-level mediators* with certified capacity, certified irreducibility (non-descend), and auditable intervention behavior.
 
 So the statement is not “Transformers are weak”. The statement is:
 
@@ -70,6 +74,10 @@ Definition (operational):
 > 4) and (in the binary case) an intervention audit showing the decision follows the mediator (swap/ablation).
 
 This is the rupture: Class C is not “a stronger model”. It is a **different contract**: the repair is measured, forced, and auditable.
+
+In particular:
+
+> **Class C is not “has memory”, not “has latent state”, and not “uses tools”; it is the subclass for which mediation is forced, capacity-minimal, marginally irreducible, and (in the binary case) intervention-audited.**
 
 ## 2) Where the repo closes the class separation (Lean spine)
 
