@@ -29,6 +29,23 @@ structure FiberEnum {S V : Type w} (obs : S → V) (target_obs : P → V) (h : P
   enum : Fin N → FiberPt (P := P) obs target_obs h
   surj : ∀ x : FiberPt (P := P) obs target_obs h, ∃ i : Fin N, enum i = x
 
+namespace FiberEnum
+
+/--
+Bridge: an explicit equivalence `fiber ≃ Fin N` yields a finitary enumeration of the fiber.
+
+This is constructive and avoids classical enumeration. Use it to discharge the `FiberEnum`
+hypothesis in the converse lemmas below.
+-/
+def ofEquivFin {S V : Type w} (obs : S → V) (target_obs : P → V) (h : P)
+    {N : Nat} (e : Equiv (FiberPt (P := P) obs target_obs h) (Fin N)) :
+    FiberEnum (P := P) obs target_obs h :=
+  { N := N
+    enum := fun i => e.invFun i
+    surj := fun x => ⟨e.toFun x, e.left_inv x⟩ }
+
+end FiberEnum
+
 
 section WithEnum
 
@@ -140,6 +157,30 @@ theorem stepSeparatesFiber_of_not_obsPredictsStep_of_fiberEnum
   · exact hSep
 
 end WithEnum
+
+section WithEquivFin
+
+variable {S V : Type w}
+variable (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+variable {h k : P} (step : HistoryGraph.Path h k)
+
+/--
+Bridge form: if the fiber admits an explicit equivalence `fiber ≃ Fin N` and `Compatible` is decidable
+on the fiber, then `¬ ObsPredictsStep` yields an explicit separating witness.
+-/
+theorem stepSeparatesFiber_of_not_obsPredictsStep_of_equivFin
+    {N : Nat} (e : Equiv (FiberPt (P := P) obs target_obs h) (Fin N))
+    (decCompat : ∀ x : FiberPt (P := P) obs target_obs h,
+      Decidable (Compatible (P := P) sem obs target_obs step x))
+    (hNoObs : ¬ ObsPredictsStep (P := P) sem obs target_obs step) :
+    StepSeparatesFiber (P := P) sem obs target_obs step :=
+  stepSeparatesFiber_of_not_obsPredictsStep_of_fiberEnum
+    (P := P) (sem := sem) (obs := obs) (target_obs := target_obs)
+    (h := h) (k := k) (step := step) hNoObs
+    (E := FiberEnum.ofEquivFin (P := P) obs target_obs h e)
+    decCompat
+
+end WithEquivFin
 
 
 section NormalFormBinary
@@ -266,8 +307,10 @@ end PrimitiveHolonomy
 
 /- AXIOM_AUDIT_BEGIN -/
 #print axioms PrimitiveHolonomy.FiberEnum
+#print axioms PrimitiveHolonomy.FiberEnum.ofEquivFin
 #print axioms PrimitiveHolonomy.obsPredictsStep_or_stepSeparatesFiber_of_fiberEnum
 #print axioms PrimitiveHolonomy.stepSeparatesFiber_of_not_obsPredictsStep_of_fiberEnum
+#print axioms PrimitiveHolonomy.stepSeparatesFiber_of_not_obsPredictsStep_of_equivFin
 #print axioms PrimitiveHolonomy.compatDimLe_two_of_decidableCompatible
 #print axioms PrimitiveHolonomy.compatDimEqTwo_of_stepSeparatesFiber_of_decidableCompatible
 #print axioms PrimitiveHolonomy.PairwisePropSeparated
