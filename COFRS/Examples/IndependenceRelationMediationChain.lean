@@ -673,12 +673,13 @@ def misBool
         Decidable (Compatible (P := P) sem' obs target_obs step' x))
     (pred : V' → Bool)
     (x : FiberPt (P := P) obs target_obs h') : Bool :=
-  if pred (obs x.1) then
-    !(compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+  match pred (obs x.1) with
+  | true =>
+      Bool.not (compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
         (h' := h') (step' := step') decCompat x)
-  else
-    (compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
-        (h' := h') (step' := step') decCompat x)
+  | false =>
+      (compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+          (h' := h') (step' := step') decCompat x)
 
 /--
 Appendix notion ("correlational" in the intended non-statistical sense):
@@ -698,14 +699,70 @@ def CorrelationallyCorrect
       compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
         (h' := h') (step' := step') decCompat x
 
+/--
+If there is **no** Boolean misclassification anywhere on the fiber, then the rule is
+correlationally correct (it exactly matches `compatBool` pointwise).
+
+This is the missing bridge needed to upgrade “no perfect obs-only predictor” into
+an explicit “at least one mistake”.
+-/
+theorem correlationallyCorrect_of_no_misBool
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (pred : V' → Bool)
+    (hNoErr :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+          (h' := h') (step' := step') decCompat pred x = false) :
+    CorrelationallyCorrect sem' obs target_obs step' decCompat pred := by
+  intro x
+  have hmis : misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+      (h' := h') (step' := step') decCompat pred x = false := hNoErr x
+  -- unfold `misBool` by cases on the prediction bit
+  cases hb : pred (obs x.1) with
+  | false =>
+      -- `misBool = compatBool` in this branch, so `compatBool = false` and hence `pred = compatBool`.
+      have hcb :
+          compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+            (h' := h') (step' := step') decCompat x = false := by
+        have hmis' := hmis
+        dsimp [misBool] at hmis'
+        rw [hb] at hmis'
+        exact hmis'
+      -- goal is `false = compatBool ...`, so use symmetry of `hcb`
+      exact Eq.symm hcb
+  | true =>
+      -- `misBool = Bool.not (compatBool)` in this branch, so `compatBool = true`.
+      have hnot :
+          Bool.not (compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+              (h' := h') (step' := step') decCompat x) = false := by
+        have hmis' := hmis
+        dsimp [misBool] at hmis'
+        rw [hb] at hmis'
+        exact hmis'
+      -- show `compatBool ... = true` by cases on it
+      cases hc :
+          compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+            (h' := h') (step' := step') decCompat x with
+      | false =>
+          -- `hnot` becomes `Bool.not false = false`, but `Bool.not false = true`.
+          have hnot' := hnot
+          rw [hc] at hnot'
+          have hNotFalse : Bool.not false = true := rfl
+          have hcontra : true = false := Eq.trans hNotFalse.symm hnot'
+          cases hcontra
+      | true =>
+          -- goal is `true = true`
+          rfl
+
 /-- A correlationally-correct Boolean rule yields an `ObsPredictsStep` witness. -/
 theorem obsPredictsStep_of_correlationallyCorrect
     (decCompat :
       ∀ x : FiberPt (P := P) obs target_obs h',
         Decidable (Compatible (P := P) sem' obs target_obs step' x))
     {pred : V' → Bool}
-    (hCorr : CorrelationallyCorrect (P := P) (sem' := sem') (obs := obs)
-      (target_obs := target_obs) (h' := h') (step' := step') decCompat pred) :
+    (hCorr : CorrelationallyCorrect sem' obs target_obs step' decCompat pred) :
     ObsPredictsStep (P := P) sem' obs target_obs step' := by
   refine ⟨(fun v => pred v = true), ?_⟩
   intro x
@@ -739,12 +796,264 @@ theorem not_correlationallyCorrect_of_not_obsPredictsStep
         Decidable (Compatible (P := P) sem' obs target_obs step' x))
     (hNo : ¬ ObsPredictsStep (P := P) sem' obs target_obs step') :
     ∀ pred : V' → Bool,
-      ¬ CorrelationallyCorrect (P := P) (sem' := sem') (obs := obs)
-        (target_obs := target_obs) (h' := h') (step' := step') decCompat pred := by
+      ¬ CorrelationallyCorrect sem' obs target_obs step' decCompat pred := by
   intro pred hCorr
   apply hNo
   exact obsPredictsStep_of_correlationallyCorrect (P := P) (sem' := sem') (obs := obs)
     (target_obs := target_obs) (h' := h') (step' := step') decCompat hCorr
+
+/--
+If the step separates the fiber, then every obs-only Boolean predictor makes a mistake
+at **some explicit** point of the fiber.
+-/
+theorem exists_misBool_of_stepSeparatesFiber
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (hSep : StepSeparatesFiber (P := P) sem' obs target_obs step')
+    (pred : V' → Bool) :
+    ∃ x : FiberPt (P := P) obs target_obs h',
+      misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+        (h' := h') (step' := step') decCompat pred x = true := by
+  rcases hSep with ⟨xT, xF, hxne, hxT, hxF⟩
+  -- The observable is constant on the fiber, hence `pred (obs x) = pred (target_obs h')` for both points.
+  have hxTobs : obs xT.1 = target_obs h' := xT.2
+  have hxFobs : obs xF.1 = target_obs h' := xF.2
+  cases hb : pred (target_obs h') with
+  | true =>
+    -- predictor says "true" everywhere on the fiber, so it must fail on the incompatible witness.
+    refine ⟨xF, ?_⟩
+    have hbF : pred (obs xF.1) = true := by
+      rw [hxFobs]
+      exact hb
+    have hCompatFalse :
+        compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+          (h' := h') (step' := step') decCompat xF = false := by
+      -- `compatBool = true` would contradict `hxF`.
+      cases hc :
+          compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+            (h' := h') (step' := step') decCompat xF with
+      | false => rfl
+      | true =>
+          have hC : Compatible (P := P) sem' obs target_obs step' xF :=
+            (compatBool_eq_true_iff (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+              (h' := h') (step' := step') decCompat xF).1 hc
+          exact False.elim (hxF hC)
+    -- `misBool = Bool.not (compatBool)` in this branch, hence it is true.
+    have hbScr : pred (obs xF.1) = true := hbF
+    cases hpred : pred (obs xF.1) with
+    | false =>
+        have : false = true := Eq.trans hpred.symm hbScr
+        cases this
+    | true =>
+        -- reduce to `Bool.not false = true`
+        unfold misBool
+        rw [hpred, hCompatFalse]
+        rfl
+  | false =>
+    -- predictor says "false" everywhere on the fiber, so it must fail on the compatible witness.
+    refine ⟨xT, ?_⟩
+    have hbT : pred (obs xT.1) = false := by
+      rw [hxTobs]
+      exact hb
+    have hCompatTrue :
+        compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+          (h' := h') (step' := step') decCompat xT = true := by
+      -- `compatBool = false` would contradict `hxT`.
+      cases hc :
+          compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+            (h' := h') (step' := step') decCompat xT with
+      | true => rfl
+      | false =>
+          have hTrue :
+              compatBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+                (h' := h') (step' := step') decCompat xT = true :=
+            (compatBool_eq_true_iff (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+              (h' := h') (step' := step') decCompat xT).2 hxT
+          -- contradiction with `hc : compatBool ... = false`
+          have hTrue' := hTrue
+          rw [hc] at hTrue'
+          cases hTrue'
+    -- `misBool = compatBool` in this branch, hence it is true.
+    have hbScr : pred (obs xT.1) = false := hbT
+    cases hpred : pred (obs xT.1) with
+    | true =>
+        have : true = false := Eq.trans hpred.symm hbScr
+        cases this
+    | false =>
+        unfold misBool
+        rw [hpred, hCompatTrue]
+
+namespace BoolCount
+
+private def liftFin {n : Nat} : Fin n → Fin (Nat.succ n) :=
+  fun i => ⟨i.val, Nat.lt_trans i.isLt (Nat.lt_succ_self n)⟩
+
+private def lastFin (n : Nat) : Fin (Nat.succ n) := ⟨n, Nat.lt_succ_self n⟩
+
+/-- Constructive count of `true` values of a Boolean predicate over `Fin n`. -/
+def countTrue : (n : Nat) → (Fin n → Bool) → Nat
+  | 0, _ => 0
+  | Nat.succ n, f =>
+      countTrue n (fun i => f (liftFin (n := n) i)) +
+        match f (lastFin n) with
+        | true => 1
+        | false => 0
+
+theorem countTrue_pos_of_exists_true :
+    ∀ {n : Nat} {f : Fin n → Bool},
+      (∃ i : Fin n, f i = true) → 0 < countTrue n f := by
+  intro n
+  induction n with
+  | zero =>
+      intro f hex
+      rcases hex with ⟨i, _⟩
+      exact Fin.elim0 i
+  | succ n ih =>
+      intro f hex
+      rcases hex with ⟨i, hi⟩
+      by_cases hLast : i.val = n
+      · -- witness is the last index
+        have hiLast : i = lastFin n := by
+          have hLastVal : (lastFin n).val = n := rfl
+          apply Fin.ext
+          rw [hLastVal]
+          exact hLast
+        have hLastTrue : f (lastFin n) = true := by
+          -- rewrite the witness equality in `hi`
+          have hi' := hi
+          rw [hiLast] at hi'
+          exact hi'
+        -- the last addend contributes 1, hence the total is positive
+        have hPos : 0 < countTrue n (fun t : Fin n => f (liftFin (n := n) t)) + 1 := by
+          -- `0 < a+1` for any `a` (rewrite `0 < Nat.succ a`)
+          have h : 0 < Nat.succ (countTrue n (fun t : Fin n => f (liftFin (n := n) t))) :=
+            Nat.zero_lt_succ _
+          have hEq :
+              Nat.succ (countTrue n (fun t : Fin n => f (liftFin (n := n) t))) =
+                countTrue n (fun t : Fin n => f (liftFin (n := n) t)) + 1 :=
+            Nat.succ_eq_add_one _
+          have h' := h
+          rw [hEq] at h'
+          exact h'
+        -- unfold `countTrue` at `Nat.succ n` and rewrite the last match using `hLastTrue`
+        unfold countTrue
+        -- goal is now `0 < countTrue n ... + match f (lastFin n) with ...`
+        -- and `hLastTrue` forces the match to be `1`
+        -- so we can finish by rewriting and using `hPos`.
+        rw [hLastTrue]
+        exact hPos
+      · -- witness is in the first `n` indices
+        have hle : i.val ≤ n := Nat.le_of_lt_succ i.isLt
+        have hlt : i.val < n := Nat.lt_of_le_of_ne hle hLast
+        let j : Fin n := ⟨i.val, hlt⟩
+        have hj : f (liftFin (n := n) j) = true := by
+          have hij : liftFin (n := n) j = i := by
+            apply Fin.ext
+            rfl
+          have hi' := hi
+          -- rewrite `hi : f i = true` along `hij`
+          rw [← hij] at hi'
+          exact hi'
+        have : 0 < countTrue n (fun t : Fin n => f (liftFin (n := n) t)) :=
+          ih ⟨j, hj⟩
+        -- then the total is positive regardless of the last addend
+        have hPos :
+            0 < countTrue n (fun t : Fin n => f (liftFin (n := n) t)) +
+              (match f (lastFin n) with | true => 1 | false => 0) :=
+          Nat.lt_of_lt_of_le this (Nat.le_add_right _ _)
+        unfold countTrue
+        exact hPos
+
+end BoolCount
+
+/-- Finite error count over an explicit fiber enumeration. -/
+def errCount
+    (E : FiberEnum (P := P) obs target_obs h')
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (pred : V' → Bool) : Nat :=
+  BoolCount.countTrue E.N (fun i =>
+    misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+      (h' := h') (step' := step') decCompat pred (E.enum i))
+
+theorem errCount_pos_of_exists_misBool
+    (E : FiberEnum (P := P) obs target_obs h')
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (pred : V' → Bool)
+    (hMis :
+      ∃ x : FiberPt (P := P) obs target_obs h',
+        misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+          (h' := h') (step' := step') decCompat pred x = true) :
+    0 < errCount (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+      (h' := h') (step' := step') E decCompat pred := by
+  rcases hMis with ⟨x, hx⟩
+  rcases E.surj x with ⟨i, hi⟩
+  -- turn the fiber witness into a `Fin E.N` witness for the counted predicate
+  have hAtI :
+      (fun j : Fin E.N =>
+          misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+            (h' := h') (step' := step') decCompat pred (E.enum j)) i = true := by
+    -- rewrite `hx` along `hi : E.enum i = x`
+    have hEq :
+        misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+            (h' := h') (step' := step') decCompat pred (E.enum i) =
+          misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+            (h' := h') (step' := step') decCompat pred x :=
+      congrArg
+        (fun y =>
+          misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+            (h' := h') (step' := step') decCompat pred y) hi
+    exact Eq.trans hEq hx
+  have : 0 < BoolCount.countTrue E.N (fun j : Fin E.N =>
+        misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+          (h' := h') (step' := step') decCompat pred (E.enum j)) :=
+    BoolCount.countTrue_pos_of_exists_true ⟨i, hAtI⟩
+  unfold errCount
+  exact this
+
+theorem errCount_pos_of_stepSeparatesFiber
+    (E : FiberEnum (P := P) obs target_obs h')
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (hSep : StepSeparatesFiber (P := P) sem' obs target_obs step')
+    (pred : V' → Bool) :
+    0 < errCount (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+      (h' := h') (step' := step') E decCompat pred := by
+  apply errCount_pos_of_exists_misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+    (h' := h') (step' := step') (E := E) (decCompat := decCompat) (pred := pred)
+  exact exists_misBool_of_stepSeparatesFiber (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+    (h' := h') (step' := step') decCompat hSep pred
+
+/--
+Finitary “strictly positive error count” version: under an explicit fiber enumeration and a
+pointwise decidability oracle, `¬ ObsPredictsStep` implies every obs-only Boolean predictor makes
+at least one mistake on the fiber, hence the finite error count is strictly positive.
+-/
+theorem errCount_pos_of_not_obsPredictsStep
+    (E : FiberEnum (P := P) obs target_obs h')
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (hNo : ¬ ObsPredictsStep (P := P) sem' obs target_obs step')
+    (pred : V' → Bool) :
+    0 < errCount (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+      (h' := h') (step' := step') E decCompat pred := by
+  have hOr :=
+    PrimitiveHolonomy.obsPredictsStep_or_stepSeparatesFiber_of_fiberEnum
+      (P := P) (sem := sem') (obs := obs) (target_obs := target_obs)
+      (step := step') E decCompat
+  cases hOr with
+  | inl hObs =>
+      exact False.elim (hNo hObs)
+  | inr hSep =>
+      exact errCount_pos_of_stepSeparatesFiber (P := P) (sem' := sem') (obs := obs)
+        (target_obs := target_obs) (h' := h') (step' := step') (E := E)
+        (decCompat := decCompat) hSep pred
 
 end CorrelationAppendix
 
@@ -775,7 +1084,15 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.compatBool
 #print axioms PrimitiveHolonomy.Examples.compatBool_eq_true_iff
 #print axioms PrimitiveHolonomy.Examples.misBool
+#print axioms PrimitiveHolonomy.Examples.correlationallyCorrect_of_no_misBool
 #print axioms PrimitiveHolonomy.Examples.CorrelationallyCorrect
 #print axioms PrimitiveHolonomy.Examples.obsPredictsStep_of_correlationallyCorrect
 #print axioms PrimitiveHolonomy.Examples.not_correlationallyCorrect_of_not_obsPredictsStep
+#print axioms PrimitiveHolonomy.Examples.exists_misBool_of_stepSeparatesFiber
+#print axioms PrimitiveHolonomy.Examples.BoolCount.countTrue
+#print axioms PrimitiveHolonomy.Examples.BoolCount.countTrue_pos_of_exists_true
+#print axioms PrimitiveHolonomy.Examples.errCount
+#print axioms PrimitiveHolonomy.Examples.errCount_pos_of_exists_misBool
+#print axioms PrimitiveHolonomy.Examples.errCount_pos_of_stepSeparatesFiber
+#print axioms PrimitiveHolonomy.Examples.errCount_pos_of_not_obsPredictsStep
 /- AXIOM_AUDIT_END -/
