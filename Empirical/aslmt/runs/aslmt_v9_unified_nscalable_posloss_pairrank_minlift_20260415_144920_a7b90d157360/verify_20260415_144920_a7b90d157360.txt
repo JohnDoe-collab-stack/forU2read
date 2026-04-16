@@ -1,0 +1,9 @@
+CMD: /home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v9_unified_nscalable_posloss_pairrank_minlift_20260415_144920_a7b90d157360/verify_aslmt_v9_unified_double_barrier_minlift_pair_oodrequired.py --master-jsonl /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v9_unified_nscalable_posloss_pairrank_minlift_20260415_144920_a7b90d157360/v9_nscalable_posloss_pairrank_master_20260415_144920_a7b90d157360.jsonl --n-classes 5 --profile solid
+[v9-REF] z=5 seeds=[0, 1, 2, 3, 4] n_rows=5 iid(A_img_min=0.9375, A_cue_min=1.0000, abl_img_max=0.0000, swap_follow_min=0.9375, swap_orig_max=0.0000) ood(A_img_min=0.8438, A_cue_min=1.0000, abl_img_max=0.0000, swap_follow_min=0.8438, swap_orig_max=0.0000)
+[v9-<n] z=4 seeds=[0, 1, 2, 3, 4] iid_A_img_min=0.7656 ood_A_img_min=0.7500
+
+[FAIL] v9_unified minlift checks did not pass:
+ - ref iid A_img_min=0.9375 < 1.0000
+ - ref ood A_img_min=0.8438 < 1.0000
+ - ref iid swap_follow_min=0.9375 < 1.0000
+ - ref ood swap_follow_min=0.8438 < 1.0000

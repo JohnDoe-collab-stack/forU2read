@@ -1,0 +1,29 @@
+{
+  "kind": "aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_spaced2_snapshot",
+  "bundle_hash": "9fcd16977fdabe1f21ef238d7af118f4079314040311972ae3078a4495dc68f4",
+  "bundle_hash_short": "9fcd16977fda",
+  "files": [
+    {
+      "name": "aslmt_model_v9_unified_double_barrier_minlift_kdet.py",
+      "sha256": "4c3186566d23d341aa3038dc3e3f9413f13d6c4ff1c7e52a7e4fedfae9f814c3"
+    },
+    {
+      "name": "aslmt_train_v9_unified_double_barrier_minlift_seeded_pair_trainood_posloss_pairrank_nscalable_kdet_spaced2.py",
+      "sha256": "05708fe36adfbb93f9c3c7c194cbe643039337dc0be5c50c85f1ae851a01a4e9"
+    },
+    {
+      "name": "aslmt_env_v9_unified_double_barrier_minlift_nscalable_spaced2.py",
+      "sha256": "ea3e0d5603357332e9ff2014ce9612156d3a9d3c5aaf4fbe4e28639bdcac33c1"
+    },
+    {
+      "name": "render_v9_unified_paired_ctx_nscalable_spaced2.py",
+      "sha256": "9382154ad0f21624fcffad9bfea04534bd0da22617eb722d1a1f9aa5403405ec"
+    },
+    {
+      "name": "verify_aslmt_v10_phaseA1_matrix.py",
+      "sha256": "77face56655d8a291d6d3ef0cc0ddef596a7709c72576c8506168b8e34a2125d"
+    }
+  ],
+  "snapshot_dir": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_spaced2_20260416_074821_9fcd16977fda",
+  "ts": "20260416_074821"
+}

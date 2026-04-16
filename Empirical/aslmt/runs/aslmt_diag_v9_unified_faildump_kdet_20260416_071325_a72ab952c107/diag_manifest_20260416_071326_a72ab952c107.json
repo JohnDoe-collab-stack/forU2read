@@ -1,0 +1,56 @@
+{
+  "kind": "aslmt_diag_v9_unified_faildump_kdet",
+  "timestamp": "20260416_071326",
+  "script": {
+    "path": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_diag_v9_unified_faildump_kdet_20260416_071325_a72ab952c107/aslmt_diag_v9_unified_faildump_kdet.py",
+    "sha256": "a72ab952c1078c7a0f9c94292f4e030069c091e997019114204160997ffb16f9"
+  },
+  "snapshot_dir": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_diag_v9_unified_faildump_kdet_20260416_071325_a72ab952c107",
+  "cmd": "aslmt_diag_v9_unified_faildump_kdet.py --device cuda --seed 4 --n-classes 3 --z-classes 3 --steps 9000 --pair-n-ctx 64 --dump-split ood --max-fails 200 --save-tensors-max 20 --w-z 5.0 --w-k 0.0 --w-pos 0.25 --w-rank-img 0.25 --rank-n-ctx 8 --rank-ood-ratio 0.5 --train-ood-ratio 0.5 --out-dir /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_diag_v9_unified_faildump_kdet_20260416_071325_a72ab952c107",
+  "args": {
+    "seed": 4,
+    "steps": 9000,
+    "batch_size": 128,
+    "lr": 0.001,
+    "w_z": 5.0,
+    "w_k": 0.0,
+    "w_pos": 0.25,
+    "w_rank_img": 0.25,
+    "rank_n_ctx": 8,
+    "rank_ood_ratio": 0.5,
+    "train_ood_ratio": 0.5,
+    "pair_n_ctx": 64,
+    "log_every": 250,
+    "n_classes": 3,
+    "z_classes": 3,
+    "device": "cuda",
+    "dump_split": "ood",
+    "max_fails": 200,
+    "save_tensors_max": 20,
+    "out_dir": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_diag_v9_unified_faildump_kdet_20260416_071325_a72ab952c107"
+  },
+  "outputs": {
+    "console_txt": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_diag_v9_unified_faildump_kdet_20260416_071325_a72ab952c107/diag_console_20260416_071326_a72ab952c107.txt",
+    "manifest_json": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_diag_v9_unified_faildump_kdet_20260416_071325_a72ab952c107/diag_manifest_20260416_071326_a72ab952c107.json",
+    "faildump_jsonl": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_diag_v9_unified_faildump_kdet_20260416_071325_a72ab952c107/diag_faildump_20260416_071326_a72ab952c107.jsonl",
+    "tensors_dir": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_diag_v9_unified_faildump_kdet_20260416_071325_a72ab952c107/diag_fail_tensors_20260416_071326_a72ab952c107",
+    "modelA_state_pt": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_diag_v9_unified_faildump_kdet_20260416_071325_a72ab952c107/diag_modelA_state_20260416_071326_a72ab952c107.pt"
+  },
+  "z_acc": {
+    "iid": 1.0,
+    "ood": 1.0
+  },
+  "dump_summary": {
+    "ood": {
+      "n_ctx": 64,
+      "n_fails": 13,
+      "n_fails_z_wrong": 0,
+      "n_fails_z_right": 13,
+      "m0_min": -0.0455169677734375,
+      "m1_min": -1.978607177734375,
+      "saved_tensors": 13,
+      "out_jsonl": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_diag_v9_unified_faildump_kdet_20260416_071325_a72ab952c107/diag_faildump_20260416_071326_a72ab952c107.jsonl",
+      "out_tensor_dir": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_diag_v9_unified_faildump_kdet_20260416_071325_a72ab952c107/diag_fail_tensors_20260416_071326_a72ab952c107"
+    }
+  }
+}

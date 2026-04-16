@@ -12,6 +12,7 @@ lean_lib «CompatObstructions» where
   roots := #[
     `COFRS.Foundations,
     `COFRS.Dynamics,
+    `COFRS.ConverseNormalForm,
     `COFRS.RegulationAndReduction,
     `COFRS.Synthesis,
     `COFRS.Examples.GodelByCode,

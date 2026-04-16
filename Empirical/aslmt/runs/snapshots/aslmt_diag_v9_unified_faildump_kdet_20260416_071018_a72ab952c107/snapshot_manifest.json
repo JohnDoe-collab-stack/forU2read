@@ -1,0 +1,23 @@
+{
+  "kind": "aslmt_diag_v9_unified_faildump_kdet_snapshot",
+  "ts": "20260416_071018",
+  "snapshot_dir": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_diag_v9_unified_faildump_kdet_20260416_071018_a72ab952c107",
+  "files": [
+    {
+      "name": "aslmt_diag_v9_unified_faildump_kdet.py",
+      "sha256": "a72ab952c1078c7a0f9c94292f4e030069c091e997019114204160997ffb16f9"
+    },
+    {
+      "name": "aslmt_env_v9_unified_double_barrier_minlift_nscalable.py",
+      "sha256": "9862c686ad0fab214895bd1b0c951c82d01b9bc45b58269eb06f394395235f8a"
+    },
+    {
+      "name": "aslmt_model_v9_unified_double_barrier_minlift_kdet.py",
+      "sha256": "4c3186566d23d341aa3038dc3e3f9413f13d6c4ff1c7e52a7e4fedfae9f814c3"
+    },
+    {
+      "name": "render_v9_unified_paired_ctx_nscalable.py",
+      "sha256": "2f3f3a6a9858690c31e753a8d2ee9c75a5d15db1ff1a09d1c5ae18bfdb8706ac"
+    }
+  ]
+}

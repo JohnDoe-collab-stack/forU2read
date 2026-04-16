@@ -1,0 +1,29 @@
+{
+  "bundle_hash": "ca7e41e311e271fc338cc838b9dd505b1297e3d43a4d3bba512aca2de5a53218",
+  "bundle_hash_short": "ca7e41e311e2",
+  "files": [
+    {
+      "name": "aslmt_model_v9_unified_double_barrier_minlift.py",
+      "sha256": "6d02995167169ccb843594710ecf81cca3eeee12b286d90bdf36b7ee663aebf2"
+    },
+    {
+      "name": "render_v9_unified_paired_ctx_nscalable.py",
+      "sha256": "2f3f3a6a9858690c31e753a8d2ee9c75a5d15db1ff1a09d1c5ae18bfdb8706ac"
+    },
+    {
+      "name": "aslmt_env_v9_unified_double_barrier_minlift_nscalable.py",
+      "sha256": "9862c686ad0fab214895bd1b0c951c82d01b9bc45b58269eb06f394395235f8a"
+    },
+    {
+      "name": "aslmt_train_v9_unified_double_barrier_minlift_seeded_pair_trainood_posloss_pairrank_nscalable.py",
+      "sha256": "8c3480d135f72019717b019c39218f7188ff6f2f9049e1ae79c7217626465038"
+    },
+    {
+      "name": "verify_aslmt_v10_phaseA1_matrix.py",
+      "sha256": "772d64bbd60dfdbd4afdc59de996268e84d6dcd17525d4419d62e13f2a95cf50"
+    }
+  ],
+  "kind": "aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_snapshot",
+  "snapshot_dir": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_20260415_160323_ca7e41e311e2",
+  "ts": "20260415_160323"
+}

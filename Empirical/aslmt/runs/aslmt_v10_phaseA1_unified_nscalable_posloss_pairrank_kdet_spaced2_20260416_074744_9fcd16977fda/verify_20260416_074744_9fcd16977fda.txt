@@ -1,0 +1,4 @@
+[v10-REF] n=3 z=3 seeds=[0] n_rows=1 iid(bar_img=True, bar_cue=True, A_img_min=0.0000, A_cue_min=0.0000) ood(bar_img=True, bar_cue=True, A_img_min=0.0000, A_cue_min=0.0000)
+
+[OK] v10 Phase A1 matrix checks passed.
+

@@ -1,0 +1,35 @@
+{
+  "bundle_hash": "ba3376bbaa693d80b31cb1c8728936161b88130e626c2ef9fa2ac3ccb8003601",
+  "bundle_hash_short": "ba3376bbaa69",
+  "files": [
+    {
+      "name": "aslmt_campaign_v9_unified_double_barrier_minlift_pair_oodrequired_v2.py",
+      "sha256": "f16806249d07a561e6229339b393d7cc0ecb2319d61c23943afa7740ab2ae431"
+    },
+    {
+      "name": "aslmt_env_v9_unified_double_barrier_minlift.py",
+      "sha256": "4c6faebd175b9ca82156b5e9d16e5d176ac9a0065d06809dbeec896d04404457"
+    },
+    {
+      "name": "render_v9_unified_paired_ctx.py",
+      "sha256": "5083718a1d9d06003d1677792fefef390bf061832cf824a3c9f425c3541565fe"
+    },
+    {
+      "name": "aslmt_model_v9_unified_double_barrier_minlift_v2.py",
+      "sha256": "453c675aaeec5d7154c05dac237ee6d3ea258807eba152e9303da603adcf9d7a"
+    },
+    {
+      "name": "aslmt_train_v9_unified_double_barrier_minlift_seeded_pair_trainood_v2.py",
+      "sha256": "2811003f6a8547be60c622a2b2d44db005514aadcfcafdd339402698a00b1603"
+    },
+    {
+      "name": "verify_aslmt_v9_unified_double_barrier_minlift_pair_oodrequired.py",
+      "sha256": "003067b2fd7eb403551c53555384b48ecd7a38f78c6a6d9238b607445dc4235f"
+    }
+  ],
+  "kind": "aslmt_v9_unified_v2_minlift_snapshot",
+  "snapshot_dir": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v9_unified_v2_minlift_20260415_093300_ba3376bbaa69",
+  "train_script_name": "aslmt_train_v9_unified_double_barrier_minlift_seeded_pair_trainood_v2.py",
+  "ts": "20260415_093300",
+  "verify_script_name": "verify_aslmt_v9_unified_double_barrier_minlift_pair_oodrequired.py"
+}

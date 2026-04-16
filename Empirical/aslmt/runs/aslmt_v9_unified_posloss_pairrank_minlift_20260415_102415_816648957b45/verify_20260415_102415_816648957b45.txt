@@ -1,0 +1,5 @@
+CMD: /home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v9_unified_posloss_pairrank_minlift_20260415_102415_816648957b45/verify_aslmt_v9_unified_double_barrier_minlift_pair_oodrequired.py --master-jsonl /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v9_unified_posloss_pairrank_minlift_20260415_102415_816648957b45/v9_posloss_pairrank_master_20260415_102415_816648957b45.jsonl --n-classes 4 --profile solid
+[v9-REF] z=4 seeds=[0, 1, 2, 3, 4] n_rows=5 iid(A_img_min=1.0000, A_cue_min=1.0000, abl_img_max=0.0000, swap_follow_min=1.0000, swap_orig_max=0.0000) ood(A_img_min=1.0000, A_cue_min=1.0000, abl_img_max=0.0000, swap_follow_min=1.0000, swap_orig_max=0.0000)
+[v9-<n] z=3 seeds=[0, 1, 2, 3, 4] iid_A_img_min=0.8281 ood_A_img_min=0.8281
+
+[OK] v9_unified minlift checks passed.

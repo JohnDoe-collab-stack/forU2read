@@ -1,0 +1,5 @@
+CMD: /usr/bin/python3 -u /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_20260415_160020_ca7e41e311e2/verify_aslmt_v10_phaseA1_matrix.py --master-jsonl /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_20260415_160020_ca7e41e311e2/v10_master_20260415_160020_ca7e41e311e2.jsonl --profile smoke --n-classes-list 3 --z-policy A1
+SCRIPT_SHA256: 772d64bbd60dfdbd4afdc59de996268e84d6dcd17525d4419d62e13f2a95cf50
+[v10-REF] n=3 z=3 seeds=[0] n_rows=1 iid(bar_img=True, bar_cue=True, A_img_min=0.0000, A_cue_min=0.0000) ood(bar_img=True, bar_cue=True, A_img_min=0.0000, A_cue_min=0.0000)
+
+[OK] v10 Phase A1 matrix checks passed.

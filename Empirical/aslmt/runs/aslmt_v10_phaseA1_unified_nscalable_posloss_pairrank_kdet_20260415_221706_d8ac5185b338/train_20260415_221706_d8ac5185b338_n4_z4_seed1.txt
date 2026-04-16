@@ -1,0 +1,31 @@
+CMD: /home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_20260415_221706_d8ac5185b338/aslmt_train_v9_unified_double_barrier_minlift_seeded_pair_trainood_posloss_pairrank_nscalable_kdet.py --seed 1 --steps 9000 --batch-size 128 --lr 0.001 --w-z 5.0 --w-k 0.0 --w-pos 0.25 --w-rank-img 0.25 --rank-n-ctx 8 --rank-ood-ratio 0.5 --train-ood-ratio 0.5 --pair-n-ctx 64 --n-classes 4 --z-classes 4 --device cuda --out-jsonl /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_20260415_221706_d8ac5185b338/v10_master_20260415_221706_d8ac5185b338.jsonl
+SCRIPT_SHA256: 65097927eb1edc02541433ac9c084be8b94017e3820660bf01e09d875202a12e
+step=250/9000 loss=4.216124 (A_seg=0.115288, A_z=0.704473, A_k=0.000000, A_pos=0.001244, A_rank_img=0.226261, Bimg=0.130825, Bcue=0.390767)
+step=500/9000 loss=1.574745 (A_seg=0.082785, A_z=0.193602, A_k=0.000000, A_pos=0.000999, A_rank_img=0.077616, Bimg=0.116037, Bcue=0.388260)
+step=750/9000 loss=0.975672 (A_seg=0.054921, A_z=0.071522, A_k=0.000000, A_pos=0.000405, A_rank_img=0.196822, Bimg=0.112411, Bcue=0.401422)
+step=1000/9000 loss=0.753631 (A_seg=0.043600, A_z=0.042252, A_k=0.000000, A_pos=0.000374, A_rank_img=0.027767, Bimg=0.116263, Bcue=0.375471)
+step=1250/9000 loss=0.685189 (A_seg=0.037228, A_z=0.024364, A_k=0.000000, A_pos=0.000404, A_rank_img=0.120799, Bimg=0.114507, Bcue=0.381334)
+step=1500/9000 loss=0.619998 (A_seg=0.033620, A_z=0.014693, A_k=0.000000, A_pos=0.000304, A_rank_img=0.000726, Bimg=0.115227, Bcue=0.397429)
+step=1750/9000 loss=0.629410 (A_seg=0.035012, A_z=0.010809, A_k=0.000000, A_pos=0.000394, A_rank_img=0.083997, Bimg=0.121980, Bcue=0.397274)
+step=2000/9000 loss=0.574623 (A_seg=0.034906, A_z=0.008537, A_k=0.000000, A_pos=0.000290, A_rank_img=0.038332, Bimg=0.114349, Bcue=0.373027)
+step=2250/9000 loss=0.538211 (A_seg=0.031966, A_z=0.004941, A_k=0.000000, A_pos=0.000296, A_rank_img=0.000135, Bimg=0.113917, Bcue=0.367518)
+step=2500/9000 loss=0.578688 (A_seg=0.025168, A_z=0.004605, A_k=0.000000, A_pos=0.000215, A_rank_img=0.068638, Bimg=0.119201, Bcue=0.394082)
+step=2750/9000 loss=0.550771 (A_seg=0.025146, A_z=0.003846, A_k=0.000000, A_pos=0.000286, A_rank_img=0.000560, Bimg=0.117343, Bcue=0.388839)
+step=3000/9000 loss=0.520930 (A_seg=0.016247, A_z=0.003065, A_k=0.000000, A_pos=0.000175, A_rank_img=0.030726, Bimg=0.113239, Bcue=0.368396)
+step=3250/9000 loss=0.554447 (A_seg=0.024050, A_z=0.002268, A_k=0.000000, A_pos=0.000287, A_rank_img=0.168422, Bimg=0.117194, Bcue=0.359684)
+step=3500/9000 loss=0.509025 (A_seg=0.018513, A_z=0.001842, A_k=0.000000, A_pos=0.000214, A_rank_img=0.000003, Bimg=0.113933, Bcue=0.367315)
+step=3750/9000 loss=0.540145 (A_seg=0.020246, A_z=0.001822, A_k=0.000000, A_pos=0.000285, A_rank_img=0.051937, Bimg=0.123392, Bcue=0.374340)
+step=4000/9000 loss=0.680026 (A_seg=0.026914, A_z=0.001527, A_k=0.000000, A_pos=0.000435, A_rank_img=0.097968, Bimg=0.238134, Bcue=0.382741)
+step=4250/9000 loss=0.517159 (A_seg=0.014820, A_z=0.001329, A_k=0.000000, A_pos=0.000179, A_rank_img=0.000133, Bimg=0.138821, Bcue=0.356796)
+step=4500/9000 loss=0.524732 (A_seg=0.013803, A_z=0.001178, A_k=0.000000, A_pos=0.000164, A_rank_img=0.023255, Bimg=0.123334, Bcue=0.375849)
+step=4750/9000 loss=0.524788 (A_seg=0.014807, A_z=0.002061, A_k=0.000000, A_pos=0.000187, A_rank_img=0.007360, Bimg=0.133417, Bcue=0.364371)
+step=5000/9000 loss=0.559702 (A_seg=0.044029, A_z=0.000852, A_k=0.000000, A_pos=0.000547, A_rank_img=0.019610, Bimg=0.122438, Bcue=0.383937)
+step=5250/9000 loss=0.584822 (A_seg=0.021705, A_z=0.000671, A_k=0.000000, A_pos=0.000270, A_rank_img=0.247362, Bimg=0.123119, Bcue=0.374735)
+Traceback (most recent call last):
+  File "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_20260415_221706_d8ac5185b338/aslmt_train_v9_unified_double_barrier_minlift_seeded_pair_trainood_posloss_pairrank_nscalable_kdet.py", line 478, in <module>
+    main()
+  File "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_20260415_221706_d8ac5185b338/aslmt_train_v9_unified_double_barrier_minlift_seeded_pair_trainood_posloss_pairrank_nscalable_kdet.py", line 398, in main
+    opt.zero_grad(set_to_none=True)
+  File "/home/frederick/.venvs/cofrs-gpu/lib/python3.10/site-packages/torch/_compile.py", line 22, in inner
+    @functools.wraps(fn)
+KeyboardInterrupt
