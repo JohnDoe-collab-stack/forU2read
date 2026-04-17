@@ -64,6 +64,10 @@ This section packages two facts:
 /-- The type of “future steps” starting at a fixed prefix `h` (endpoint varies). -/
 def Future (h : P) := Σ k : P, HistoryGraph.Path h k
 
+/-- The canonical mediator type at `h`: a predicate on all dependent future steps. -/
+abbrev CanonicalMediator (h : P) : Type _ :=
+  Future h → Prop
+
 /-- Compatibility along a dependent future step. -/
 def CompatibleFuture {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
     {h : P} (step : Future (P := P) h) (x : FiberPt (P := P) obs target_obs h) : Prop :=
@@ -73,6 +77,13 @@ def CompatibleFuture {S V : Type w} (sem : Semantics P S) (obs : S → V) (targe
 def Sig {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
     {h : P} (x : FiberPt (P := P) obs target_obs h) : Future (P := P) h → Prop :=
   fun step => CompatibleFuture (P := P) sem obs target_obs step x
+
+/-- Name the canonical mediator map explicitly (it is just `Sig`). -/
+abbrev canonicalMediator
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P} (x : FiberPt (P := P) obs target_obs h) :
+    CanonicalMediator (h := h) :=
+  Sig (P := P) sem obs target_obs x
 
 /-- Restrict the full signature `Sig` to an indexed family of future steps. -/
 def SigFam {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
@@ -559,6 +570,35 @@ theorem compatDimLe_iff_refiningLift
   constructor
   · exact refiningLift_of_compatDimLe_prop (P := P) sem obs target_obs step n
   · exact compatDimLe_of_refiningLift (P := P) sem obs target_obs step n
+
+/--
+Global compression implies step-local compression:
+compressing the full signature `Sig` into `Fin n` yields a `CompatDimLe … step n` witness
+for any fixed `step`.
+-/
+theorem compatDimLe_of_compatSigDimLe
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h k : P} (step : HistoryGraph.Path h k) {n : Nat} :
+    CompatSigDimLe (P := P) sem obs target_obs (h := h) n →
+      CompatDimLe (P := P) sem obs target_obs step n :=
+by
+  rintro ⟨σ, pred, Hcorr⟩
+  let fut : Future h := ⟨k, step⟩
+  refine ⟨σ, (fun i => pred i fut), ?_⟩
+  intro x
+  have := Hcorr x fut
+  simpa [CompatibleFuture, fut] using this.symm
+
+/-- `CompatSigDimLe` also yields a refining lift for any fixed `step`. -/
+theorem refiningLift_of_compatSigDimLe
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h k : P} (step : HistoryGraph.Path h k) (n : Nat) :
+    CompatSigDimLe (P := P) sem obs target_obs (h := h) n →
+      RefiningLift (P := P) sem obs target_obs h step n :=
+by
+  intro hSig
+  exact (compatDimLe_iff_refiningLift (P := P) sem obs target_obs step n).1
+    ((compatDimLe_of_compatSigDimLe (P := P) sem obs target_obs step) hSig)
 
 /-- Monotonicity: if `CompatDimLe … m` and `m ≤ n`, then `CompatDimLe … n`. -/
 theorem compatDimLe_mono
@@ -1209,8 +1249,10 @@ ordered by line of appearance.
 #print axioms PrimitiveHolonomy.LagEvent
 #print axioms PrimitiveHolonomy.lag_of_witness
 #print axioms PrimitiveHolonomy.Future
+#print axioms PrimitiveHolonomy.CanonicalMediator
 #print axioms PrimitiveHolonomy.CompatibleFuture
 #print axioms PrimitiveHolonomy.Sig
+#print axioms PrimitiveHolonomy.canonicalMediator
 #print axioms PrimitiveHolonomy.SigFam
 #print axioms PrimitiveHolonomy.iff_of_eq
 #print axioms PrimitiveHolonomy.sigFam_iff_of_summary_correct
@@ -1219,6 +1261,8 @@ ordered by line of appearance.
 #print axioms PrimitiveHolonomy.sigFactorsThrough_of_summary_correct
 #print axioms PrimitiveHolonomy.CompatSigDimLe
 #print axioms PrimitiveHolonomy.sigFactorsThrough_of_compatSigDimLe
+#print axioms PrimitiveHolonomy.compatDimLe_of_compatSigDimLe
+#print axioms PrimitiveHolonomy.refiningLift_of_compatSigDimLe
 #print axioms PrimitiveHolonomy.summary_separates_compatible_witness
 #print axioms PrimitiveHolonomy.lagEvent_gives_summary_witness
 #print axioms PrimitiveHolonomy.StepSeparatesFiber
