@@ -19,7 +19,3 @@ Thumbs.db
 # Python artifacts
 __pycache__/
 *.pyc
-
-# Local scratch (untracked)
-COFRS/CollatzLagEvent.lean
-COFRS/CollatzTheory.lean
