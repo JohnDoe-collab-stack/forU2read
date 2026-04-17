@@ -517,6 +517,83 @@ theorem diag_compatDimLe_two_step (e : Nat) :
       (step := PPath.step (g (D := D) e)) 2
       (diag_hiddenCompatClassifiedByFin_two_step (Provable := Provable) (U := U) (D := D) e)
 
+/-!
+### Global compression of the canonical mediator on the diagonal fiber
+
+`CompatDimLe … step n` is step-local. On the diagonal fiber, we can also compress the full
+future-compatibility signature `Sig : Future h → Prop` into one hidden bit (i.e. `Fin 2`).
+
+This is the instance-level bridge to the canonical-mediator layer in `COFRS/Dynamics.lean`.
+-/
+
+/-- On the diagonal fiber, the full signature `Sig` admits a global `Fin 2` compression. -/
+theorem diag_compatSigDimLe_two (e : Nat) :
+    CompatSigDimLe (P := Nat) (@semantics Provable) obs target_obs
+      (h := g (D := D) e) 2 := by
+  let fin0 : Fin 2 := ⟨0, by decide⟩
+  let fin1 : Fin 2 := ⟨1, by decide⟩
+  let σ : FiberPt (P := Nat) obs target_obs (g (D := D) e) → Fin 2 :=
+    fun z => match z.1.hidden with | false => fin0 | true => fin1
+  let pred : Fin 2 → Future (P := Nat) (g (D := D) e) → Prop :=
+    fun i step =>
+      if i.val = 0 then
+        CompatibleFuture (P := Nat) (@semantics Provable) obs target_obs step (x (D := D) e)
+      else
+        CompatibleFuture (P := Nat) (@semantics Provable) obs target_obs step (x' (D := D) e)
+  refine ⟨σ, pred, ?_⟩
+  intro z step
+  rcases diag_fiber_cases (D := D) e z with rfl | rfl
+  · -- z = x
+    have hσ : σ (x (D := D) e) = fin0 := by rfl
+    have hPred : pred (σ (x (D := D) e)) step ↔ pred fin0 step := by
+      exact PrimitiveHolonomy.iff_of_eq (congrArg (fun i => pred i step) hσ)
+    have hPred0 : pred fin0 step ↔
+        CompatibleFuture (P := Nat) (@semantics Provable) obs target_obs step (x (D := D) e) := by
+      dsimp [pred, fin0]
+      rfl
+    exact (hPred.trans hPred0)
+  · -- z = x'
+    have hσ : σ (x' (D := D) e) = fin1 := by rfl
+    have hPred : pred (σ (x' (D := D) e)) step ↔ pred fin1 step := by
+      exact PrimitiveHolonomy.iff_of_eq (congrArg (fun i => pred i step) hσ)
+    have hPred1 : pred fin1 step ↔
+        CompatibleFuture (P := Nat) (@semantics Provable) obs target_obs step (x' (D := D) e) := by
+      dsimp [pred, fin1]
+      rfl
+    exact (hPred.trans hPred1)
+
+/-- On the diagonal fiber, the full signature `Sig` cannot be compressed into `Fin 1`. -/
+theorem diag_not_compatSigDimLe_one (e : Nat) :
+    ¬ CompatSigDimLe (P := Nat) (@semantics Provable) obs target_obs
+        (h := g (D := D) e) 1 := by
+  intro hSig1
+  have hDim1 :
+      CompatDimLe (P := Nat) (@semantics Provable) obs target_obs
+        (h := g (D := D) e) (k := g (D := D) e)
+        (PPath.step (g (D := D) e)) 1 :=
+    (compatDimLe_of_compatSigDimLe (P := Nat) (@semantics Provable) obs target_obs
+      (step := PPath.step (g (D := D) e)) (h := g (D := D) e)) hSig1
+  have hNoDim1 :
+      ¬ CompatDimLe (P := Nat) (@semantics Provable) obs target_obs
+        (h := g (D := D) e) (k := g (D := D) e)
+        (PPath.step (g (D := D) e)) 1 :=
+    not_compatDimLe_one_of_lagEvent (P := Nat) (@semantics Provable) obs target_obs
+      (h := g (D := D) e) (k := g (D := D) e) (k' := g (D := D) e)
+      (p := PPath.p (g (D := D) e)) (q := PPath.q (g (D := D) e))
+      (α := α (D := D) e)
+      (step := PPath.step (g (D := D) e))
+      (lagEvent_at_diag (Provable := Provable) (U := U) (D := D) e)
+  exact hNoDim1 hDim1
+
+/-- Corollary: on the diagonal fiber, the canonical mediator `Sig` factors through `Fin 2`. -/
+theorem diag_sigFactorsThrough_two (e : Nat) :
+    ∃ σ : FiberPt (P := Nat) obs target_obs (g (D := D) e) → Fin 2,
+      SigFactorsThrough (P := Nat) (@semantics Provable) obs target_obs σ := by
+  exact
+    sigFactorsThrough_of_compatSigDimLe (P := Nat) (@semantics Provable) obs target_obs
+      (h := g (D := D) e) (n := 2)
+      (diag_compatSigDimLe_two (Provable := Provable) (U := U) (D := D) e)
+
 /-- The diagonal compatibility predicate has dimension exactly 2. -/
 theorem diag_compatDimEqTwo_step (e : Nat) :
     CompatDimEqTwo (P := Nat) (@semantics Provable) obs target_obs
@@ -1118,6 +1195,9 @@ Auto-generated: `#print axioms` for each non-private `theorem`/`lemma` in this f
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_compatible_step_iff_hidden
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_hiddenCompatClassifiedByFin_two_step
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_compatDimLe_two_step
+#print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_compatSigDimLe_two
+#print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_not_compatSigDimLe_one
+#print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_sigFactorsThrough_two
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_compatDimEqTwo_step
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.codeRepairsDiagonalCell_iff_autoRegulatedSingleton
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.not_codeRepairsDiagonalCell
