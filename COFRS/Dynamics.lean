@@ -74,10 +74,31 @@ def Sig {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P →
     {h : P} (x : FiberPt (P := P) obs target_obs h) : Future (P := P) h → Prop :=
   fun step => CompatibleFuture (P := P) sem obs target_obs step x
 
+/-- Restrict the full signature `Sig` to an indexed family of future steps. -/
+def SigFam {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P} {F : Type v} (ι : F → Future (P := P) h)
+    (x : FiberPt (P := P) obs target_obs h) : F → Prop :=
+  fun f => Sig (P := P) sem obs target_obs x (ι f)
+
 /-- Convert equality of propositions into an iff (axiom-free). -/
 theorem iff_of_eq {P Q : Prop} (h : P = Q) : P ↔ Q := by
   cases h
   exact Iff.rfl
+
+theorem sigFam_iff_of_summary_correct
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P} {F : Type v} (ι : F → Future (P := P) h)
+    {Q : Type uQ} (σ : FiberPt (P := P) obs target_obs h → Q)
+    (pred : Q → F → Prop)
+    (Hcorr : ∀ x f, pred (σ x) f ↔ SigFam (P := P) sem obs target_obs ι x f)
+    {x x' : FiberPt (P := P) obs target_obs h}
+    (hσ : σ x = σ x') :
+    ∀ f, SigFam (P := P) sem obs target_obs ι x f ↔ SigFam (P := P) sem obs target_obs ι x' f :=
+by
+  intro f
+  have hx : pred (σ x) f ↔ pred (σ x') f :=
+    iff_of_eq (congrArg (fun q => pred q f) hσ)
+  exact (Hcorr x f).symm.trans (hx.trans (Hcorr x' f))
 
 theorem sig_iff_of_summary_correct
     {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
@@ -93,6 +114,52 @@ by
   have hx : pred (σ x) step ↔ pred (σ x') step :=
     iff_of_eq (congrArg (fun q => pred q step) hσ)
   exact (Hcorr x step).symm.trans (hx.trans (Hcorr x' step))
+
+/--
+Full-signature factorization: a summary `σ` respects the canonical signature `Sig`
+if equal summaries imply equal signatures on every future step.
+-/
+def SigFactorsThrough
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P} {Q : Type uQ} (σ : FiberPt (P := P) obs target_obs h → Q) : Prop :=
+  ∀ {x x' : FiberPt (P := P) obs target_obs h},
+    σ x = σ x' →
+      ∀ step, Sig (P := P) sem obs target_obs x step ↔ Sig (P := P) sem obs target_obs x' step
+
+theorem sigFactorsThrough_of_summary_correct
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P}
+    {Q : Type uQ} (σ : FiberPt (P := P) obs target_obs h → Q)
+    (pred : Q → Future (P := P) h → Prop)
+    (Hcorr : ∀ x step, pred (σ x) step ↔ CompatibleFuture (P := P) sem obs target_obs step x) :
+    SigFactorsThrough (P := P) sem obs target_obs σ := by
+  intro x x' hσ
+  exact sig_iff_of_summary_correct (P := P) sem obs target_obs σ pred Hcorr hσ
+
+/--
+Finite *global* compression of the canonical mediator `Sig`:
+there is a finite summary with `n` values that predicts compatibility for **every** future step.
+
+This is strictly stronger than step-local `CompatDimLe … step n`, which only predicts compatibility
+for a single fixed `step`.
+-/
+def CompatSigDimLe
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P} (n : Nat) : Prop :=
+  ∃ (σ : FiberPt (P := P) obs target_obs h → Fin n)
+      (pred : Fin n → Future (P := P) h → Prop),
+    ∀ x step, pred (σ x) step ↔ CompatibleFuture (P := P) sem obs target_obs step x
+
+theorem sigFactorsThrough_of_compatSigDimLe
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P} {n : Nat} :
+    CompatSigDimLe (P := P) sem obs target_obs (h := h) n →
+      ∃ σ : FiberPt (P := P) obs target_obs h → Fin n,
+        SigFactorsThrough (P := P) sem obs target_obs σ :=
+by
+  rintro ⟨σ, pred, Hcorr⟩
+  refine ⟨σ, ?_⟩
+  exact sigFactorsThrough_of_summary_correct (P := P) sem obs target_obs σ pred Hcorr
 
 theorem summary_separates_compatible_witness
     {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
@@ -1144,8 +1211,14 @@ ordered by line of appearance.
 #print axioms PrimitiveHolonomy.Future
 #print axioms PrimitiveHolonomy.CompatibleFuture
 #print axioms PrimitiveHolonomy.Sig
+#print axioms PrimitiveHolonomy.SigFam
 #print axioms PrimitiveHolonomy.iff_of_eq
+#print axioms PrimitiveHolonomy.sigFam_iff_of_summary_correct
 #print axioms PrimitiveHolonomy.sig_iff_of_summary_correct
+#print axioms PrimitiveHolonomy.SigFactorsThrough
+#print axioms PrimitiveHolonomy.sigFactorsThrough_of_summary_correct
+#print axioms PrimitiveHolonomy.CompatSigDimLe
+#print axioms PrimitiveHolonomy.sigFactorsThrough_of_compatSigDimLe
 #print axioms PrimitiveHolonomy.summary_separates_compatible_witness
 #print axioms PrimitiveHolonomy.lagEvent_gives_summary_witness
 #print axioms PrimitiveHolonomy.StepSeparatesFiber
