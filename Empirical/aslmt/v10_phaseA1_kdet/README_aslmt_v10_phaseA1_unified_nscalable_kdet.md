@@ -16,6 +16,13 @@ Underlying witness pieces (from `v9_unified`):
 - `aslmt_model_v9_unified_double_barrier_minlift_kdet.py`
 - `aslmt_train_v9_unified_double_barrier_minlift_seeded_pair_trainood_posloss_pairrank_nscalable_kdet.py`
 
+## Recommended status
+
+For strict A1 claims (stability in `n` under the full “double barrier + min-lift + causal gates” contract),
+the best-documented closure run uses the **spaced2** witness variant:
+
+- `Empirical/aslmt/v10_phaseA1_kdet_spaced2/README_aslmt_v10_phaseA1_unified_nscalable_kdet_spaced2.md`
+
 ## Run (solid, CUDA)
 
 ```bash
@@ -31,3 +38,13 @@ cd /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt
   --w-rank-img 0.25 --rank-n-ctx 8 --rank-ood-ratio 0.5
 ```
 
+## Known closed A1 run (spaced2)
+
+Phase A1 is closed on `n ∈ {3,4,5,6}` with `seed=0..4` in:
+
+- Run directory:
+  - `Empirical/aslmt/runs/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_spaced2_20260416_074821_9fcd16977fda/`
+- Master JSONL:
+  - `Empirical/aslmt/runs/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_spaced2_20260416_074821_9fcd16977fda/v10_master_20260416_074821_9fcd16977fda.jsonl`
+
+See the spaced2 README for the acceptance criteria and the summary table.

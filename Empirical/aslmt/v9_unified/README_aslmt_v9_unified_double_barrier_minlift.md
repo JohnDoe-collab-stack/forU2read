@@ -123,6 +123,21 @@ use the dedicated campaign+verifier layer:
 
 This keeps `v9_unified` as the witness definition, and moves the “Phase A1 closure protocol” into v10.
 
+### Closed A1 reference (recommended)
+
+The best-documented strict A1 closure currently uses:
+
+- the k-deterministic decoder conditioning (`k-det`), and
+- the spaced2 witness variant (reduced overlap; strict pair-grade closure is achievable).
+
+Entry point:
+
+- `Empirical/aslmt/v10_phaseA1_kdet_spaced2/README_aslmt_v10_phaseA1_unified_nscalable_kdet_spaced2.md`
+
+Run:
+
+- `Empirical/aslmt/runs/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_spaced2_20260416_074821_9fcd16977fda/`
+
 ## Scaling note (`n > 4`)
 
 The original `v9_unified` renderer uses a modulo position map for the hidden class `h`. In IID contexts, the number of
@@ -152,5 +167,6 @@ cd /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt
 ```
 
 Note: the n-scalable variant ensures the **barrier lock** remains valid when `n` grows. It does not guarantee
-that the learner achieves strict `A_*_min=1.0` at larger `n` without additional closure engineering; that is
-exactly what Phase A1 is meant to measure.
+that the learner achieves strict `A_*_min=1.0` at larger `n` without additional closure engineering. In practice,
+the `k-det` and `spaced2` refinements were introduced specifically to close Phase A1 strictly through `n=6`
+under `profile=solid`.

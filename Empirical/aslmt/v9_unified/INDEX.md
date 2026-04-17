@@ -34,10 +34,14 @@ map when too few distinct positions exist). Use the n-scalable variant:
 
 If your goal is “close the law in `n`” as a matrix over `n`, `z`, and seeds, use the dedicated Phase A1 runner:
 
-- `../v10_phaseA1_kdet/README_aslmt_v10_phaseA1_unified_nscalable_kdet.md`
+- `../v10_phaseA1_kdet_spaced2/README_aslmt_v10_phaseA1_unified_nscalable_kdet_spaced2.md`
 
 That runner reuses the v9 witness but enforces a clean modeling constraint: `k` is **visible** and is injected
 deterministically into the decoder so the segmentation cannot ignore it.
+
+Closed A1 run (strict `solid`, IID ∪ OOD, `seed=0..4`, `n=3..6`):
+
+- `../runs/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_spaced2_20260416_074821_9fcd16977fda/`
 
 ## Core components (conceptual roles)
 
@@ -68,4 +72,3 @@ deterministically into the decoder so the segmentation cannot ignore it.
 
 - `__pycache__/` is Python bytecode cache. It is safe to delete locally, but it is not required for correctness and
 should not be treated as a “result”.
-

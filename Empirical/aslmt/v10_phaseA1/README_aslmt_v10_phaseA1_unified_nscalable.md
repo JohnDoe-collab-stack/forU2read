@@ -48,3 +48,11 @@ The campaign writes a single matrix master JSONL and a single strict verifier ou
 
 `Empirical/aslmt/runs/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_<timestamp>_<bundlehash>/`
 
+## Status / recommended driver
+
+Phase A1 is now closed (strict `solid`, IID ∪ OOD, `seed=0..4`) on `n ∈ {3,4,5,6}` using the **k-det + spaced2**
+variant of the witness and campaign:
+
+- `Empirical/aslmt/v10_phaseA1_kdet_spaced2/README_aslmt_v10_phaseA1_unified_nscalable_kdet_spaced2.md`
+
+If you are writing a “solid” claim or comparing to later phases (B/C/D), prefer that driver as the reference A1 closure.

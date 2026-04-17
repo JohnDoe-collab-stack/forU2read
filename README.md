@@ -61,6 +61,14 @@ This feeds the “thesis spine”:
 - Examples:
   - `COFRS/Examples/*.lean`
 
+## Empirical status (Phase A1)
+
+The empirical A1 milestone (“stability in `n` under a single unified witness with a strict verifier”) is closed on
+`n ∈ {3,4,5,6}` with `seed=0..4` under `profile=solid` in:
+
+- `Empirical/aslmt/v10_phaseA1_kdet_spaced2/README_aslmt_v10_phaseA1_unified_nscalable_kdet_spaced2.md`
+- `Empirical/aslmt/runs/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_spaced2_20260416_074821_9fcd16977fda/`
+
 ## Build
 
 - Lean toolchain: see `lean-toolchain` (currently `leanprover/lean4:v4.30.0-rc1`).
