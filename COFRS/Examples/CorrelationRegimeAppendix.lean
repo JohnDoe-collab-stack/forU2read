@@ -2,22 +2,24 @@ import COFRS.Dynamics
 import COFRS.ConverseNormalForm
 
 /-!
-# Appendix: a finitary “correlation regime” (uniform error lower bound)
+# Appendix: a finitary “correlation regime” (positive error lower bound)
 
 The repository’s core definitions are not probabilistic: they are structural and fiber-based.
 However, the design-level meaning of “correlation-only” used in experiments can be captured
 constructively in a fully finitary way:
 
 * fix a finite fiber `Ω := FiberPt obs target_obs h`,
-* equip it with the uniform distribution (counting measure),
 * and consider predictors that depend **only** on the observable interface `obs`.
 
 If the step separates the fiber (`StepSeparatesFiber`), then any `obs`-only predictor must make
-at least one mistake on `Ω`. Under the uniform distribution, this is a strictly positive error
-probability.
+at least one mistake on `Ω`.
 
 This file formalizes the corresponding strictly finitary statement:
-nonzero error count (hence nonzero uniform error rate) for any `obs`-only Boolean predictor.
+nonzero error count for any `obs`-only Boolean predictor.
+
+It also encodes the corresponding “uniform error rate” view as a finitary fraction `errCount / |Ω|`
+(witnessed by a positive numerator together with `|Ω| > 0`), without introducing any probabilistic
+machinery.
 
 All proofs are constructive; see the `AXIOM_AUDIT` block at the end.
 -/
@@ -397,6 +399,43 @@ def errCount
     misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
       (h' := h') (step' := step') decCompat pred (E.enum i))
 
+/--
+Finitary “uniform error rate” view: a fraction `num/den` with `den = |Ω| = E.N`.
+
+We keep this lightweight and purely finitary: “rate is strictly positive” is witnessed by
+`0 < num` together with `0 < den`.
+-/
+structure ErrRate where
+  num : Nat
+  den : Nat
+  den_pos : 0 < den
+
+def errRate
+    (E : FiberEnum (P := P) obs target_obs h')
+    (hN : 0 < E.N)
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (pred : V' → Bool) : ErrRate :=
+  { num := errCount (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+      (h' := h') (step' := step') E decCompat pred
+    den := E.N
+    den_pos := by simpa using hN }
+
+theorem errRate_num_pos_of_errCount_pos
+    (E : FiberEnum (P := P) obs target_obs h')
+    (hN : 0 < E.N)
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (pred : V' → Bool)
+    (hPos :
+      0 < errCount (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+        (h' := h') (step' := step') E decCompat pred) :
+    0 < (errRate (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+      (h' := h') (step' := step') E hN decCompat pred).num := by
+  simpa [errRate] using hPos
+
 theorem errCount_pos_of_exists_misBool
     (E : FiberEnum (P := P) obs target_obs h')
     (decCompat :
@@ -466,6 +505,21 @@ theorem errCount_pos_of_not_obsPredictsStep
     (target_obs := target_obs) (h' := h') (step' := step') (E := E)
     (decCompat := decCompat) hNo pred
 
+theorem errRate_num_pos_of_not_obsPredictsStep
+    (E : FiberEnum (P := P) obs target_obs h')
+    (hN : 0 < E.N)
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (hNo : ¬ ObsPredictsStep (P := P) sem' obs target_obs step')
+    (pred : V' → Bool) :
+    0 < (errRate (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+      (h' := h') (step' := step') E hN decCompat pred).num := by
+  apply errRate_num_pos_of_errCount_pos (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+    (h' := h') (step' := step') (E := E) (hN := hN) (decCompat := decCompat) (pred := pred)
+  exact errCount_pos_of_not_obsPredictsStep (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+    (h' := h') (step' := step') (E := E) (decCompat := decCompat) hNo pred
+
 end CorrelationAppendix
 
 end Examples
@@ -484,7 +538,11 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.BoolCount.countTrue
 #print axioms PrimitiveHolonomy.Examples.BoolCount.countTrue_pos_of_exists_true
 #print axioms PrimitiveHolonomy.Examples.errCount
+#print axioms PrimitiveHolonomy.Examples.ErrRate
+#print axioms PrimitiveHolonomy.Examples.errRate
+#print axioms PrimitiveHolonomy.Examples.errRate_num_pos_of_errCount_pos
 #print axioms PrimitiveHolonomy.Examples.errCount_pos_of_exists_misBool
 #print axioms PrimitiveHolonomy.Examples.errCount_pos_of_stepSeparatesFiber
 #print axioms PrimitiveHolonomy.Examples.errCount_pos_of_not_obsPredictsStep
+#print axioms PrimitiveHolonomy.Examples.errRate_num_pos_of_not_obsPredictsStep
 /- AXIOM_AUDIT_END -/
