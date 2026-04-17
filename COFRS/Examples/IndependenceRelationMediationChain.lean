@@ -113,6 +113,110 @@ abbrev RightObsPredictsJointStep : Prop :=
   PrimitiveHolonomy.RightObsPredictsJointStep (P := P) sem obsA obsB targetA targetB step
 
 /-!
+### Canonical-mediator irreducibility (beyond step-local predictability)
+
+`LeftObsPredictsJointStep` / `RightObsPredictsJointStep` express irreducibility for a *fixed* step.
+
+Since `COFRS/Dynamics.lean` now makes the canonical mediator explicit as the full future signature `Sig`,
+we can also phrase a stronger “irreducibility” statement:
+
+> no summary that depends only on the left (resp. right) marginal observation can respect the full
+> canonical signature on a joint fiber, as soon as the joint step separates that fiber.
+
+This captures the intended meaning “the joint dynamic truth is not contained in either marginal view”
+at the level of the canonical mediator itself, not only at the level of a single-step prediction.
+-/
+
+theorem not_sigFactorsThrough_of_leftFactors
+    {Q : Type w}
+    (σ : FiberPt (P := P) (obsAB (obsA := obsA) (obsB := obsB))
+      (targetAB (targetA := targetA) (targetB := targetB)) h → Q)
+    (hσ : ∃ f : VA → Q, ∀ x, σ x = f (obsA x.1))
+    (hSep :
+      StepSeparatesFiber (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+        (targetAB (targetA := targetA) (targetB := targetB)) step) :
+    ¬ SigFactorsThrough (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+      (targetAB (targetA := targetA) (targetB := targetB)) (h := h) σ := by
+  intro hFac
+  rcases hSep with ⟨x, x', hxne, hx, hx'⟩
+  rcases hσ with ⟨f, hf⟩
+  have hAx : obsA x.1 = targetA h := congrArg Prod.fst x.2
+  have hAx' : obsA x'.1 = targetA h := congrArg Prod.fst x'.2
+  have hEq : σ x = σ x' := by
+    calc
+      σ x = f (obsA x.1) := hf x
+      _ = f (targetA h) := congrArg f hAx
+      _ = f (obsA x'.1) := (congrArg f hAx').symm
+      _ = σ x' := (hf x').symm
+  have hSig :
+      ∀ s, Sig (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+        (targetAB (targetA := targetA) (targetB := targetB)) x s ↔
+          Sig (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+            (targetAB (targetA := targetA) (targetB := targetB)) x' s :=
+    hFac (x := x) (x' := x') hEq
+  let s : Future (P := P) h := ⟨k, step⟩
+  have hStep := hSig s
+  -- unfold `Sig` on the specific future step `⟨k, step⟩`
+  dsimp [Sig, CompatibleFuture, CompatibleFuture] at hStep
+  exact hx' (hStep.mp hx)
+
+theorem not_sigFactorsThrough_of_rightFactors
+    {Q : Type w}
+    (σ : FiberPt (P := P) (obsAB (obsA := obsA) (obsB := obsB))
+      (targetAB (targetA := targetA) (targetB := targetB)) h → Q)
+    (hσ : ∃ f : VB → Q, ∀ x, σ x = f (obsB x.1))
+    (hSep :
+      StepSeparatesFiber (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+        (targetAB (targetA := targetA) (targetB := targetB)) step) :
+    ¬ SigFactorsThrough (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+      (targetAB (targetA := targetA) (targetB := targetB)) (h := h) σ := by
+  intro hFac
+  rcases hSep with ⟨x, x', hxne, hx, hx'⟩
+  rcases hσ with ⟨f, hf⟩
+  have hBx : obsB x.1 = targetB h := congrArg Prod.snd x.2
+  have hBx' : obsB x'.1 = targetB h := congrArg Prod.snd x'.2
+  have hEq : σ x = σ x' := by
+    calc
+      σ x = f (obsB x.1) := hf x
+      _ = f (targetB h) := congrArg f hBx
+      _ = f (obsB x'.1) := (congrArg f hBx').symm
+      _ = σ x' := (hf x').symm
+  have hSig :
+      ∀ s, Sig (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+        (targetAB (targetA := targetA) (targetB := targetB)) x s ↔
+          Sig (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+            (targetAB (targetA := targetA) (targetB := targetB)) x' s :=
+    hFac (x := x) (x' := x') hEq
+  let s : Future (P := P) h := ⟨k, step⟩
+  have hStep := hSig s
+  dsimp [Sig, CompatibleFuture, CompatibleFuture] at hStep
+  exact hx' (hStep.mp hx)
+
+/-!
+### Using global signature compression to obtain step-local lifts
+
+`CompatSigDimLe` is a global compression of the canonical mediator `Sig` at a prefix `h`.
+`Dynamics.lean` provides the bridge from `CompatSigDimLe` to step-local `RefiningLift`.
+
+This is useful in the two-interface file because it lets us separate:
+
+* the *existence* of a finite mediator (as a compression of `Sig`), and
+* step-local minimality statements (which are genuinely step-local and live in `CompatDimEq`).
+-/
+
+theorem refiningLift_of_jointCompatSigDimLe
+    {n : Nat}
+    (hSig :
+      CompatSigDimLe (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+        (targetAB (targetA := targetA) (targetB := targetB)) (h := h) n) :
+    RefiningLift (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+      (targetAB (targetA := targetA) (targetB := targetB)) h step n := by
+  exact refiningLift_of_compatSigDimLe (P := P) sem
+    (obsAB (obsA := obsA) (obsB := obsB))
+    (targetAB (targetA := targetA) (targetB := targetB))
+    (h := h) (k := k) (step := step) (n := n) hSig
+
+/-!
 ### Mediator descent (irreducibility at the mediator level)
 
 The previous “irreducibility” notion was phrased at the level of **predicting the joint dynamic truth**
@@ -247,6 +351,52 @@ theorem not_rightObsPredictsJointStep_of_stepSeparatesJointFiber
       (obs := (obsAB (obsA := obsA) (obsB := obsB)))
       (target_obs := (targetAB (targetA := targetA) (targetB := targetB)))
       (h := h) (k := k) (step := step) hSep) hConst
+
+/-!
+### End-to-end (joint, global mediator existence)
+
+This is a light wrapper that combines:
+
+* joint separation for the chosen `step`, and
+* global signature compression on the joint interface (`CompatSigDimLe`),
+
+to produce:
+
+* marginal irreducibility for this `step` (`¬ LeftObsPredictsJointStep` and `¬ RightObsPredictsJointStep`), and
+* a step-local finite lift `RefiningLift … step n` witnessed by the global compression.
+
+Unlike `endToEnd_joint`, this wrapper does **not** claim step-local minimality: that part remains
+genuinely step-local (`CompatDimEq … step n`).
+-/
+
+theorem endToEnd_joint_global
+    {n : Nat}
+    (hSepAB :
+      StepSeparatesFiber (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+        (targetAB (targetA := targetA) (targetB := targetB)) step)
+    (hSigAB :
+      CompatSigDimLe (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+        (targetAB (targetA := targetA) (targetB := targetB)) (h := h) n) :
+    (¬ LeftObsPredictsJointStep (P := P) (sem := sem) (obsA := obsA) (obsB := obsB)
+        (targetA := targetA) (targetB := targetB) (h := h) (k := k) step)
+      ∧ (¬ RightObsPredictsJointStep (P := P) (sem := sem) (obsA := obsA) (obsB := obsB)
+        (targetA := targetA) (targetB := targetB) (h := h) (k := k) step)
+      ∧ RefiningLift (P := P) sem (obsAB (obsA := obsA) (obsB := obsB))
+        (targetAB (targetA := targetA) (targetB := targetB)) h step n := by
+  have hNoL :=
+    not_leftObsPredictsJointStep_of_stepSeparatesJointFiber
+      (P := P) (sem := sem) (obsA := obsA) (obsB := obsB)
+      (targetA := targetA) (targetB := targetB) (h := h) (k := k) (step := step) hSepAB
+  have hNoR :=
+    not_rightObsPredictsJointStep_of_stepSeparatesJointFiber
+      (P := P) (sem := sem) (obsA := obsA) (obsB := obsB)
+      (targetA := targetA) (targetB := targetB) (h := h) (k := k) (step := step) hSepAB
+  have hLift :=
+    refiningLift_of_jointCompatSigDimLe
+      (P := P) (sem := sem) (obsA := obsA) (obsB := obsB)
+      (targetA := targetA) (targetB := targetB) (h := h) (k := k) (step := step)
+      (n := n) hSigAB
+  exact ⟨hNoL, hNoR, hLift⟩
 
 /-!
 ## (1) Diagonal obstruction certifies marginal no-go (two interfaces)
@@ -619,6 +769,10 @@ end PrimitiveHolonomy
 /- AXIOM_AUDIT_BEGIN -/
 #print axioms PrimitiveHolonomy.Examples.compatibleA_of_compatibleAB
 #print axioms PrimitiveHolonomy.Examples.compatibleB_of_compatibleAB
+#print axioms PrimitiveHolonomy.Examples.not_sigFactorsThrough_of_leftFactors
+#print axioms PrimitiveHolonomy.Examples.not_sigFactorsThrough_of_rightFactors
+#print axioms PrimitiveHolonomy.Examples.refiningLift_of_jointCompatSigDimLe
+#print axioms PrimitiveHolonomy.Examples.endToEnd_joint_global
 #print axioms PrimitiveHolonomy.Examples.leftObsPredictsJointStep_of_mediatorDescendsLeft
 #print axioms PrimitiveHolonomy.Examples.rightObsPredictsJointStep_of_mediatorDescendsRight
 #print axioms PrimitiveHolonomy.Examples.not_mediatorDescendsLeft_of_stepSeparatesJointFiber
