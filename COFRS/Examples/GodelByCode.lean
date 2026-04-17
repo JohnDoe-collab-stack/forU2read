@@ -585,6 +585,14 @@ theorem diag_not_compatSigDimLe_one (e : Nat) :
       (lagEvent_at_diag (Provable := Provable) (U := U) (D := D) e)
   exact hNoDim1 hDim1
 
+/-- On the diagonal fiber, global `Fin 0` compression of `Sig` is impossible. -/
+theorem diag_not_compatSigDimLe_zero (e : Nat) :
+    ¬ CompatSigDimLe (P := Nat) (@semantics Provable) obs target_obs
+        (h := g (D := D) e) 0 := by
+  rintro ⟨σ, _pred, _Hcorr⟩
+  have h0 : Fin 0 := σ (x (D := D) e)
+  exact Fin.elim0 h0
+
 /-- Corollary: on the diagonal fiber, the canonical mediator `Sig` factors through `Fin 2`. -/
 theorem diag_sigFactorsThrough_two (e : Nat) :
     ∃ σ : FiberPt (P := Nat) obs target_obs (g (D := D) e) → Fin 2,
@@ -706,6 +714,27 @@ theorem diag_hidden_eq_iff_sameSig (e : Nat)
     constructor
     · intro _h; intro step; rfl
     · intro _hAll; rfl
+
+/-- On the diagonal fiber, the canonical mediator has global exact dimension `2`. -/
+theorem diag_compatSigDimEqTwo (e : Nat) :
+    CompatSigDimEq (P := Nat) (@semantics Provable) obs target_obs
+      (h := g (D := D) e) 2 := by
+  refine ⟨diag_compatSigDimLe_two (Provable := Provable) (U := U) (D := D) e, ?_⟩
+  intro m hm
+  cases m with
+  | zero =>
+      exact diag_not_compatSigDimLe_zero (Provable := Provable) (U := U) (D := D) e
+  | succ m =>
+      cases m with
+      | zero =>
+          -- m = 1
+          exact diag_not_compatSigDimLe_one (Provable := Provable) (U := U) (D := D) e
+      | succ m =>
+          -- m ≥ 2 contradicts `m < 2`
+          intro _h
+          have hge : 2 ≤ Nat.succ (Nat.succ m) :=
+            Nat.succ_le_succ (Nat.succ_le_succ (Nat.zero_le m))
+          exact False.elim ((Nat.not_lt_of_ge hge) hm)
 
 /-- The diagonal compatibility predicate has dimension exactly 2. -/
 theorem diag_compatDimEqTwo_step (e : Nat) :
@@ -1309,9 +1338,11 @@ Auto-generated: `#print axioms` for each non-private `theorem`/`lemma` in this f
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_hiddenCompatClassifiedByFin_two_step
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_compatDimLe_two_step
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_compatSigDimLe_two
+#print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_not_compatSigDimLe_zero
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_not_compatSigDimLe_one
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_sigFactorsThrough_two
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_hidden_eq_iff_sameSig
+#print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_compatSigDimEqTwo
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_compatDimEqTwo_step
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.codeRepairsDiagonalCell_iff_autoRegulatedSingleton
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.not_codeRepairsDiagonalCell

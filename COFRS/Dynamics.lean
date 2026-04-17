@@ -161,6 +161,16 @@ def CompatSigDimLe
       (pred : Fin n → Future (P := P) h → Prop),
     ∀ x step, pred (σ x) step ↔ CompatibleFuture (P := P) sem obs target_obs step x
 
+/--
+Exact global signature dimension `n`: globally compressible into `Fin n`,
+and not globally compressible into any strict smaller `m < n`.
+-/
+def CompatSigDimEq
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P} (n : Nat) : Prop :=
+  CompatSigDimLe (P := P) sem obs target_obs (h := h) n ∧
+    ∀ m : Nat, m < n → ¬ CompatSigDimLe (P := P) sem obs target_obs (h := h) m
+
 theorem sigFactorsThrough_of_compatSigDimLe
     {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
     {h : P} {n : Nat} :
@@ -1302,6 +1312,7 @@ ordered by line of appearance.
 #print axioms PrimitiveHolonomy.SigFactorsThrough
 #print axioms PrimitiveHolonomy.sigFactorsThrough_of_summary_correct
 #print axioms PrimitiveHolonomy.CompatSigDimLe
+#print axioms PrimitiveHolonomy.CompatSigDimEq
 #print axioms PrimitiveHolonomy.sigFactorsThrough_of_compatSigDimLe
 #print axioms PrimitiveHolonomy.compatSigDimLe_of_sigFactorsThrough
 #print axioms PrimitiveHolonomy.compatSigDimLe_iff_exists_sigFactorsThrough
