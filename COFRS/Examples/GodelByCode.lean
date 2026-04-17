@@ -594,6 +594,119 @@ theorem diag_sigFactorsThrough_two (e : Nat) :
       (h := g (D := D) e) (n := 2)
       (diag_compatSigDimLe_two (Provable := Provable) (U := U) (D := D) e)
 
+/--
+On the diagonal fiber, the hidden bit classifies *exactly* the canonical future signature:
+two states have the same hidden bit iff they have the same `Sig` on all future steps.
+-/
+theorem diag_hidden_eq_iff_sameSig (e : Nat)
+    (z z' : FiberPt (P := Nat) obs target_obs (g (D := D) e)) :
+    z.1.hidden = z'.1.hidden ↔
+      (∀ step : Future (P := Nat) (g (D := D) e),
+        Sig (P := Nat) (@semantics Provable) obs target_obs z step ↔
+          Sig (P := Nat) (@semantics Provable) obs target_obs z' step) := by
+  rcases diag_fiber_cases (D := D) e z with rfl | rfl <;>
+    rcases diag_fiber_cases (D := D) e z' with rfl | rfl
+  · -- (x, x)
+    constructor
+    · intro _h; intro step; rfl
+    · intro _hAll; rfl
+  · -- (x, x')
+    constructor
+    · intro h
+      cases h
+    · intro hAll
+      have hspec := (D.diag_spec e)
+      let step0 : Future (P := Nat) (g (D := D) e) := ⟨g (D := D) e, PPath.step (g (D := D) e)⟩
+      have hIff := hAll step0
+      have hContra : False := by
+        by_cases hU : U e (g (D := D) e) = false
+        · have hP : Provable (g (D := D) e) := (hspec).2 hU
+          have hxC :
+              Compatible (P := Nat) (@semantics Provable) obs target_obs (PPath.step (g (D := D) e))
+                (x (D := D) e) :=
+            compatible_step_x_of_provable (Provable := Provable) (U := U) (D := D) e hP
+          have hx'C :
+              ¬ Compatible (P := Nat) (@semantics Provable) obs target_obs (PPath.step (g (D := D) e))
+                  (x' (D := D) e) :=
+            not_compatible_step_x'_of_provable (Provable := Provable) (U := U) (D := D) e hP
+          have hxSig :
+              Sig (P := Nat) (@semantics Provable) obs target_obs (x (D := D) e) step0 := by
+            simpa [Sig, CompatibleFuture, step0] using hxC
+          have hx'Sig :
+              ¬ Sig (P := Nat) (@semantics Provable) obs target_obs (x' (D := D) e) step0 := by
+            simpa [Sig, CompatibleFuture, step0] using hx'C
+          exact hx'Sig (hIff.mp hxSig)
+        · have hNP : ¬ Provable (g (D := D) e) := by
+            intro hP
+            have : U e (g (D := D) e) = false := (hspec).1 hP
+            exact hU this
+          have hxC :
+              ¬ Compatible (P := Nat) (@semantics Provable) obs target_obs (PPath.step (g (D := D) e))
+                  (x (D := D) e) :=
+            not_compatible_step_x_of_not_provable (Provable := Provable) (U := U) (D := D) e hNP
+          have hx'C :
+              Compatible (P := Nat) (@semantics Provable) obs target_obs (PPath.step (g (D := D) e))
+                (x' (D := D) e) :=
+            compatible_step_x'_of_not_provable (Provable := Provable) (U := U) (D := D) e hNP
+          have hxSig :
+              ¬ Sig (P := Nat) (@semantics Provable) obs target_obs (x (D := D) e) step0 := by
+            simpa [Sig, CompatibleFuture, step0] using hxC
+          have hx'Sig :
+              Sig (P := Nat) (@semantics Provable) obs target_obs (x' (D := D) e) step0 := by
+            simpa [Sig, CompatibleFuture, step0] using hx'C
+          exact hxSig (hIff.mpr hx'Sig)
+      exact False.elim hContra
+  · -- (x', x)
+    constructor
+    · intro h
+      cases h
+    · intro hAll
+      have hspec := (D.diag_spec e)
+      let step0 : Future (P := Nat) (g (D := D) e) := ⟨g (D := D) e, PPath.step (g (D := D) e)⟩
+      have hIff := hAll step0
+      have hContra : False := by
+        by_cases hU : U e (g (D := D) e) = false
+        · have hP : Provable (g (D := D) e) := (hspec).2 hU
+          have hxC :
+              Compatible (P := Nat) (@semantics Provable) obs target_obs (PPath.step (g (D := D) e))
+                (x (D := D) e) :=
+            compatible_step_x_of_provable (Provable := Provable) (U := U) (D := D) e hP
+          have hx'C :
+              ¬ Compatible (P := Nat) (@semantics Provable) obs target_obs (PPath.step (g (D := D) e))
+                  (x' (D := D) e) :=
+            not_compatible_step_x'_of_provable (Provable := Provable) (U := U) (D := D) e hP
+          have hxSig :
+              Sig (P := Nat) (@semantics Provable) obs target_obs (x (D := D) e) step0 := by
+            simpa [Sig, CompatibleFuture, step0] using hxC
+          have hx'Sig :
+              ¬ Sig (P := Nat) (@semantics Provable) obs target_obs (x' (D := D) e) step0 := by
+            simpa [Sig, CompatibleFuture, step0] using hx'C
+          exact hx'Sig (hIff.mpr hxSig)
+        · have hNP : ¬ Provable (g (D := D) e) := by
+            intro hP
+            have : U e (g (D := D) e) = false := (hspec).1 hP
+            exact hU this
+          have hxC :
+              ¬ Compatible (P := Nat) (@semantics Provable) obs target_obs (PPath.step (g (D := D) e))
+                  (x (D := D) e) :=
+            not_compatible_step_x_of_not_provable (Provable := Provable) (U := U) (D := D) e hNP
+          have hx'C :
+              Compatible (P := Nat) (@semantics Provable) obs target_obs (PPath.step (g (D := D) e))
+                (x' (D := D) e) :=
+            compatible_step_x'_of_not_provable (Provable := Provable) (U := U) (D := D) e hNP
+          have hxSig :
+              ¬ Sig (P := Nat) (@semantics Provable) obs target_obs (x (D := D) e) step0 := by
+            simpa [Sig, CompatibleFuture, step0] using hxC
+          have hx'Sig :
+              Sig (P := Nat) (@semantics Provable) obs target_obs (x' (D := D) e) step0 := by
+            simpa [Sig, CompatibleFuture, step0] using hx'C
+          exact hxSig (hIff.mp hx'Sig)
+      exact False.elim hContra
+  · -- (x', x')
+    constructor
+    · intro _h; intro step; rfl
+    · intro _hAll; rfl
+
 /-- The diagonal compatibility predicate has dimension exactly 2. -/
 theorem diag_compatDimEqTwo_step (e : Nat) :
     CompatDimEqTwo (P := Nat) (@semantics Provable) obs target_obs
@@ -1198,6 +1311,7 @@ Auto-generated: `#print axioms` for each non-private `theorem`/`lemma` in this f
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_compatSigDimLe_two
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_not_compatSigDimLe_one
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_sigFactorsThrough_two
+#print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_hidden_eq_iff_sameSig
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.diag_compatDimEqTwo_step
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.codeRepairsDiagonalCell_iff_autoRegulatedSingleton
 #print axioms PrimitiveHolonomy.HolonomicGodelByCode.not_codeRepairsDiagonalCell
