@@ -56,9 +56,32 @@ Un test “consistant” doit vérifier simultanément :
   (voir le README de `v9_unified` pour les runs de référence).
 - `v10_phaseA1` : couche **campagne+verifier matrice** pour exécuter **Phase A1** en une seule passe (multi-`n`, multi-`z`, multi-seeds)
   en s’appuyant sur le témoin `v9_unified` *n-scalable* (verrou barrière + injectivité).
+- `v10_phaseA1_kdet_spaced2` : même protocole A1 avec un témoin **spaced2** (anti-overlap) ; sur le run
+  `aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_spaced2_20260416_074821_9fcd16977fda`,
+  **Phase A1 est fermée** sur `n ∈ {3,4,5,6}` avec `seed=0..4` (référence `z=n` OK sur IID/OOD, `z<n` FAIL sur l’image-barrier, causal gates OK).
 
 Conclusion : le spine est présent (et il existe déjà une fermeture stricte à `n=4`), mais l’universalité demande encore
 la fermeture de **Phase A1** (stabilité sur `n`) puis la généralisation (familles / solveurs / converse).
+
+### 2.1 Résultat A1 (tableau minimal)
+
+Run : `Empirical/aslmt/runs/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_spaced2_20260416_074821_9fcd16977fda/`
+Master : `Empirical/aslmt/runs/aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_spaced2_20260416_074821_9fcd16977fda/v10_master_20260416_074821_9fcd16977fda.jsonl`
+
+Lecture (résultat “publisable” au niveau Phase A1) :
+
+> Sous `profile=solid`, la chaîne unifiée (double barrière + min-lift + causal gates) est stable quand `n` varie :
+> pour `n=3,4,5,6` et `seed=0..4`, le groupe de référence `z=n` ferme strictement (IID ∪ OOD), et des groupes `z<n`
+> échouent strictement sur l’image-barrier, avec barrières valides, baselines à 0, ablation à 0, et swap-follow qui suit l’échec.
+
+Table (min sur seeds 0..4, deux splits) :
+
+| `n` | `z=n` (réf) | `z<n` testés | Réf : `A_img_min` / `A_cue_min` (IID/OOD) | Sous-capacité : `A_img_min` (IID/OOD) |
+|---:|:--:|:--|:--|:--|
+| 3 | PASS | `z=2` | `1.0 / 1.0` | `0.6719 / 0.6719` |
+| 4 | PASS | `z=3`, `z=2` | `1.0 / 1.0` | `0.8281/0.7500`, `0.6719/0.6719` |
+| 5 | PASS | `z=4`, `z=2` | `1.0 / 1.0` | `0.8281/0.8906`, `0.5938/0.5625` |
+| 6 | PASS | `z=5`, `z=3` | `1.0 / 1.0` | `0.9062/0.9375`, `0.7812/0.7969` *(OOD cue drops to `0.9688` for `z=3`)* |
 
 ## 3) Roadmap (ordre recommandé)
 
