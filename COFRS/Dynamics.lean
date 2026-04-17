@@ -224,6 +224,60 @@ by
   · rintro ⟨σ, hσ⟩
     exact compatSigDimLe_of_sigFactorsThrough (P := P) sem obs target_obs (h := h) (n := n) σ hσ
 
+/-- Monotonicity: if `CompatSigDimLe … m` and `m ≤ n`, then `CompatSigDimLe … n`. -/
+theorem compatSigDimLe_mono
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P} {m n : Nat} (hmn : m ≤ n) :
+    CompatSigDimLe (P := P) sem obs target_obs (h := h) m →
+      CompatSigDimLe (P := P) sem obs target_obs (h := h) n := by
+  rintro ⟨σ, pred, Hcorr⟩
+  let emb : Fin m → Fin n := PrimitiveHolonomy.Combinatorics.finEmbed hmn
+  let σ' : FiberPt (P := P) obs target_obs h → Fin n := fun x => emb (σ x)
+  let pred' : Fin n → Future (P := P) h → Prop :=
+    fun i step => ∃ j : Fin m, emb j = i ∧ pred j step
+  refine ⟨σ', pred', ?_⟩
+  intro x step
+  constructor
+  · rintro ⟨j, hj, hjPred⟩
+    have : j = σ x := by
+      apply PrimitiveHolonomy.Combinatorics.finEmbed_injective hmn
+      simpa [σ'] using hj
+    subst this
+    exact (Hcorr x step).1 hjPred
+  · intro hxCompat
+    have : pred (σ x) step := (Hcorr x step).2 hxCompat
+    refine ⟨σ x, rfl, this⟩
+
+/--
+Exactness packaging: `CompatSigDimEq … n` yields a finite summary `σ : fiber → Fin n`
+that respects `Sig`, together with the minimality statement expressed directly on summaries.
+-/
+theorem exists_sigFactorsThrough_of_compatSigDimEq
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P} {n : Nat} :
+    CompatSigDimEq (P := P) sem obs target_obs (h := h) n →
+      ∃ σ : FiberPt (P := P) obs target_obs h → Fin n,
+        SigFactorsThrough (P := P) sem obs target_obs σ
+        ∧ ∀ m : Nat, m < n →
+            ¬ (∃ σm : FiberPt (P := P) obs target_obs h → Fin m,
+                SigFactorsThrough (P := P) sem obs target_obs σm) := by
+  rintro ⟨hLe, hMin⟩
+  rcases sigFactorsThrough_of_compatSigDimLe (P := P) sem obs target_obs (h := h) (n := n) hLe with
+    ⟨σ, hσ⟩
+  refine ⟨σ, hσ, ?_⟩
+  intro m hm
+  rintro ⟨σm, hσm⟩
+  have hLe_m :
+      CompatSigDimLe (P := P) sem obs target_obs (h := h) m :=
+    compatSigDimLe_of_sigFactorsThrough (P := P) sem obs target_obs (h := h) (n := m) σm hσm
+  exact (hMin m hm) hLe_m
+
+/-- Exact global dimension `2` (alias for readability). -/
+abbrev CompatSigDimEqTwo
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P} : Prop :=
+  CompatSigDimEq (P := P) sem obs target_obs (h := h) 2
+
 theorem summary_separates_compatible_witness
     {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
     {h : P}
@@ -1316,8 +1370,9 @@ ordered by line of appearance.
 #print axioms PrimitiveHolonomy.sigFactorsThrough_of_compatSigDimLe
 #print axioms PrimitiveHolonomy.compatSigDimLe_of_sigFactorsThrough
 #print axioms PrimitiveHolonomy.compatSigDimLe_iff_exists_sigFactorsThrough
-#print axioms PrimitiveHolonomy.compatDimLe_of_compatSigDimLe
-#print axioms PrimitiveHolonomy.refiningLift_of_compatSigDimLe
+#print axioms PrimitiveHolonomy.compatSigDimLe_mono
+#print axioms PrimitiveHolonomy.exists_sigFactorsThrough_of_compatSigDimEq
+#print axioms PrimitiveHolonomy.CompatSigDimEqTwo
 #print axioms PrimitiveHolonomy.summary_separates_compatible_witness
 #print axioms PrimitiveHolonomy.lagEvent_gives_summary_witness
 #print axioms PrimitiveHolonomy.StepSeparatesFiber
@@ -1344,6 +1399,8 @@ ordered by line of appearance.
 #print axioms PrimitiveHolonomy.refiningLift_of_compatDimLe
 #print axioms PrimitiveHolonomy.compatDimLe_of_refiningLift
 #print axioms PrimitiveHolonomy.compatDimLe_iff_refiningLift
+#print axioms PrimitiveHolonomy.compatDimLe_of_compatSigDimLe
+#print axioms PrimitiveHolonomy.refiningLift_of_compatSigDimLe
 #print axioms PrimitiveHolonomy.compatDimLe_mono
 #print axioms PrimitiveHolonomy.CompatDimEq
 #print axioms PrimitiveHolonomy.refiningLift_of_compatDimEq
