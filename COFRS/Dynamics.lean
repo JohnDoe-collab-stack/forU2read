@@ -172,6 +172,48 @@ by
   refine ⟨σ, ?_⟩
   exact sigFactorsThrough_of_summary_correct (P := P) sem obs target_obs σ pred Hcorr
 
+/-- A finite summary that respects `Sig` yields a global `CompatSigDimLe` witness. -/
+theorem compatSigDimLe_of_sigFactorsThrough
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P} {n : Nat}
+    (σ : FiberPt (P := P) obs target_obs h → Fin n)
+    (hσ : SigFactorsThrough (P := P) sem obs target_obs σ) :
+    CompatSigDimLe (P := P) sem obs target_obs (h := h) n :=
+by
+  let pred : Fin n → Future (P := P) h → Prop :=
+    fun i step =>
+      ∃ x' : FiberPt (P := P) obs target_obs h,
+        σ x' = i ∧ CompatibleFuture (P := P) sem obs target_obs step x'
+  refine ⟨σ, pred, ?_⟩
+  intro x step
+  constructor
+  · rintro ⟨x', hx', hxCompat⟩
+    have hEq : σ x' = σ x := hx'.trans rfl
+    have hSig :
+        Sig (P := P) sem obs target_obs x' step ↔ Sig (P := P) sem obs target_obs x step :=
+      (hσ (x := x') (x' := x) hEq) step
+    -- `Sig … step` is definitionaly `CompatibleFuture … step …`
+    exact (hSig.mp hxCompat)
+  · intro hxCompat
+    exact ⟨x, rfl, hxCompat⟩
+
+/--
+Global finite compression of `Sig` is equivalent to the existence of a finite summary that
+respects `Sig` (in the sense of `SigFactorsThrough`).
+-/
+theorem compatSigDimLe_iff_exists_sigFactorsThrough
+    {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
+    {h : P} (n : Nat) :
+    CompatSigDimLe (P := P) sem obs target_obs (h := h) n ↔
+      ∃ σ : FiberPt (P := P) obs target_obs h → Fin n,
+        SigFactorsThrough (P := P) sem obs target_obs σ :=
+by
+  constructor
+  · intro hSig
+    exact sigFactorsThrough_of_compatSigDimLe (P := P) sem obs target_obs (h := h) (n := n) hSig
+  · rintro ⟨σ, hσ⟩
+    exact compatSigDimLe_of_sigFactorsThrough (P := P) sem obs target_obs (h := h) (n := n) σ hσ
+
 theorem summary_separates_compatible_witness
     {S V : Type w} (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
     {h : P}
@@ -1261,6 +1303,8 @@ ordered by line of appearance.
 #print axioms PrimitiveHolonomy.sigFactorsThrough_of_summary_correct
 #print axioms PrimitiveHolonomy.CompatSigDimLe
 #print axioms PrimitiveHolonomy.sigFactorsThrough_of_compatSigDimLe
+#print axioms PrimitiveHolonomy.compatSigDimLe_of_sigFactorsThrough
+#print axioms PrimitiveHolonomy.compatSigDimLe_iff_exists_sigFactorsThrough
 #print axioms PrimitiveHolonomy.compatDimLe_of_compatSigDimLe
 #print axioms PrimitiveHolonomy.refiningLift_of_compatSigDimLe
 #print axioms PrimitiveHolonomy.summary_separates_compatible_witness
