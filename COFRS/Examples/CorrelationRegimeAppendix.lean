@@ -278,6 +278,40 @@ theorem exists_misBool_of_stepSeparatesFiber
           rw [hpred]
           exact hCompatTrue
 
+/-!
+### From `¬ ObsPredictsStep` to an explicit mistake
+
+The core development proves non-closure as `¬ ObsPredictsStep`. The converse/normal-form layer
+(`COFRS/ConverseNormalForm.lean`) turns that negative statement into an explicit fiber separation,
+provided we have:
+
+- an explicit finite enumeration of the fiber (`FiberEnum`), and
+- a pointwise decidability oracle for `Compatible` on that fiber.
+
+This lemma packages the “there exists at least one mistake” form directly from `¬ ObsPredictsStep`,
+so the appendix has both the “count > 0” statement and the explicit witness form.
+-/
+theorem exists_misBool_of_not_obsPredictsStep
+    (E : FiberEnum (P := P) obs target_obs h')
+    (decCompat :
+      ∀ x : FiberPt (P := P) obs target_obs h',
+        Decidable (Compatible (P := P) sem' obs target_obs step' x))
+    (hNo : ¬ ObsPredictsStep (P := P) sem' obs target_obs step')
+    (pred : V' → Bool) :
+    ∃ x : FiberPt (P := P) obs target_obs h',
+      misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+        (h' := h') (step' := step') decCompat pred x = true := by
+  have hOr :=
+    PrimitiveHolonomy.obsPredictsStep_or_stepSeparatesFiber_of_fiberEnum
+      (P := P) (sem := sem') (obs := obs) (target_obs := target_obs)
+      (step := step') E decCompat
+  cases hOr with
+  | inl hObs =>
+      exact False.elim (hNo hObs)
+  | inr hSep =>
+      exact exists_misBool_of_stepSeparatesFiber (P := P) (sem' := sem') (obs := obs)
+        (target_obs := target_obs) (h' := h') (step' := step') decCompat hSep pred
+
 namespace BoolCount
 
 private def liftFin {n : Nat} : Fin n → Fin (Nat.succ n) :=
@@ -426,17 +460,11 @@ theorem errCount_pos_of_not_obsPredictsStep
     (pred : V' → Bool) :
     0 < errCount (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
       (h' := h') (step' := step') E decCompat pred := by
-  have hOr :=
-    PrimitiveHolonomy.obsPredictsStep_or_stepSeparatesFiber_of_fiberEnum
-      (P := P) (sem := sem') (obs := obs) (target_obs := target_obs)
-      (step := step') E decCompat
-  cases hOr with
-  | inl hObs =>
-      exact False.elim (hNo hObs)
-  | inr hSep =>
-      exact errCount_pos_of_stepSeparatesFiber (P := P) (sem' := sem') (obs := obs)
-        (target_obs := target_obs) (h' := h') (step' := step') (E := E)
-        (decCompat := decCompat) hSep pred
+  apply errCount_pos_of_exists_misBool (P := P) (sem' := sem') (obs := obs) (target_obs := target_obs)
+    (h' := h') (step' := step') (E := E) (decCompat := decCompat) (pred := pred)
+  exact exists_misBool_of_not_obsPredictsStep (P := P) (sem' := sem') (obs := obs)
+    (target_obs := target_obs) (h' := h') (step' := step') (E := E)
+    (decCompat := decCompat) hNo pred
 
 end CorrelationAppendix
 
@@ -452,6 +480,7 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.obsPredictsStep_of_correlationallyCorrect
 #print axioms PrimitiveHolonomy.Examples.not_correlationallyCorrect_of_not_obsPredictsStep
 #print axioms PrimitiveHolonomy.Examples.exists_misBool_of_stepSeparatesFiber
+#print axioms PrimitiveHolonomy.Examples.exists_misBool_of_not_obsPredictsStep
 #print axioms PrimitiveHolonomy.Examples.BoolCount.countTrue
 #print axioms PrimitiveHolonomy.Examples.BoolCount.countTrue_pos_of_exists_true
 #print axioms PrimitiveHolonomy.Examples.errCount
