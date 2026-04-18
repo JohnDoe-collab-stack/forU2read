@@ -2,7 +2,7 @@ import COFRS.Dynamics
 import COFRS.Examples.GodelByCode
 
 /-!
-# Thesis spine (Lean): diagonalization ⇒ no-go obs-only ⇒ forced finite lift ⇒ testable causal signature
+# Core theorem chain (Lean): diagonalization ⇒ no-go obs-only ⇒ forced finite lift ⇒ testable causal signature
 
 This file is a **single place** where the project’s thesis sentence is expressed as Lean theorems.
 It does not change the repository’s objective; it only makes the objective *checkable*.
