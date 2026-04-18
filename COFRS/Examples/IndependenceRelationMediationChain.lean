@@ -3,7 +3,7 @@ import COFRS.ConverseNormalForm
 import COFRS.Examples.DiagonalizationMediationCausalityThesis
 
 /-!
-# Independence → relation → mediator (Lean spine, two interfaces)
+# Independence → relation → mediator (reusable theorem chain, two interfaces)
 
 This file makes **operationally checkable** a long-form chain that is used throughout the project:
 
@@ -692,13 +692,13 @@ predicate intended as a reusable **joint-level** invariant name:
 * it packages separation and minimal finite repairability on the joint interface `obsAB`,
 * and irreducibility of predicting the **joint** truth from either marginal projection.
 
-It is not the full narrative wrapper: in particular, it does not include marginal diagonal
+It is not the full end-to-end wrapper: in particular, it does not include marginal diagonal
 certification (`LagEvent` on each margin) nor the constructive extraction of marginal separation
 from marginal no-go statements. Those are bundled in `endToEnd_full` / `endToEnd_full_with_causalSignature2`.
 
 The lemmas below show:
 
-* how the joint spine implies the joint-level profile; and
+* how the joint-level theorems imply the joint-level profile; and
 * how the profile yields the strongest “irreducibility” consequences used in high level statements
   (non-descent of the mediator to either margin, and in the binary case a causal signature).
 -/
