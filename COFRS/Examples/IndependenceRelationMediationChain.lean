@@ -157,7 +157,7 @@ theorem not_sigFactorsThrough_of_leftFactors
   let s : Future (P := P) h := ⟨k, step⟩
   have hStep := hSig s
   -- unfold `Sig` on the specific future step `⟨k, step⟩`
-  dsimp [Sig, CompatibleFuture, CompatibleFuture] at hStep
+  dsimp [Sig, CompatibleFuture] at hStep
   exact hx' (hStep.mp hx)
 
 theorem not_sigFactorsThrough_of_rightFactors
@@ -189,7 +189,7 @@ theorem not_sigFactorsThrough_of_rightFactors
     hFac (x := x) (x' := x') hEq
   let s : Future (P := P) h := ⟨k, step⟩
   have hStep := hSig s
-  dsimp [Sig, CompatibleFuture, CompatibleFuture] at hStep
+  dsimp [Sig, CompatibleFuture] at hStep
   exact hx' (hStep.mp hx)
 
 /-!
@@ -222,7 +222,7 @@ theorem refiningLift_of_jointCompatSigDimLe
 The previous “irreducibility” notion was phrased at the level of **predicting the joint dynamic truth**
 from a marginal projection.
 
-To express the strongest form used in the thesis narrative, we also define “descent” for the mediator:
+To express the strongest form used in high level project statements, we also define “descent” for the mediator:
 the finite supplement carried by a `RefiningLiftData` on the joint fiber should not be reconstructible
 from either marginal observation alone.
 
@@ -582,9 +582,9 @@ theorem not_mediatorDescendsRight_of_stepSeparatesJointFiber
     (targetA := targetA) (targetB := targetB) (h := h) (k := k) step hSep
 
 /-!
-## (5) End-to-end wrapper (maximal form used in the thesis narrative)
+## (5) End-to-end wrapper (maximal form used in high level project statements)
 
-This closes the “single spine theorem” form that mentions:
+This closes the “single end-to-end theorem” form that mentions:
 
 * **two marginal diagonal obstructions** (lag events) and their constructive separation witnesses;
 * **joint separation** (the same joint dynamic truth varies on the joint fiber);
@@ -699,7 +699,7 @@ from marginal no-go statements. Those are bundled in `endToEnd_full` / `endToEnd
 The lemmas below show:
 
 * how the joint spine implies the joint-level profile; and
-* how the profile yields the strongest “irreducibility” consequences used in narrative statements
+* how the profile yields the strongest “irreducibility” consequences used in high level statements
   (non-descent of the mediator to either margin, and in the binary case a causal signature).
 -/
 
