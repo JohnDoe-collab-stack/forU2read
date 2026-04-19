@@ -8,7 +8,7 @@ Une interface est dite complete lorsqu elle ferme deja, sans mediation non trivi
 
 ## Referentiel
 
-La diagonalisation, la factorisation dynamique qu elle force, et l isolement d un mediateur fini qui ne descend pas aux marginales sont relatifs a un sujet, au sens ou ils ne sont formulables et certifiables causalement que dans un referentiel qui fixe une interface de decision, une verite dynamique visee, et un quotient d indiscernabilite.
+La diagonalisation, la factorisation dynamique qu elle force, et l isolement d un mediateur fini qui ne descend pas aux marginales sont relatifs a un sujet, au sens d un quotient, au sens ou ils ne sont formulables et certifiables causalement que dans un referentiel qui fixe une interface de decision, une verite dynamique visee, et un quotient d indiscernabilite.
 
 Un quotient est dit sujet au sens referentiel lorsqu il est suffisamment structure pour rendre formulables, dans ce cadre, l indiscernabilite visible, la verite dynamique visee, et une separation diagonale eventuelle de cette verite a visible fixe.
 
@@ -32,7 +32,7 @@ ou bien
 
 une interface observable est complète pour une vérité cible exactement quand cette vérité est déjà une fonction du visible ; sinon, l’incomplétude est la dimension minimale d’un supplément de médiation nécessaire pour rendre cette dépendance vraie.
 
-## Language courant
+## Langage courant
 
 Un systeme est dit **complet** si ses observables suffisent a decider sans ambiguite la verite dynamique visee sur la dynamique consideree.
 Inversement, un systeme est **incomplet** si des situations dynamiquement distinctes restent indiscernables dans l espace observable ; la mediation minimale est alors le plus petit supplement de variables necessaire pour lever cette indiscernabilite pour la verite visee.

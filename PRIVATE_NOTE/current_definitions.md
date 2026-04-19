@@ -10,9 +10,9 @@ An interface is called complete when it already closes, without any nontrivial m
 
 ## Referential
 
-Diagonalization, the dynamic factorization it forces, and the isolation of a finite mediator that does not descend to the marginals are relative to a subject, in the sense that they are only formulable and causally certifiable within a referential that fixes a decision interface, a targeted dynamic truth, and an indiscernibility quotient.
+Diagonalization, the dynamic factorization it forces, and the isolation of a finite mediator that does not descend to the marginals are relative to a subject, meaning a quotient, in the sense that they are only formulable and causally certifiable within a referential that fixes a decision interface, a targeted dynamic truth, and an indiscernibility quotient.
 
-A quotient is called a subject in the REFERENTIAL sense when it is sufficiently structured to make the following formalisable within that framing: visible indiscernibility classes, the targeted dynamic truth, and a possible diagonal separation of that truth at fixed visible class.
+A quotient is called a subject in the REFERENTIAL sense when it is sufficiently structured to make the following formulable within that framing: visible indiscernibility classes, the targeted dynamic truth, and a possible diagonal separation of that truth at fixed visible class.
 
 Note: In exposition, I often introduce the word subject before naming the underlying notion as referential, because referential is easy to misread as coordinate jargon.
 
