@@ -8,15 +8,26 @@ This file formalizes a minimal, constructive notion of "induction" used in the p
 Core idea:
 
 * A quotient `q : X → Q` induces fibers ("same visible").
-* A truth `T : X → Prop` is not closed by `q` if there exist `x != x'` with `q x = q x'`
+* A truth `T : X → Prop` is not closed by `q` if there exist `x ≠ x'` with `q x = q x'`
   but `T x` differs from `T x'`. This is a diagonal witness.
 * If there exists a finite mediator `σ : X → Fin n` that decides `T`, then:
   - `σ` cannot descend to `q` (it cannot be a function of `q`), because `T` varies inside a fiber.
   - extending the quotient to `q' x := (q x, σ x)` closes `T`.
 
-This packages a single "referential induction step" as explicit data and theorems.
-It is intentionally abstract (quotients and truths), and can be instantiated with
-`Compatible` / `StepSeparatesFiber` from `COFRS/Dynamics.lean`.
+This file exposes the mechanism at three levels:
+
+* Single-step repair (`InductionStep`): obstruction (diagonal witness) plus a finite mediator,
+  yielding a forced quotient extension that closes the current truth.
+* Re-targetable chains (`ReferentialDerivation`): after repairing a stage, the next stage may
+  aim at a new truth `Tnext` on the extended quotient.
+* Disciplined chains (`DisciplinedReferentialDerivation`): re-targeting is required to use the
+  extension, witnessed by a diagonal obstruction for `Tnext` in the old quotient view.
+
+The development is intentionally abstract (quotients and truths), and can be instantiated with
+`Compatible` and `StepSeparatesFiber` from `COFRS/Dynamics.lean`. It also connects to the global
+canonical mediator layer (`Sig`) by showing that step separation forbids any obs-only summary from
+respecting `Sig`, while global signature compressibility (`CompatSigDimLe`) yields a local
+induction step via a refining lift.
 
 All proofs are constructive; see the `AXIOM_AUDIT` block at the end.
 -/
@@ -198,12 +209,24 @@ namespace StageTransition
 def Rnext (J : StageTransition) : ReferentialProblem :=
   ReferentialProblem.retarget J.I.R' J.Tnext
 
+/-- `oldView` is the "old quotient view" equipped with the next-stage truth `Tnext`.
+
+It forgets the added mediator coordinate (the `Fin n` component of `extendQuot`), keeping only
+the original quotient information while evaluating the new target truth. -/
 def oldView (J : StageTransition) : ReferentialProblem :=
   { X := J.I.R'.X
     Q := J.I.R.Q
     q := fun x => (J.I.R'.q x).1
     T := J.Tnext }
 
+/-- On the extended domain, the old view quotient is definitionally the original quotient. -/
+theorem oldView_q_eq (J : StageTransition) (x : J.I.R'.X) :
+    (J.oldView).q x = J.I.R.q x := by
+  rfl
+
+/-- `UsesExtension` means: with the old quotient only, the new target truth has a diagonal
+witness of non-closure. This is a positive (witness carrying) version of "not closed by the
+old view"; it does not assert that the new target truth is closed by the extended quotient. -/
 def UsesExtension (J : StageTransition) : Prop :=
   (J.oldView).DiagonalWitness
 
@@ -407,6 +430,7 @@ end CompatibleInstantiation
 #print axioms PrimitiveHolonomy.Examples.ReferentialProblem.not_descends_of_diagonalWitness_of_mediatesLe
 #print axioms PrimitiveHolonomy.Examples.Derivation
 #print axioms PrimitiveHolonomy.Examples.StageTransition
+#print axioms PrimitiveHolonomy.Examples.StageTransition.oldView_q_eq
 #print axioms PrimitiveHolonomy.Examples.ReferentialDerivation
 #print axioms PrimitiveHolonomy.Examples.DisciplinedStageTransition
 #print axioms PrimitiveHolonomy.Examples.DisciplinedReferentialDerivation
