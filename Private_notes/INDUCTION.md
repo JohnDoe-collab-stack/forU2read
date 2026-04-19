@@ -167,3 +167,43 @@ This document is design level, but it corresponds directly to the repository str
 - joint irreducibility and non descent are packaged by the end to end joint chain
 
 The term induction refers to iterating this package, stage by stage, by extending the visible interface with the forced mediator and moving to the next targeted truth.
+
+## Appendix A) Ordinal indexing as bookkeeping
+
+This appendix explains how ordinals can be used to index a chain of referentials without changing the meaning of induction in this project.
+The ordinal is never the motor of construction.
+It is only a register for staging and for addressing steps.
+
+### A.1 Successor stages
+
+An ordinal successor stage is a stage `beta + 1` whose referential is constructed from the previous one by the same forced step described in the main document.
+
+To be valid as a successor stage, the transition must carry:
+- a diagonal witness in the previous stage `R_beta`
+- a mediator satisfying the chosen contract for `R_beta`
+- an extension construction producing the next interface
+
+In short:
+`R_{beta+1}` is a successor stage only when it is obtained by `Extend(R_beta, z_beta, T_{beta+1})` for a mediator `z_beta` forced by obstruction in `R_beta`.
+
+### A.2 Limit stages
+
+An ordinal limit stage is a stage `lambda` where `lambda` has no immediate predecessor.
+In this project, a limit stage has meaning only when it is given by an explicit construction that integrates the previous forced mediators into a new referential.
+
+Examples of explicit limit constructions include:
+- a joint interface that exposes a tuple of all mediators accumulated along a cofinal prefix
+- a controlled join of interfaces together with a newly fixed targeted truth that becomes formulable only in the joint view
+
+The limit construction is not automatic.
+It must be specified as part of the chain, and it must preserve the rule that extensions are justified by witnesses.
+
+### A.3 What does not change
+
+Using ordinals does not change any of the project obligations:
+- no diagonal step is created by the index
+- the witnesses and mediators must still be carried at each forced transition
+- a pure ordinal description without the derivation data loses the procedure
+
+In this sense:
+ordinal indexing can be used for bookkeeping, but induction remains a derivation on referentials driven by diagonal obstruction and repaired by forced mediation.
