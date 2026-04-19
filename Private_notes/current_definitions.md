@@ -24,6 +24,14 @@ A system is auto referential relative to a referential when the targeted decisio
 
 A system is auto reflexive relative to a referential when its internal state produces an action such as a query or intervention that changes what becomes observable or decidable, and the final decision is then made under this reconfigured access.
 
+## Induction
+
+In this framework, an induction is an iteration of referentials.
+1. Fix a quotient, meaning a decision interface and a targeted dynamic truth, in a framing that is sufficiently expressive to formulate a diagonalization.
+2. A diagonalization exhibits a failure of visible closure, which forces a dynamic factorization through a mediator that does not descend to the marginals.
+3. Build the next referential by extending the interface with that mediator, or by passing to a joint interface.
+4. Re apply the same schema to a new targeted dynamic truth in this new framing.
+
 ## Physics
 
 An observation device is complete for a given dynamics, relative to a targeted dynamic truth, if the observables it provides suffice to decide that truth unambiguously in the situations under consideration. If it does not, there exist situations that are indistinguishable in observable space yet diverge on the targeted dynamic truth. The minimal mediation is then the smallest supplement of variables needed to lift exactly this indiscernibility with respect to the targeted truth, without claiming to decide anything beyond that targeted truth.

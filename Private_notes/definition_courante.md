@@ -22,6 +22,14 @@ Un systeme est dit auto referentiel relativement a un referentiel lorsque la dec
 
 Un systeme est dit auto reflexif relativement a un referentiel lorsque son etat interne produit une action telle qu une requete ou une intervention qui change ensuite ce qui devient observable ou decidable, puis la decision finale est prise sous cet acces reconfigure.
 
+## Induction
+
+Dans ce cadre, une induction est une iteration de referentiels.
+1. On fixe un quotient, donc une interface de decision et une verite dynamique visee, dans un cadre suffisamment expressif pour formuler une diagonalisation.
+2. Une diagonalisation exhibe une non cloture sur ce visible, ce qui force une factorisation dynamique par un mediateur qui ne descend pas aux marginales.
+3. On construit alors le referentiel suivant en etendant l interface par ce mediateur, ou en passant a une interface jointe.
+4. On re applique le meme schema a une nouvelle verite dynamique visee dans ce nouveau cadre.
+
 ## Physique
 
 Un dispositif d’observation est complet pour une dynamique donnée, relativement à une vérité dynamique visée, si les observables qu’il fournit suffisent à décider sans ambiguïté cette vérité dans les situations considérées.
