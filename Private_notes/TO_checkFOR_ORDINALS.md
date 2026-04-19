@@ -1,63 +1,81 @@
-Oui. Voici le tableau conceptuel serré.
+# Ordinals as bookkeeping (checklist)
 
-## Problème ordinal / résolution COFRS
+This file is a strict checklist for using ordinals to index a COFRS style referential induction without changing its meaning.
+The ordinal never generates diagonalization. It only indexes an already witnessed derivation.
 
-| Problème avec la perspective ordinale                                                               | Ce que COFRS change                                                                                                               | Effet précis                                                         |
-| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| **L’ordinal indexe les étapes mais n’explique pas le passage**                                      | Le passage est fondé par une **obstruction diagonale** puis une **médiation forcée**                                              | On cesse de confondre ordre des positions et nécessité de transition |
-| **Le successeur donne un “après”, pas une raison**                                                  | Chaque étape suivante doit être **justifiée par témoin**                                                                          | Le “next” n’est plus formel, il devient motivé                       |
-| **Les étapes limites sont souvent formellement nettes mais conceptuellement opaques**               | Une limite n’a de portée que si elle correspond à une **intégration effective** de médiations ou à une nouvelle vérité formulable | La limite cesse d’être une simple borne externe                      |
-| **Risque d’inflation des niveaux** : on ajoute des étages parce qu’on peut les ranger dans un ordre | Pas d’extension sans **échec local de clôture**                                                                                   | La stratification devient disciplinée                                |
-| **Confusion entre longueur et profondeur**                                                          | La longueur peut rester ordinale, mais la profondeur est mesurée par la structure des obstructions et réparations                 | “Plus loin” ne veut plus dire “plus nécessaire”                      |
-| **Perte des témoins dans une suite indexée**                                                        | L’induction porte sur la **dérivation** : fermeture ou témoin diagonal + médiateur + extension                                    | On conserve la raison de chaque pas                                  |
-| **L’ordre semble moteur de la construction**                                                        | L’ordre devient secondaire ; le moteur réel est référentiel                                                                       | Décentrement de l’ordinal comme principe générateur                  |
-| **Le transfini peut devenir rhétorique**                                                            | Un ordinal n’est substantiel que s’il archive une chaîne effective de passages forcés                                             | Critère contre le transfini décoratif                                |
-| **La différence successeur / limite monopolise l’analyse**                                          | La typologie décisive devient : **fermeture / obstruction / médiation / extension**                                               | Nouvelle grammaire conceptuelle                                      |
-| **Une chaîne peut être présentée comme auto-suffisante par son type ordinal**                       | Une chaîne n’est intelligible qu’avec son contenu local de transition                                                             | L’ordinal seul devient sémantiquement pauvre                         |
-| **On croit qu’un rang suffit à caractériser une étape**                                             | Une étape est définie par son référentiel, sa vérité cible, son éventuelle obstruction et son contrat de réparation               | Primat du contenu structural sur la place                            |
-| **Le passage à la suite peut paraître arbitraire ou externe**                                       | Le passage est rendu interne au stade par la séparation dans une fibre visible                                                    | Internalisation du principe de continuation                          |
+See also: `Private_notes/INDUCTION.md` (Appendix A).
 
----
+## 0) What an ordinal index is allowed to do
 
-## Version encore plus compacte
+Allowed:
+- provide stable names for stages
+- allow transfinite staging when you explicitly construct successor and limit steps
+- support addressing and referencing of previously constructed mediators and witnesses
 
-### 1. Passage
+Not allowed:
+- replace witnesses by an index
+- claim a successor step exists without carrying its diagonal obstruction and repair data
+- claim a limit step exists without an explicit integration construction
 
-**Problème ordinal** : l’ordre dit qu’il y a un après.
-**Résolution COFRS** : le témoin diagonal dit pourquoi il faut passer.
+## 1) Stage record (what each ordinal stage must carry)
 
-### 2. Limite
+For each index `alpha`, a stage must fix:
+- a decision interface `obs_alpha`
+- a targeted dynamic truth `T_alpha` (step local or family scoped)
+- the relevant fiber (the indiscernibility classes induced by `obs_alpha`)
 
-**Problème ordinal** : la limite marque une position, mais pas toujours un sens.
-**Résolution COFRS** : une étape n’est pertinente que si elle intègre effectivement des médiations ou ouvre une nouvelle vérité cible.
+And it must carry one of:
+- a closure certificate for `T_alpha` at fixed `obs_alpha`, or
+- a diagonal obstruction witness plus a mediator satisfying the stage contract
 
-### 3. Génération
+If a stage does not explicitly carry this, the ordinal index is empty bookkeeping.
 
-**Problème ordinal** : l’ordre est pris pour principe générateur.
-**Résolution COFRS** : la génération vient de l’échec local de clôture, pas du rang.
+## 2) Successor stage validity (`beta + 1`)
 
-### 4. Contrôle
+A successor stage is valid only if the transition from `beta` to `beta + 1` carries:
+1) obstruction at stage `beta`
+   - an explicit diagonal witness or an equivalent object in the codebase
+2) forced mediation at stage `beta`
+   - a mediator satisfying the chosen contract (capacity, minimality if required, non descent if required)
+3) extension construction
+   - a new interface `obs_{beta+1}` that exposes the repaired mediator (or an explicitly defined joint interface that contains it)
+4) a newly fixed truth `T_{beta+1}`
+   - explicitly stated at the new stage, not implied by the index
 
-**Problème ordinal** : on peut multiplier les niveaux sans contrainte interne forte.
-**Résolution COFRS** : chaque extension doit être forcée sous contrat explicite.
+If any of (1) to (4) is missing, then `beta + 1` is not a successor stage in the COFRS sense.
 
-### 5. Mémoire
+## 3) Limit stage validity (`lambda`)
 
-**Problème ordinal** : la suite conserve mal les raisons des transitions.
-**Résolution COFRS** : la dérivation garde les témoins, les médiateurs et les certificats.
+A limit stage is valid only if you give an explicit construction that integrates a cofinal prefix.
+Examples of acceptable constructions:
+- expose a tuple of accumulated mediators in the interface
+- expose a controlled joint interface, then fix a new truth that only becomes formulable in that joint view
 
----
+Unacceptable by default:
+- defining `obs_lambda` as a pointwise limit without specifying what is integrated and how it is made observable
+- treating the limit index itself as an integration operator
 
-## Thèse synthétique
+The practical rule is simple:
+no limit stage without an explicit interface level integration construction.
 
-> Les ordinaux organisaient bien les étapes, mais expliquaient mal leur nécessité.
-> COFRS résout cela en transférant le principe de progression du rang vers l’obstruction.
+## 4) Failure modes to anticipate (operational)
 
-Ou plus tranché :
+1) Index without derivation
+   - you can write down ordinal stages, but you cannot replay the chain because witnesses are missing
 
-> L’ordinal classe les passages ; COFRS les justifie.
+2) Local versus global confusion
+   - step local mediation facts are used as if they implied global signature compression
+   - fix by using explicit global objects when needed (canonical signature and its compression)
 
-## Formule finale
+3) Ill formed coupling at limits
+   - a joint stage is claimed, but the joint truth and its fiber are not fixed and audited
 
-> Ce que COFRS résout, ce n’est pas un défaut technique des ordinaux, mais une surcharge théorique : on leur demandait d’expliquer la genèse des étapes alors qu’ils n’expliquent au mieux que leur ordre.
+4) Silent contract drift
+   - capacity, minimality, or non descent assumptions change across stages without being stated
 
+## 5) Minimal correctness statement for an ordinal indexed chain
+
+An ordinal indexed chain is acceptable in this project if and only if:
+- every successor index corresponds to a witnessed obstruction plus a witnessed repair plus an explicit extension
+- every limit index corresponds to an explicit integration construction
+- the chain can be replayed as a derivation that does not use the ordinal index to create any step
