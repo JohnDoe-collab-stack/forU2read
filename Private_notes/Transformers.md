@@ -2,7 +2,7 @@
 
 This note is for readers who already know Transformers, but who want a precise, professional statement of what COFRS adds *as a class of systems*, not as a superficial architectural tweak.
 
-COFRS is built around a checkable spine:
+COFRS is built around a checkable core theorem chain:
 
 `diagonal obstruction` → `no interface-only closure` → `minimal finite mediator` → `intervention audit`.
 
@@ -27,7 +27,7 @@ In Lean, that closure regime is captured by `ObsPredictsStep`.
 
 ## 1) The three classes (what distinguishes systems, not architectures)
 
-### Class A — visible-only closure (the historical regime)
+### Class A - visible-only closure (the historical regime)
 
 Definition (operational):
 
@@ -45,15 +45,15 @@ This is the “destruction of the static regime”: a global closed decision rul
 
 Mapping to standard Transformers (why this is not an opinion):
 
-- Standard autoregressive inference is a function from *visible context* (tokens; plus any visible retrieved text, if provided) to an output.
+- In standard deployment, the model's output is contracted as a function of the decision-time interface (the provided token context, plus any externally provided retrieved text or tool outputs). Any additional information must enter through that interface.
 - Relative to the interface “what is provided to the model at decision time”, that is a Class A regime: correctness is still contracted as a function of `V`.
 - Internal activations exist, but they are not exposed as *contract-level mediators* with certified capacity, certified irreducibility (non-descend), and auditable intervention behavior.
 
 So the statement is not “Transformers are weak”. The statement is:
 
-> **standard inference is interface-only relative to its provided interface.**
+> **Standard Transformer inference is Class A relative to the chosen decision interface: correctness is evaluated as a function of what is provided at decision time; internal activations are not treated as contract-level mediators with certified capacity, certified non-descent, and intervention audit.**
 
-### Class B — stateful systems (memory/latent), but not certified
+### Class B - stateful systems (memory/latent), but not certified
 
 Definition (operational):
 
@@ -63,7 +63,7 @@ Class B can succeed or fail; what matters is that its *success* is not character
 
 This is why “Transformer + memory” does not automatically move you to the COFRS regime. It often moves you from A to B, but B is still missing the defining closure package.
 
-### Class C — mediated, minimal, irreducible, auditable (the COFRS object)
+### Class C - mediated, minimal, irreducible, auditable (the COFRS object)
 
 Definition (operational):
 
@@ -79,7 +79,7 @@ In particular:
 
 > **Class C is not “has memory”, not “has latent state”, and not “uses tools”; it is the subclass for which mediation is forced, capacity-minimal, marginally irreducible, and (in the binary case) intervention-audited.**
 
-## 2) Where the repo closes the class separation (Lean spine)
+## 2) Where the repo closes the class separation (Lean core theorem chain)
 
 This section is what makes the A/B/C story professional: it points to explicit declarations.
 
@@ -115,7 +115,7 @@ This is the point where “mediation” becomes operationally testable, not just
 
 The Class C story is strongest when you have **two marginal interfaces** `A : S → VA` and `B : S → VB` and you are isolating a third term that is irreducible to each margin.
 
-This is exactly the kind of spine that lives in:
+This is exactly the kind of core theorem chain that lives in:
 
 - `COFRS/Examples/IndependenceRelationMediationChain.lean`
 
