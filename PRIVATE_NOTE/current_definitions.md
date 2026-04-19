@@ -8,13 +8,29 @@ In the diagonal cases formalized here, an observable interface is called incompl
 
 An interface is called complete when it already closes, without any nontrivial mediation, the ambiguity that a diagonalization could otherwise reveal. Equivalently, no diagonalization can produce an intra fiber separation of the targeted dynamic truth, and a visible only rule already suffices to decide that truth on the relevant fiber. In this sense, no additional information is required to restore closure.
 
+## Referential
+
+Diagonalization, the dynamic factorization it forces, and the isolation of a finite mediator that does not descend to the marginals are relative to a subject, in the sense that they are only formulable and causally certifiable within a referential that fixes a decision interface, a targeted dynamic truth, and an indiscernibility quotient.
+
+A quotient is called a subject in the REFERENTIAL sense when it is sufficiently structured to make the following formalisable within that framing: visible indiscernibility classes, the targeted dynamic truth, and a possible diagonal separation of that truth at fixed visible class.
+
+Note: In exposition, I often introduce the word subject before naming the underlying notion as referential, because referential is easy to misread as coordinate jargon.
+
+## Auto reference
+
+A system is auto referential relative to a referential when the targeted decision does not close on the visible marginals, and the system carries an internal mediator through which the decision factors.
+
+## Autoreflexivity
+
+A system is auto reflexive relative to a referential when its internal state produces an action such as a query or intervention that changes what becomes observable or decidable, and the final decision is then made under this reconfigured access.
+
 ## Physics
 
-An observation device is complete for a given dynamics, relative to a targeted dynamic truth, if the observables it provides suffice to decide that truth unambiguously in the situations under consideration. If it does not, there exist states that are indistinguishable in observable space yet diverge on the targeted dynamic truth. The minimal mediation is then the smallest supplement of variables needed to lift exactly this indistinguishability with respect to the targeted truth, without claiming to identify the underlying state in full.
+An observation device is complete for a given dynamics, relative to a targeted dynamic truth, if the observables it provides suffice to decide that truth unambiguously in the situations under consideration. If it does not, there exist situations that are indistinguishable in observable space yet diverge on the targeted dynamic truth. The minimal mediation is then the smallest supplement of variables needed to lift exactly this indiscernibility with respect to the targeted truth, without claiming to decide anything beyond that targeted truth.
 
 ## Everyday language
 
-A system is called complete if its observables suffice to determine, without ambiguity, the state or evolution of the targeted dynamics. Conversely, a system is incomplete if dynamically distinct states remain indistinguishable in observable space. The minimal mediation is then the smallest supplement of state variables needed to lift this degeneracy.
+A system is called complete if its observables suffice to decide, without ambiguity, the targeted dynamic truth about the dynamics under consideration. Conversely, a system is incomplete if dynamically distinct situations remain indistinguishable in observable space. The minimal mediation is then the smallest supplement of variables needed to lift this indiscernibility for that targeted truth.
 
 More simply:
 
