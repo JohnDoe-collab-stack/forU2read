@@ -12,6 +12,8 @@ Crucially, the classification is **relative**:
 
 > **A/B/C are always relative to a chosen decision interface `obs : S → V` and a chosen local dynamic truth (a fixed `step` and the associated `Compatible … step`).**
 
+In this note, **A/B/C are expository closure classes** grounded in the repository's formal and empirical invariants. They are not names of Lean predicates by themselves.
+
 ## 0) Minimal setup (what the class labels talk about)
 
 COFRS talks about *decisions at an interface*.
@@ -79,6 +81,8 @@ In particular:
 
 > **Class C is not “has memory”, not “has latent state”, and not “uses tools”; it is the subclass for which mediation is forced, capacity-minimal, marginally irreducible, and (in the binary case) intervention-audited.**
 
+In the repository, this package is **formally grounded by explicit Lean theorem chains** and **empirically witnessed by explicit protocol families**. The note does not claim that every possible architecture has already been exhaustively classified by the repository.
+
 ## 2) Where the repo closes the class separation (Lean core theorem chain)
 
 This section is what makes the A/B/C story professional: it points to explicit declarations.
@@ -129,7 +133,9 @@ This is the precise formalization of “the relation becomes a third term”.
 
 ## 3) Empirical mapping (protocols as witnesses of Class C)
 
-The empirical side is not “another definition”; it is an operational witness that your solver training actually instantiates the same contract.
+The empirical side is not “another definition”; it is an operational witness that a solver training protocol actually instantiates the same contract.
+
+These empirical witnesses are **witnesses**, not an exhaustive empirical classifier of all model families.
 
 Very compact mapping (as used in the repo’s experimental suite):
 

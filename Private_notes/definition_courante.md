@@ -16,11 +16,13 @@ Note: dans l exposition, j introduis souvent le mot sujet avant de nommer explic
 
 ## Auto reference
 
-Un systeme est dit auto referentiel relativement a un referentiel lorsque la decision visee ne se ferme pas sur les marginales visibles, et que le systeme porte une mediation interne par laquelle la decision factorise.
+Un systeme est dit auto referentiel relativement a un referentiel donne lorsque la decision visee ne se ferme pas sur les marginales visibles seules, mais factorise a travers un etat interne ou un mediateur porte par le systeme.
+Dans la lecture empirique, cela signifie que la decision correcte depend d une variable interne non reductible au visible seul, et que cette variable joue le role de mediateur minimal pour la verite dynamique visee.
 
 ## Autoreflexivite
 
-Un systeme est dit auto reflexif relativement a un referentiel lorsque son etat interne produit une action telle qu une requete ou une intervention qui change ensuite ce qui devient observable ou decidable, puis la decision finale est prise sous cet acces reconfigure.
+Un systeme est dit auto reflexif relativement a un referentiel donne lorsque son etat interne n intervient pas seulement comme support passif de mediation, mais produit une operation qui reconfigure ensuite ce qui devient observable, accessible ou decidable pour le systeme lui meme.
+Dans la lecture empirique, cela signifie que l etat interne sert a orienter une requete, une intervention, une selection ou une relecture, de sorte que la decision finale est prise sous un acces transforme par le systeme.
 
 ## Induction
 
@@ -48,3 +50,19 @@ Inversement, un systeme est **incomplet** si des situations dynamiquement distin
 Ou plus simplement
 
 le visible n’est pas un invariant suffisant de la vérité dynamique, et la médiation mesure l’écart exact entre ce qui est observable et ce qui est décidable.
+
+## Glossaire (pour ce document)
+
+- Interface observable: application qui associe a un micro etat une observation visible. Deux micro etats sont visibles identiques s ils ont la meme observation.
+- Quotient (sens referentiel): specification de ce qui est considere identique du point de vue de l interface observable.
+- Marginales visibles: les composantes visibles d une situation, au sens du quotient choisi.
+- Fibre: ensemble des micro etats qui partagent le meme visible, donc la meme valeur de l interface observable.
+- Verite dynamique visee: la proposition a decider, definie par une dynamique et un critere (ce document ne suppose pas qu on decide tout l etat).
+- Cloture (sur le visible): la verite dynamique visee est deja une fonction du visible, sur le domaine considere.
+- Non cloture (sur le visible): la verite dynamique visee varie a visible fixe sur le domaine considere.
+- Diagonalisation: methode qui produit un temoin de non cloture, par separation intra fibre.
+- Mediation: supplement necessaire pour restaurer la cloture de la verite visee sans pretendre decider plus que cette verite.
+- Mediateur fini: variable interne de capacite finie suffisante pour decider la verite visee sur le domaine considere.
+- Descente: un mediateur descend au visible si sa valeur est deja reconstructible depuis le quotient visible.
+- Non descente: impossibilite de reconstruire le mediateur depuis le visible seul, sous non cloture, lorsqu on exige une decision correcte.
+- Certification causale (sens operatoire): attestation que la decision suit effectivement le mediateur, par interventions sur ce mediateur.

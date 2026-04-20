@@ -421,6 +421,9 @@ theorem inductionStep_of_compatSigDimLe_of_stepSeparatesFiber
 
 end CompatibleInstantiation
 
+end Examples
+end PrimitiveHolonomy
+
 /- AXIOM_AUDIT_BEGIN -/
 #print axioms PrimitiveHolonomy.Examples.InductionStep.not_descends
 #print axioms PrimitiveHolonomy.Examples.InductionStep.closes_extended
@@ -439,6 +442,3 @@ end CompatibleInstantiation
 #print axioms PrimitiveHolonomy.Examples.exists_sigFactorsThrough_nonvisible_of_compatSigDimLe_of_stepSeparatesFiber
 #print axioms PrimitiveHolonomy.Examples.inductionStep_of_compatSigDimLe_of_stepSeparatesFiber
 /- AXIOM_AUDIT_END -/
-
-end Examples
-end PrimitiveHolonomy

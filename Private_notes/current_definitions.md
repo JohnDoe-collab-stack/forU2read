@@ -18,11 +18,13 @@ Note: In exposition, I often introduce the word subject before naming the underl
 
 ## Auto reference
 
-A system is auto referential relative to a referential when the targeted decision does not close on the visible marginals, and the system carries an internal mediator through which the decision factors.
+A system is auto referential relative to a given referential when the targeted decision does not close on the visible marginals alone, but factors through an internal state or mediator carried by the system.
+In the empirical reading, this means that the correct decision depends on an internal variable that is not reducible to the visible alone, and that this variable plays the role of a minimal mediator for the targeted dynamic truth.
 
 ## Autoreflexivity
 
-A system is auto reflexive relative to a referential when its internal state produces an action such as a query or intervention that changes what becomes observable or decidable, and the final decision is then made under this reconfigured access.
+A system is auto reflexive relative to a given referential when its internal state does not merely serve as a passive support for mediation, but produces an operation that reconfigures what becomes observable, accessible, or decidable for the system itself.
+In the empirical reading, this means that the internal state is used to guide a query, an intervention, a selection, or a rereading, so that the final decision is made under an access transformed by the system.
 
 ## Induction
 
@@ -43,3 +45,19 @@ A system is called complete if its observables suffice to decide, without ambigu
 More simply:
 
 the visible is not a sufficient invariant of the dynamic truth, and mediation measures the exact gap between what is observable and what is decidable.
+
+## Glossary (for this document)
+
+- Observable interface: a map that assigns to each micro state a visible observation. Two micro states are visibly identical when they have the same observation.
+- Quotient (referential sense): the specification of what is treated as identical from the point of view of the observable interface.
+- Visible marginals: the visible components of a situation, as determined by the chosen quotient.
+- Fiber: the set of micro states that share the same visible observation, for the chosen interface.
+- Targeted dynamic truth: the proposition to be decided, defined relative to a dynamics and a criterion. This document does not assume total identification of the full state.
+- Closure on the visible: the targeted dynamic truth is already a function of the visible, on the domain under consideration.
+- Failure of visible closure: the targeted dynamic truth varies at fixed visible value, on the domain under consideration.
+- Diagonalization: a method that produces a witness of failure of visible closure by exhibiting an intra fiber separation.
+- Mediation: the supplement needed to restore closure of the targeted truth, without claiming to decide anything beyond that targeted truth.
+- Finite mediator: an internal variable of finite capacity that suffices to decide the targeted truth on the domain under consideration.
+- Descent: a mediator descends to the visible when its value is already reconstructible from the visible quotient.
+- Non descent: under failure of visible closure and correctness requirements, it is impossible to reconstruct the mediator from the visible alone.
+- Causal certification (operational sense): attestation that the decision actually follows the mediator, established by interventions on that mediator.
