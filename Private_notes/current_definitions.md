@@ -19,7 +19,7 @@ Note: In exposition, I often introduce the word subject before naming the underl
 ## Auto reference
 
 A system is auto referential relative to a given referential when the targeted decision does not close on the visible marginals alone, but factors through an internal state or mediator carried by the system.
-In the empirical reading, this means that the correct decision depends on an internal variable that is not reducible to the visible alone, and that this variable plays the role of a minimal mediator for the targeted dynamic truth.
+In the empirical reading, this means that the correct decision depends on an internal variable that is not reducible to the visible alone, and that this variable plays the role of a mediator for the targeted dynamic truth.
 
 ## Autoreflexivity
 
