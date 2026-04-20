@@ -35,9 +35,11 @@ namespace Examples
 
 universe u w
 
-variable {P : Type u} [HistoryGraph P]
+variable {P : Type u}
 
 section RefiningLiftBridge
+
+variable [HistoryGraph P]
 
 variable {S VA VB : Type w}
 variable (sem : Semantics P S)
@@ -133,13 +135,47 @@ theorem refiningLift_two_of_stepSeparatesFiber_of_correctOnLeftFiber
 
 end RefiningLiftBridge
 
+section PostStateReadback
+
+variable {S VA VB : Type w}
+variable (obsA : S → VA) (obsB : S → VB)
+variable (targetA : P → VA)
+variable {h : P}
+
+/--
+In the minimal query architecture, the post-query state (under action `true`) stores the response
+in the second component. This makes any summary of the response channel readable from the
+post-query state.
+-/
+theorem sigma_from_postStateUnder_true_eq
+    (defaultB : VB) (decAB : VA × VB → Bool)
+    {n : Nat} (encode : VB → Fin n)
+    (world : FiberPt (P := P) obsA targetA h) :
+    let Arch :=
+      queryRepairBySecondMargin (P := P) (obsA := obsA) (obsB := obsB) (targetA := targetA)
+        (h0 := h) (defaultB := defaultB) (decAB := decAB)
+    encode (AutoreflexiveQueryArchitecture.postStateUnder Arch world true).2 =
+      encode (obsB world.1) := by
+  rfl
+
+end PostStateReadback
+
 section SigBridge
+
+variable [HistoryGraph P]
 
 variable {S VA VB : Type w}
 variable (sem : Semantics P S)
 variable (obsA : S → VA) (obsB : S → VB)
 variable (targetA : P → VA)
 variable {h : P}
+
+/-- A concrete witness that the full signature `Sig` is not constant on the left fiber. -/
+def SigSeparatesLeftFiber : Prop :=
+  ∃ x x' : FiberPt (P := P) obsA targetA h,
+    ∃ fut : Future (P := P) h,
+      Sig (P := P) sem obsA targetA x fut ∧
+        ¬ Sig (P := P) sem obsA targetA x' fut
 
 /--
 Global correctness on a fixed left fiber:
@@ -202,6 +238,53 @@ theorem compatSigDimLe_of_correctSigOnLeftFiber_of_encode_injective
     have : predB (obsB x.1) fut := (hCorr x fut).2 hComp
     exact ⟨obsB x.1, rfl, this⟩
 
+/--
+If `Sig` separates the left fiber, there is no global `Fin 0` compression.
+
+Reason: `CompatSigDimLe ... 0` provides a function into `Fin 0`,
+contradicting the existence of a point in the separating witness.
+-/
+theorem not_compatSigDimLe_zero_of_sigSeparatesLeftFiber
+    (hSep : SigSeparatesLeftFiber (P := P) (sem := sem)
+      (obsA := obsA) (targetA := targetA) (h := h)) :
+    ¬ CompatSigDimLe (P := P) sem obsA targetA (h := h) 0 := by
+  intro hDim
+  rcases hSep with ⟨x, _x', _fut, _hx, _hx'⟩
+  rcases hDim with ⟨σ, _pred, _Hcorr⟩
+  exact Fin.elim0 (σ x)
+
+/--
+If `Sig` separates the left fiber, there is no global `Fin 1` compression.
+
+Reason: `Fin 1` is a subsingleton, so any `σ : fiber → Fin 1` identifies any two states.
+If `σ` respects `Sig`, this forces equality of `Sig` on every future step, contradicting separation.
+-/
+theorem not_compatSigDimLe_one_of_sigSeparatesLeftFiber
+    (hSep : SigSeparatesLeftFiber (P := P) (sem := sem)
+      (obsA := obsA) (targetA := targetA) (h := h)) :
+    ¬ CompatSigDimLe (P := P) sem obsA targetA (h := h) 1 := by
+  intro hDim
+  rcases hSep with ⟨x, x', fut, hx, hx'⟩
+  rcases sigFactorsThrough_of_compatSigDimLe
+      (P := P) (sem := sem) (obs := obsA) (target_obs := targetA) (h := h) (n := 1) hDim with
+    ⟨σ, hσ⟩
+  have fin1_val_eq_zero : ∀ t : Fin 1, t.val = 0 := by
+    intro t
+    cases t with
+    | mk v hv =>
+        cases v with
+        | zero => rfl
+        | succ v =>
+            have : False := Nat.not_lt_zero v (Nat.lt_of_succ_lt_succ hv)
+            exact this.elim
+  have hEq : σ x = σ x' := by
+    apply Fin.ext
+    have hx0 : (σ x).val = 0 := fin1_val_eq_zero (σ x)
+    have hx'0 : (σ x').val = 0 := fin1_val_eq_zero (σ x')
+    exact hx0.trans hx'0.symm
+  have hIff := hσ hEq fut
+  exact hx' (hIff.mp hx)
+
 theorem sigFactorsThrough_encode_postStateUnder_true_of_correctSigOnLeftFiber_of_encode_injective
     (defaultB : VB) (decAB : VA × VB → Bool)
     {n : Nat} (encode : VB → Fin n) (hEncode : Function.Injective encode)
@@ -226,6 +309,45 @@ theorem sigFactorsThrough_encode_postStateUnder_true_of_correctSigOnLeftFiber_of
     simpa [Arch] using hσ
   exact hFac hσ'
 
+/--
+Global minimality at `2`, on a fixed left fiber.
+
+This is the global analogue of the step-local `CompatDimEq ... 2`: if there is an injective
+encoding of the response channel into `Fin 2` that is correct for the full signature, and if `Sig`
+separates the fiber, then the global signature dimension is exactly `2`.
+-/
+theorem compatSigDimEq_two_of_correctSigOnLeftFiber_of_encode_injective_of_sigSeparatesLeftFiber
+    (encode : VB → Fin 2) (hEncode : Function.Injective encode)
+    (predB : VB → Future (P := P) h → Prop)
+    (hCorr : CorrectSigOnLeftFiber (P := P) (sem := sem)
+      (obsA := obsA) (obsB := obsB) (targetA := targetA) (h := h) predB)
+    (hSep : SigSeparatesLeftFiber (P := P) (sem := sem)
+      (obsA := obsA) (targetA := targetA) (h := h)) :
+    CompatSigDimEq (P := P) sem obsA targetA (h := h) 2 := by
+  refine ⟨
+    compatSigDimLe_of_correctSigOnLeftFiber_of_encode_injective
+      (P := P) (sem := sem) (obsA := obsA) (obsB := obsB) (targetA := targetA) (h := h)
+      (encode := encode) hEncode predB hCorr,
+    ?_⟩
+  intro m hm
+  cases m with
+  | zero =>
+      exact (not_compatSigDimLe_zero_of_sigSeparatesLeftFiber
+        (P := P) (sem := sem) (obsA := obsA) (targetA := targetA) (h := h) hSep)
+  | succ m =>
+      cases m with
+      | zero =>
+          -- `m = 1`
+          exact (not_compatSigDimLe_one_of_sigSeparatesLeftFiber
+            (P := P) (sem := sem) (obsA := obsA) (targetA := targetA) (h := h) hSep)
+      | succ m =>
+          -- `m >= 2`, contradicts `Nat.succ (Nat.succ m) < 2`
+          have hge : 2 ≤ Nat.succ (Nat.succ m) :=
+            Nat.succ_le_succ (Nat.succ_le_succ (Nat.zero_le m))
+          have : ¬ Nat.succ (Nat.succ m) < 2 := Nat.not_lt_of_ge hge
+          intro _hDim
+          exact this hm
+
 end SigBridge
 
 end Examples
@@ -239,4 +361,8 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.sigFactorsThrough_encode_obsB_of_correctSigOnLeftFiber_of_encode_injective
 #print axioms PrimitiveHolonomy.Examples.compatSigDimLe_of_correctSigOnLeftFiber_of_encode_injective
 #print axioms PrimitiveHolonomy.Examples.sigFactorsThrough_encode_postStateUnder_true_of_correctSigOnLeftFiber_of_encode_injective
+#print axioms PrimitiveHolonomy.Examples.sigma_from_postStateUnder_true_eq
+#print axioms PrimitiveHolonomy.Examples.not_compatSigDimLe_zero_of_sigSeparatesLeftFiber
+#print axioms PrimitiveHolonomy.Examples.not_compatSigDimLe_one_of_sigSeparatesLeftFiber
+#print axioms PrimitiveHolonomy.Examples.compatSigDimEq_two_of_correctSigOnLeftFiber_of_encode_injective_of_sigSeparatesLeftFiber
 /- AXIOM_AUDIT_END -/
