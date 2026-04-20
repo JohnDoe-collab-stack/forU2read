@@ -12,6 +12,7 @@ import COFRS.Combinatorics.FinCompression
 /-Bonus-/
 import COFRS.Examples.DynamicCompatDimN
 import COFRS.Examples.DiagonalizationMediationCausalityThesis
+import COFRS.Examples.AutoreflexiveQueryArchitecture
 import COFRS.Examples.ReferentialInduction
 
 
