@@ -154,10 +154,20 @@ def postState (A : AutoreflexiveQueryArchitecture) (world : A.World) : A.State :
 def run (A : AutoreflexiveQueryArchitecture) (world : A.World) : A.Output :=
   A.decide (A.postState world)
 
-/-- Forbidden bypass (recoverability form): the chosen action is already recoverable from the bypass channel alone. -/
-def ActionRecoverableFromBypass (A : AutoreflexiveQueryArchitecture) : Prop :=
+/--
+Recoverability from the forbidden channel:
+the chosen action is reconstructible from the forbidden visible channel alone.
+
+This is an information-level notion. It is not a "causal access" notion: it can hold even when the
+architecture never reads the forbidden channel, if the world makes it reconstructible.
+-/
+def ActionRecoverableFromForbiddenChannel (A : AutoreflexiveQueryArchitecture) : Prop :=
   ∃ queryBypass : A.BypassVisible → A.Action, ∀ world : A.World,
     A.chosenAction world = queryBypass (A.bypassVisible world)
+
+/-- Backwards-compatible name. -/
+abbrev ActionRecoverableFromBypass (A : AutoreflexiveQueryArchitecture) : Prop :=
+  A.ActionRecoverableFromForbiddenChannel
 
 /-- Collapse mode: the returned response (under the chosen action) was already recoverable from the pre-query state. -/
 def ResponseFactorsThroughPreStateChosen (A : AutoreflexiveQueryArchitecture) : Prop :=
@@ -174,10 +184,19 @@ def DecisionFactorsThroughPreStateChosen (A : AutoreflexiveQueryArchitecture) : 
   ∃ decidePre : A.State → A.Output, ∀ world : A.World,
     A.run world = decidePre (A.preState world)
 
-/-- Forbidden bypass (recoverability form): the final decision is already recoverable from the bypass channel alone. -/
-def DecisionRecoverableFromBypass (A : AutoreflexiveQueryArchitecture) : Prop :=
+/--
+Recoverability from the forbidden channel:
+the final decision is reconstructible from the forbidden visible channel alone.
+
+This is an information-level notion. It is not a "causal access" notion.
+-/
+def DecisionRecoverableFromForbiddenChannel (A : AutoreflexiveQueryArchitecture) : Prop :=
   ∃ decideBypass : A.BypassVisible → A.Output, ∀ world : A.World,
     A.run world = decideBypass (A.bypassVisible world)
+
+/-- Backwards-compatible name. -/
+abbrev DecisionRecoverableFromBypass (A : AutoreflexiveQueryArchitecture) : Prop :=
+  A.DecisionRecoverableFromForbiddenChannel
 
 /-- Degenerate regime: for each world, the environment answer ignores the action. -/
 def ResponseIndependentOfAction (A : AutoreflexiveQueryArchitecture) : Prop :=
@@ -209,6 +228,23 @@ def postStateUnder (A : AutoreflexiveQueryArchitecture) (world : A.World) (actio
 def runUnder (A : AutoreflexiveQueryArchitecture) (world : A.World) (action : A.Action) : A.Output :=
   A.decide (A.postStateUnder world action)
 
+@[simp] theorem runUnder_chosenAction_eq_run
+    (A : AutoreflexiveQueryArchitecture) (world : A.World) :
+    A.runUnder world (A.chosenAction world) = A.run world := by
+  rfl
+
+/-!
+### Interventional collapse (response under)
+
+This is the response-level analogue of `PostStateFactorsThroughPreStateUnder` and
+`DecisionFactorsThroughPreStateUnder`.
+-/
+
+/-- Interventional collapse at the response level: forcing actions cannot change the response. -/
+def ResponseFactorsThroughPreStateUnder (A : AutoreflexiveQueryArchitecture) : Prop :=
+  ∃ responsePre : A.State → A.Response, ∀ world : A.World, ∀ action : A.Action,
+    A.returnedResponseUnder world action = responsePre (A.preState world)
+
 /-!
 Two interventional non-degeneracy notions:
 
@@ -222,6 +258,12 @@ def RealizedActionHasDecisionEffect (A : AutoreflexiveQueryArchitecture) : Prop 
     A.chosenAction world₁ ≠ A.chosenAction world₂
       ∧ A.runUnder world₀ (A.chosenAction world₁) ≠ A.runUnder world₀ (A.chosenAction world₂)
 
+/-- Some realized actions, when forced, change the post-query state in a fixed world. -/
+def RealizedActionHasPostStateEffect (A : AutoreflexiveQueryArchitecture) : Prop :=
+  ∃ world₀ world₁ world₂ : A.World,
+    A.chosenAction world₁ ≠ A.chosenAction world₂
+      ∧ A.postStateUnder world₀ (A.chosenAction world₁) ≠ A.postStateUnder world₀ (A.chosenAction world₂)
+
 /-!
 Interventional collapse: even if we force arbitrary actions, the decision can already be computed
 from the pre-query state alone. This captures the failure mode "the loop is a syntactic loop, but
@@ -231,6 +273,69 @@ has no effect at decision time".
 def DecisionFactorsThroughPreStateUnder (A : AutoreflexiveQueryArchitecture) : Prop :=
   ∃ decidePre : A.State → A.Output, ∀ world : A.World, ∀ action : A.Action,
     A.runUnder world action = decidePre (A.preState world)
+
+/-- Interventional collapse at the post-state level: forcing actions cannot change `postState`. -/
+def PostStateFactorsThroughPreStateUnder (A : AutoreflexiveQueryArchitecture) : Prop :=
+  ∃ postPre : A.State → A.State, ∀ world : A.World, ∀ action : A.Action,
+    A.postStateUnder world action = postPre (A.preState world)
+
+/-- Under response collapse, post-state collapse follows trivially. -/
+theorem postStateFactorsThroughPreStateUnder_of_responseFactorsThroughPreStateUnder
+    (A : AutoreflexiveQueryArchitecture)
+    (hResp : A.ResponseFactorsThroughPreStateUnder) :
+    A.PostStateFactorsThroughPreStateUnder := by
+  rcases hResp with ⟨responsePre, hResp⟩
+  refine ⟨fun state => A.update state (responsePre state), ?_⟩
+  intro world action
+  dsimp [postStateUnder, preState, returnedResponseUnder]
+  have h := hResp world action
+  dsimp [returnedResponseUnder, preState] at h
+  exact congrArg (A.update (A.encode (A.historyVisible world))) h
+
+/-- Under post-state collapse, decision-under-forced-action collapse follows trivially. -/
+theorem decisionFactorsThroughPreStateUnder_of_postStateFactorsThroughPreStateUnder
+    (A : AutoreflexiveQueryArchitecture)
+    (hPost : A.PostStateFactorsThroughPreStateUnder) :
+    A.DecisionFactorsThroughPreStateUnder := by
+  rcases hPost with ⟨postPre, hPost⟩
+  refine ⟨fun state => A.decide (postPre state), ?_⟩
+  intro world action
+  dsimp [runUnder, postStateUnder, preState, returnedResponseUnder]
+  have h := hPost world action
+  dsimp [postStateUnder, returnedResponseUnder, preState] at h
+  exact congrArg A.decide h
+
+/-- Under response collapse, decision-under-forced-action collapse follows by composition. -/
+theorem decisionFactorsThroughPreStateUnder_of_responseFactorsThroughPreStateUnder
+    (A : AutoreflexiveQueryArchitecture)
+    (hResp : A.ResponseFactorsThroughPreStateUnder) :
+    A.DecisionFactorsThroughPreStateUnder := by
+  exact A.decisionFactorsThroughPreStateUnder_of_postStateFactorsThroughPreStateUnder
+    (A.postStateFactorsThroughPreStateUnder_of_responseFactorsThroughPreStateUnder hResp)
+
+/-- Same-world alternative-action audit: in some world, an alternative action changes the decision. -/
+def ExistsAlternativeActionDecisionEffect (A : AutoreflexiveQueryArchitecture) : Prop :=
+  ∃ world : A.World, ∃ altAction : A.Action,
+    altAction ≠ A.chosenAction world ∧ A.runUnder world altAction ≠ A.run world
+
+/-- A same-world alternative-action effect rules out decision collapse under forced actions. -/
+theorem not_decisionFactorsThroughPreStateUnder_of_existsAlternativeActionDecisionEffect
+    (A : AutoreflexiveQueryArchitecture)
+    (hAlt : A.ExistsAlternativeActionDecisionEffect) :
+    ¬ A.DecisionFactorsThroughPreStateUnder := by
+  intro hUnder
+  rcases hUnder with ⟨decidePre, hUnder⟩
+  rcases hAlt with ⟨world, altAction, _hneAlt, hneRun⟩
+  have h1 : A.runUnder world altAction = decidePre (A.preState world) :=
+    hUnder world altAction
+  have h2 : A.run world = decidePre (A.preState world) := by
+    calc
+      A.run world = A.runUnder world (A.chosenAction world) := by
+        symm
+        exact A.runUnder_chosenAction_eq_run world
+      _ = decidePre (A.preState world) :=
+        hUnder world (A.chosenAction world)
+  exact hneRun (h1.trans h2.symm)
 
 /--
 Operational query-loop contract.
@@ -242,7 +347,9 @@ that would reduce the architecture back to a purely autoreferential computation 
 structure QueryLoopOperationality (A : AutoreflexiveQueryArchitecture) : Prop where
   noActionBypass : ¬ A.ActionRecoverableFromBypass
   realizedActionHasEffect : A.RealizedActionHasEffect
+  realizedActionHasPostStateEffect : A.RealizedActionHasPostStateEffect
   realizedActionHasDecisionEffect : A.RealizedActionHasDecisionEffect
+  existsAlternativeActionDecisionEffect : A.ExistsAlternativeActionDecisionEffect
   decisionUsesMoreThanPreStateChosen : ¬ A.DecisionFactorsThroughPreStateChosen
   noDecisionBypass : ¬ A.DecisionRecoverableFromBypass
 
@@ -312,6 +419,53 @@ theorem not_realizedActionHasEffect_of_responseIndependentOfAction
   have h2 : A.env world₀ (A.chosenAction world₂) = responseWorld world₀ := hResp world₀ (A.chosenAction world₂)
   exact hneResp (h1.trans h2.symm)
 
+theorem not_responseIndependentOfAction_of_realizedActionHasEffect
+    (A : AutoreflexiveQueryArchitecture)
+    (hEff : A.RealizedActionHasEffect) :
+    ¬ A.ResponseIndependentOfAction := by
+  intro hIndep
+  exact (A.not_realizedActionHasEffect_of_responseIndependentOfAction hIndep) hEff
+
+theorem responseIndependentOfAction_of_responseFactorsThroughPreStateUnder
+    (A : AutoreflexiveQueryArchitecture)
+    (hResp : A.ResponseFactorsThroughPreStateUnder) :
+    A.ResponseIndependentOfAction := by
+  rcases hResp with ⟨responsePre, hResp⟩
+  refine ⟨fun world => responsePre (A.preState world), ?_⟩
+  intro world action
+  have h := hResp world action
+  dsimp [returnedResponseUnder] at h
+  exact h
+
+theorem not_realizedActionHasEffect_of_responseFactorsThroughPreStateUnder
+    (A : AutoreflexiveQueryArchitecture)
+    (hResp : A.ResponseFactorsThroughPreStateUnder) :
+    ¬ A.RealizedActionHasEffect := by
+  intro hEff
+  have hIndep : A.ResponseIndependentOfAction :=
+    A.responseIndependentOfAction_of_responseFactorsThroughPreStateUnder hResp
+  exact (A.not_realizedActionHasEffect_of_responseIndependentOfAction hIndep) hEff
+
+theorem not_responseFactorsThroughPreStateUnder_of_realizedActionHasEffect
+    (A : AutoreflexiveQueryArchitecture)
+    (hEff : A.RealizedActionHasEffect) :
+    ¬ A.ResponseFactorsThroughPreStateUnder := by
+  intro hResp
+  exact (A.not_realizedActionHasEffect_of_responseFactorsThroughPreStateUnder hResp) hEff
+
+theorem not_postStateFactorsThroughPreStateUnder_of_realizedActionHasPostStateEffect
+    (A : AutoreflexiveQueryArchitecture)
+    (hEff : A.RealizedActionHasPostStateEffect) :
+    ¬ A.PostStateFactorsThroughPreStateUnder := by
+  intro hPost
+  rcases hPost with ⟨postPre, hPost⟩
+  rcases hEff with ⟨world₀, world₁, world₂, _hneAct, hnePost⟩
+  have h1 : A.postStateUnder world₀ (A.chosenAction world₁) = postPre (A.preState world₀) :=
+    hPost world₀ (A.chosenAction world₁)
+  have h2 : A.postStateUnder world₀ (A.chosenAction world₂) = postPre (A.preState world₀) :=
+    hPost world₀ (A.chosenAction world₂)
+  exact hnePost (h1.trans h2.symm)
+
 /-!
 ## Basic consequences of operationality
 
@@ -337,6 +491,24 @@ theorem not_postStateFactorsThroughPreStateChosen_of_queryLoopOperationality
   have hDec := A.decisionFactorsThroughPreStateChosen_of_postStateFactorsThroughPreStateChosen hPost
   exact hOp.decisionUsesMoreThanPreStateChosen hDec
 
+theorem not_responseIndependentOfAction_of_queryLoopOperationality
+    (A : AutoreflexiveQueryArchitecture)
+    (hOp : A.QueryLoopOperationality) :
+    ¬ A.ResponseIndependentOfAction :=
+  A.not_responseIndependentOfAction_of_realizedActionHasEffect hOp.realizedActionHasEffect
+
+theorem not_responseFactorsThroughPreStateUnder_of_queryLoopOperationality
+    (A : AutoreflexiveQueryArchitecture)
+    (hOp : A.QueryLoopOperationality) :
+    ¬ A.ResponseFactorsThroughPreStateUnder :=
+  A.not_responseFactorsThroughPreStateUnder_of_realizedActionHasEffect hOp.realizedActionHasEffect
+
+theorem not_postStateFactorsThroughPreStateUnder_of_queryLoopOperationality
+    (A : AutoreflexiveQueryArchitecture)
+    (hOp : A.QueryLoopOperationality) :
+    ¬ A.PostStateFactorsThroughPreStateUnder :=
+  A.not_postStateFactorsThroughPreStateUnder_of_realizedActionHasPostStateEffect hOp.realizedActionHasPostStateEffect
+
 theorem not_decisionFactorsThroughPreStateUnder_of_realizedActionHasDecisionEffect
     (A : AutoreflexiveQueryArchitecture)
     (hEff : A.RealizedActionHasDecisionEffect) :
@@ -355,6 +527,13 @@ theorem not_decisionFactorsThroughPreStateUnder_of_queryLoopOperationality
     (hOp : A.QueryLoopOperationality) :
     ¬ A.DecisionFactorsThroughPreStateUnder :=
   A.not_decisionFactorsThroughPreStateUnder_of_realizedActionHasDecisionEffect hOp.realizedActionHasDecisionEffect
+
+theorem not_decisionFactorsThroughPreStateUnder_of_queryLoopOperationality_alt
+    (A : AutoreflexiveQueryArchitecture)
+    (hOp : A.QueryLoopOperationality) :
+    ¬ A.DecisionFactorsThroughPreStateUnder :=
+  A.not_decisionFactorsThroughPreStateUnder_of_existsAlternativeActionDecisionEffect
+    hOp.existsAlternativeActionDecisionEffect
 
 /--
 The query architecture induces an autoreferential architecture on the **post-query** state.
@@ -404,6 +583,11 @@ end PrimitiveHolonomy
 
 /- AXIOM_AUDIT_BEGIN -/
 #print axioms PrimitiveHolonomy.Examples.AutoreferentialArchitecture.run
+#print axioms PrimitiveHolonomy.Examples.AutoreflexiveQueryArchitecture.runUnder_chosenAction_eq_run
+#print axioms PrimitiveHolonomy.Examples.AutoreflexiveQueryArchitecture.postStateFactorsThroughPreStateUnder_of_responseFactorsThroughPreStateUnder
+#print axioms PrimitiveHolonomy.Examples.AutoreflexiveQueryArchitecture.not_responseFactorsThroughPreStateUnder_of_queryLoopOperationality
+#print axioms PrimitiveHolonomy.Examples.AutoreflexiveQueryArchitecture.not_postStateFactorsThroughPreStateUnder_of_queryLoopOperationality
+#print axioms PrimitiveHolonomy.Examples.AutoreflexiveQueryArchitecture.not_decisionFactorsThroughPreStateUnder_of_existsAlternativeActionDecisionEffect
 #print axioms PrimitiveHolonomy.Examples.AutoreflexiveQueryArchitecture.not_responseFactorsThroughPreStateChosen_of_queryLoopOperationality
 #print axioms PrimitiveHolonomy.Examples.AutoreflexiveQueryArchitecture.not_decisionFactorsThroughPreStateUnder_of_queryLoopOperationality
 #print axioms PrimitiveHolonomy.Examples.AutoreflexiveQueryArchitecture.toAutoreferential_run_eq
