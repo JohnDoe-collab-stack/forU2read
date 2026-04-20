@@ -148,6 +148,44 @@ structure InductionStep where
   diag : R.DiagonalWitness
   mediates : ∀ x : R.X, R.T x ↔ predFin (σ x)
 
+/-!
+### Induction steps, parameterized by the stage
+
+`InductionStep` packages the stage `R` as a field.
+For some developments (for example, "the next stage is already repairable"), it is more convenient
+to parameterize the induction step by its stage in the type.
+-/
+
+structure InductionStepOn (R : ReferentialProblem.{w}) where
+  n : Nat
+  σ : R.X → Fin n
+  predFin : Fin n → Prop
+  diag : R.DiagonalWitness
+  mediates : ∀ x : R.X, R.T x ↔ predFin (σ x)
+
+namespace InductionStepOn
+
+def asInductionStep {R : ReferentialProblem.{w}} (I : InductionStepOn R) : InductionStep :=
+  { R := R
+    n := I.n
+    σ := I.σ
+    predFin := I.predFin
+    diag := I.diag
+    mediates := I.mediates }
+
+def R' {R : ReferentialProblem.{w}} (I : InductionStepOn R) : ReferentialProblem.{w} :=
+  R.extendQuot I.σ
+
+theorem not_descends {R : ReferentialProblem.{w}} (I : InductionStepOn R) :
+    ¬ R.DescendsToQuot I.σ :=
+  ReferentialProblem.not_descends_of_diagonalWitness_of_mediatesLe R I.diag I.σ I.predFin I.mediates
+
+theorem closes_extended {R : ReferentialProblem.{w}} (I : InductionStepOn R) :
+    (I.R').Closes :=
+  ReferentialProblem.closes_extendQuot_of_mediatesLe R I.σ I.predFin I.mediates
+
+end InductionStepOn
+
 namespace InductionStep
 
 def R' (I : InductionStep) : ReferentialProblem.{w} :=
@@ -220,7 +258,7 @@ def oldView (J : StageTransition) : ReferentialProblem :=
     T := J.Tnext }
 
 /-- On the extended domain, the old view quotient is definitionally the original quotient. -/
-theorem oldView_q_eq (J : StageTransition) (x : J.I.R'.X) :
+@[simp] theorem oldView_q_eq (J : StageTransition) (x : J.I.R'.X) :
     (J.oldView).q x = J.I.R.q x := by
   rfl
 
@@ -270,6 +308,38 @@ inductive DisciplinedReferentialDerivation : ReferentialProblem → Type (w + 1)
   | stop {R : ReferentialProblem} : R.Closes → DisciplinedReferentialDerivation R
   | next (J : DisciplinedStageTransition) :
       DisciplinedReferentialDerivation J.Rnext → DisciplinedReferentialDerivation J.toStageTransition.I.R
+
+/-!
+## Self contained stage transitions
+
+`DisciplinedStageTransition` provides a re targeting step together with a positive witness that the
+new target truth is not already closed by the old quotient view (`UsesExtension`).
+
+To make the induction mechanism deployable as a procedure, it is often useful to bundle, in the
+same object, not only the re targeting but also a forced repair step for the next stage truth.
+-/
+
+structure DisciplinedStageTransitionWithRepair where
+  J : DisciplinedStageTransition
+  next : InductionStepOn J.Rnext
+
+namespace DisciplinedStageTransitionWithRepair
+
+def Rnext (K : DisciplinedStageTransitionWithRepair) : ReferentialProblem :=
+  K.J.Rnext
+
+def Rnext' (K : DisciplinedStageTransitionWithRepair) : ReferentialProblem :=
+  K.next.R'
+
+theorem next_not_descends (K : DisciplinedStageTransitionWithRepair) :
+    ¬ K.Rnext.DescendsToQuot K.next.σ :=
+  K.next.not_descends
+
+theorem next_closes_extended (K : DisciplinedStageTransitionWithRepair) :
+    K.Rnext'.Closes :=
+  K.next.closes_extended
+
+end DisciplinedStageTransitionWithRepair
 
 /-!
 ## Instantiation with `Compatible` at a fixed step
@@ -402,7 +472,7 @@ theorem inductionStep_of_compatSigDimLe_of_stepSeparatesFiber
     {n : Nat}
     (hSig : CompatSigDimLe (P := P) sem obs target_obs (h := h) n)
     (hSep : StepSeparatesFiber (P := P) sem obs target_obs step) :
-    Nonempty (InductionStep.{w}) := by
+    ∃ I : InductionStep.{w}, I.n = n := by
   have hLift : RefiningLift (P := P) sem obs target_obs h step n :=
     refiningLift_of_compatSigDimLe (P := P) sem obs target_obs step n hSig
   rcases hLift with ⟨L⟩
@@ -415,9 +485,9 @@ theorem inductionStep_of_compatSigDimLe_of_stepSeparatesFiber
             diag :=
               diagonalWitness_of_stepSeparatesFiber (P := P) (sem := sem) (obs := obs)
                 (target_obs := target_obs) (h := h) (k := k) (step := step) hSep
-            mediates := ?_ }⟩
-  intro x
-  simpa using (L.factors x)
+            mediates := (by
+              intro x
+              simpa using (L.factors x)) }, rfl⟩
 
 end CompatibleInstantiation
 
@@ -427,6 +497,9 @@ end PrimitiveHolonomy
 /- AXIOM_AUDIT_BEGIN -/
 #print axioms PrimitiveHolonomy.Examples.InductionStep.not_descends
 #print axioms PrimitiveHolonomy.Examples.InductionStep.closes_extended
+#print axioms PrimitiveHolonomy.Examples.InductionStepOn.not_descends
+#print axioms PrimitiveHolonomy.Examples.InductionStepOn.closes_extended
+#print axioms PrimitiveHolonomy.Examples.DisciplinedStageTransitionWithRepair.next_closes_extended
 #print axioms PrimitiveHolonomy.Examples.inductionStep_of_refiningLiftData
 #print axioms PrimitiveHolonomy.Examples.ReferentialProblem.not_closes_of_diagonalWitness
 #print axioms PrimitiveHolonomy.Examples.ReferentialProblem.closes_of_descendsToQuot_of_mediatesLe
