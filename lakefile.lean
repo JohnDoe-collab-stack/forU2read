@@ -18,12 +18,16 @@ lean_lib «CompatObstructions» where
     `COFRS.Examples.GodelByCode,
     `COFRS.Examples.DiagonalizationMediationCausalityThesis,
     `COFRS.Examples.CorrelationRegimeAppendix,
+    `COFRS.Examples.AutoreflexiveQueryArchitecture,
     `COFRS.Examples.GeometryDynamicsIndependence,
     `COFRS.Examples.DynamicCompatDimN,
     `COFRS.Examples.IndependenceRelationMediationChain,
+    `COFRS.Examples.IndependenceToAutoreflexiveQueryBridge,
+    `COFRS.Examples.IndependenceToAutoreflexiveQueryStrongBridge,
+    `COFRS.Examples.IndependenceToAutoreflexiveQueryRefiningLiftBridge,
     `COFRS.Examples.ReferentialInduction,
     `COFRS.Combinatorics.FinCompression,
-      `COFRS.Main,
+    `COFRS.Main,
     ]
 
 /- AXIOM_AUDIT_BEGIN -/

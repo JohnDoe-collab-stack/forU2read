@@ -297,7 +297,7 @@ by
   have hEq : CompatibleFuture (P := P) sem obs target_obs step x ↔
       CompatibleFuture (P := P) sem obs target_obs step x' := by
     have h := hsig step
-    dsimp [Sig, CompatibleFuture, CompatibleFuture] at h
+    dsimp [Sig, CompatibleFuture] at h
     exact h
   exact hx' (hEq.mp hx)
 
