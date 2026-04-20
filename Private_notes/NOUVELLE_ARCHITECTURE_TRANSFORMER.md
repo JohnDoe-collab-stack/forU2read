@@ -16,6 +16,22 @@ Convention de lecture du document :
 
 La these architecturale du projet ne part pas d une intuition vague sur la memoire interne. Elle repose sur un resultat conceptuel plus fort, deja formalise dans la theorie Lean du projet sur le cas a deux interfaces. Cette theorie montre la chaine suivante : des obstructions diagonales sur chaque marge certifient que la verite dynamique visee ne se ferme pas sur les observations marginales prises separement ; cette non cloture peut etre convertie constructivement en separation explicite de fibre ; la verite jointe ainsi obtenue n est reductible ni a la projection gauche ni a la projection droite ; et sa reparabilite exige alors un mediateur fini exact sur l interface jointe, avec une dimension minimale. Le mediateur n apparait donc pas comme un latent opportuniste ajoute pour mieux predire. Il apparait comme la variable interne minimale requise pour porter une relation dynamique que le visible marginal ne contient pas. De plus, si ce mediateur pouvait redescendre vers une seule marge, la verite jointe redeviendrait predictible depuis cette marge, ce qui contredirait l obstruction initiale. Dans le cas binaire, cette mediation force meme une signature causale interventionnelle. Le sens architectural est alors net : quand la cloture sur le visible echoue structurellement, la bonne forme n est plus visible -> sortie, mais interface(s) -> mediateur -> decision. Ce socle justifie la version autoreferentielle minimale du projet ; l extension autoreflexive en est le prolongement naturel, lorsque l etat interne ne sert plus seulement a medier la decision, mais aussi a reconfigurer l acces ulterieur a l information.
 
+### Cadre referentiel
+
+Tout ce document est relatif a un referentiel fixe :
+
+- une interface de decision (ce qui est considere comme visible au moment de la decision)
+- une verite dynamique visee (ce que le solveur doit decider correctement)
+
+Dans ce cadre, l enjeu n est pas de classer des architectures par famille syntaxique, mais de stratifier les regimes admissibles de solveurs selon le regime de cloture de la verite relativement a l interface.
+
+Formulation de travail :
+
+- si la verite se ferme sur le visible, un solveur visible-only est admissible
+- si la verite ne se ferme pas sur le visible, toute solution correcte doit passer par une mediation non descendue aux marginales
+- si cette mediation admet une compression finie exacte, on obtient un regime autoreferential
+- si la mediation est forcee par une boucle de requete qui reconfigure l acces a l information depuis l etat interne, on obtient un regime autoreflexive
+
 ## 1. Idee directrice
 
 Le projet ne vise pas un Transformer qui decide seulement a partir de l interface visible fournie au moment de la decision.
@@ -103,6 +119,12 @@ Attestation operatoire :
 - le swap detruit l adequation aux labels d origine et suit au contraire la permutation attendue
 
 En pratique, on tient donc l autoreferentialite pour attestee seulement si le protocole expose le mediateur et si les mesures `ablation_drop`, `swap_vs_orig`, `swap_vs_perm` montrent qu il est effectivement load bearing.
+
+Ancrage Lean :
+
+- mediation finie step-locale et minimalite : `CompatDimEq` et `RefiningLift` dans `COFRS/Dynamics.lean`
+- irreductibilite jointe et non-descente du mediateur : `COFRS/Examples/IndependenceRelationMediationChain.lean`
+- lecture architecturelle minimale de type etat puis decision : `AutoreferentialArchitecture` dans `COFRS/Examples/AutoreflexiveQueryArchitecture.lean`
 
 Spec stricte :
 
@@ -245,6 +267,14 @@ Chaine operatoire :
 - `m' = Update(m, r)`
 - `y = Decide(m')`
 
+Spec stricte (correspondance Lean) :
+
+- architecture : `AutoreflexiveQueryArchitecture` dans `COFRS/Examples/AutoreflexiveQueryArchitecture.lean`
+- execution : `preState`, `chosenAction`, `returnedResponse`, `postState`, `run`
+- branches interventionnelles : `returnedResponseUnder`, `postStateUnder`, `runUnder`
+- effets testables : `RealizedActionHasEffect`, `RealizedActionHasPostStateEffect`, `RealizedActionHasDecisionEffect`, `ExistsAlternativeActionDecisionEffect`
+- collapses testables : `DecisionFactorsThroughPreStateChosen`, `DecisionFactorsThroughPreStateUnder`, `DecisionRecoverableFromForbiddenChannel`
+
 Mot en face de chaque terme :
 
 - `m` = etat interne
@@ -269,7 +299,14 @@ Condition structurale :
 - il doit exister une vraie etape `Query`
 - il doit exister une vraie etape `Env`
 - la decision doit se faire apres `r`
-- un anti bypass doit interdire `visible courant -> action`
+- un anti bypass doit interdire un court-circuit de la decision par le visible courant
+
+Clarification anti bypass :
+
+- anti bypass structurel : un interdit de chemin de donnees dans l architecture (le visible courant ne peut pas etre lu directement par le module d action)
+- anti bypass recoverability : une condition informationnelle testable, disant que l action ou la decision ne sont pas reconstructibles a partir d un canal interdit seul
+
+Le fichier `COFRS/Examples/AutoreflexiveQueryArchitecture.lean` se place explicitement au niveau recoverability pour les notions `ActionRecoverableFromForbiddenChannel` et `DecisionRecoverableFromForbiddenChannel`.
 
 Attestation attendue :
 
@@ -597,3 +634,15 @@ Il dit ce que l architecture doit etre au sens du projet.
 Il ne pretend pas que chaque detail d implementation finale est deja fige dans un unique fichier du depot.
 
 Ce qui est deja fixe, en revanche, est le contrat structural que cette architecture doit satisfaire.
+
+## 10. Ce que ce document ne pretend pas
+
+Ce document ne pretende pas :
+
+- enumerer exhaustivement toutes les variantes de Transformers ou de systemes existants
+- proposer une taxonomie absolue des architectures en general
+
+Ce document vise :
+
+- une stratification des regimes admissibles relativement a un referentiel (interface et verite dynamique)
+- une specification testable des regimes autoreferential et autoreflexive au sens operatoire du depot
