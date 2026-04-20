@@ -17,7 +17,7 @@ Note: dans l exposition, j introduis souvent le mot sujet avant de nommer explic
 ## Auto reference
 
 Un systeme est dit auto referentiel relativement a un referentiel donne lorsque la decision visee ne se ferme pas sur les marginales visibles seules, mais factorise a travers un etat interne ou un mediateur porte par le systeme.
-Dans la lecture empirique, cela signifie que la decision correcte depend d une variable interne non reductible au visible seul, et que cette variable joue le role de mediateur pour la verite dynamique visee.
+Dans la lecture empirique, cela signifie que la decision correcte depend d une variable interne non reductible au visible seul, et que cette variable joue le role de mediateur minimal pour la verite dynamique visee.
 
 ## Autoreflexivite
 

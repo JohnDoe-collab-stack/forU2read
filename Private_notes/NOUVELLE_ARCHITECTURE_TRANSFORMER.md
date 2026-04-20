@@ -12,6 +12,10 @@ Convention de lecture du document :
 - `operativite` = operation exacte qui porte le mot dans le protocole
 - `attestation` = ce que le test calcule effectivement pour tenir la propriete
 
+## Avant propos theorique
+
+La these architecturale du projet ne part pas d une intuition vague sur la memoire interne. Elle repose sur un resultat conceptuel plus fort, deja formalise dans la theorie Lean du projet sur le cas a deux interfaces. Cette theorie montre la chaine suivante : des obstructions diagonales sur chaque marge certifient que la verite dynamique visee ne se ferme pas sur les observations marginales prises separement ; cette non cloture peut etre convertie constructivement en separation explicite de fibre ; la verite jointe ainsi obtenue n est reductible ni a la projection gauche ni a la projection droite ; et sa reparabilite exige alors un mediateur fini exact sur l interface jointe, avec une dimension minimale. Le mediateur n apparait donc pas comme un latent opportuniste ajoute pour mieux predire. Il apparait comme la variable interne minimale requise pour porter une relation dynamique que le visible marginal ne contient pas. De plus, si ce mediateur pouvait redescendre vers une seule marge, la verite jointe redeviendrait predictible depuis cette marge, ce qui contredirait l obstruction initiale. Dans le cas binaire, cette mediation force meme une signature causale interventionnelle. Le sens architectural est alors net : quand la cloture sur le visible echoue structurellement, la bonne forme n est plus visible -> sortie, mais interface(s) -> mediateur -> decision. Ce socle justifie la version autoreferentielle minimale du projet ; l extension autoreflexive en est le prolongement naturel, lorsque l etat interne ne sert plus seulement a medier la decision, mais aussi a reconfigurer l acces ulterieur a l information.
+
 ## 1. Idee directrice
 
 Le projet ne vise pas un Transformer qui decide seulement a partir de l interface visible fournie au moment de la decision.
