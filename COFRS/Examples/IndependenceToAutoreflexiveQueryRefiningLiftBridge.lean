@@ -309,6 +309,50 @@ theorem sigFactorsThrough_encode_postStateUnder_true_of_correctSigOnLeftFiber_of
     simpa [Arch] using hσ
   exact hFac hσ'
 
+ /--
+ A `CompatSigDimLe` witness with the summary explicitly read from the post-query state.
+
+ This avoids any extra definition, and keeps the dependence on the minimal query architecture
+ explicit in the statement.
+ -/
+theorem exists_predFin_for_postStateUnder_true_of_correctSigOnLeftFiber_of_encode_injective
+    (defaultB : VB) (decAB : VA × VB → Bool)
+    {n : Nat} (encode : VB → Fin n) (hEncode : Function.Injective encode)
+    (predB : VB → Future (P := P) h → Prop)
+    (hCorr : CorrectSigOnLeftFiber (P := P) (sem := sem)
+      (obsA := obsA) (obsB := obsB) (targetA := targetA) (h := h) predB) :
+    let Arch :=
+      queryRepairBySecondMargin (P := P) (obsA := obsA) (obsB := obsB) (targetA := targetA)
+        (h0 := h) (defaultB := defaultB) (decAB := decAB)
+    ∃ predFin : Fin n → Future (P := P) h → Prop,
+      ∀ x fut,
+        predFin (encode (AutoreflexiveQueryArchitecture.postStateUnder Arch x true).2) fut ↔
+          CompatibleFuture (P := P) sem obsA targetA fut x := by
+  intro Arch
+  let predFin : Fin n → Future (P := P) h → Prop :=
+    fun i fut => ∃ v : VB, encode v = i ∧ predB v fut
+  refine ⟨predFin, ?_⟩
+  intro x fut
+  constructor
+  · rintro ⟨v, hv, hvPred⟩
+    have hv' : encode v = encode (obsB x.1) := by
+      simpa [predFin, Arch] using hv
+    have : v = obsB x.1 := hEncode hv'
+    subst this
+    exact (hCorr x fut).1 hvPred
+  · intro hComp
+    have : predB (obsB x.1) fut := (hCorr x fut).2 hComp
+    refine ⟨obsB x.1, ?_, this⟩
+    -- `postStateUnder ... true` stores `obsB x.1` in its second component.
+    have hEq :
+        encode (AutoreflexiveQueryArchitecture.postStateUnder Arch x true).2 =
+          encode (obsB x.1) := by
+      simpa [Arch] using
+        (sigma_from_postStateUnder_true_eq (P := P) (obsA := obsA) (obsB := obsB)
+          (targetA := targetA) (h := h) (defaultB := defaultB) (decAB := decAB)
+          (encode := encode) x)
+    exact hEq.symm
+
 /--
 Global minimality at `2`, on a fixed left fiber.
 
@@ -361,6 +405,7 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.sigFactorsThrough_encode_obsB_of_correctSigOnLeftFiber_of_encode_injective
 #print axioms PrimitiveHolonomy.Examples.compatSigDimLe_of_correctSigOnLeftFiber_of_encode_injective
 #print axioms PrimitiveHolonomy.Examples.sigFactorsThrough_encode_postStateUnder_true_of_correctSigOnLeftFiber_of_encode_injective
+#print axioms PrimitiveHolonomy.Examples.exists_predFin_for_postStateUnder_true_of_correctSigOnLeftFiber_of_encode_injective
 #print axioms PrimitiveHolonomy.Examples.sigma_from_postStateUnder_true_eq
 #print axioms PrimitiveHolonomy.Examples.not_compatSigDimLe_zero_of_sigSeparatesLeftFiber
 #print axioms PrimitiveHolonomy.Examples.not_compatSigDimLe_one_of_sigSeparatesLeftFiber
