@@ -21,15 +21,13 @@ namespace Examples
 
 universe u w
 
-variable {P : Type u} [HistoryGraph P]
+variable {P : Type u}
 
 section StrongBridge
 
 variable {S VA VB : Type w}
-variable (sem : Semantics P S)
 variable (obsA : S → VA) (obsB : S → VB)
 variable (targetA : P → VA)
-variable (stepAt : ∀ h : P, Σ k : P, HistoryGraph.Path h k)
 
 variable (defaultB : VB)
 variable (policy : VA → Bool)
@@ -63,6 +61,59 @@ namespace QueryRepairFamilyBySecondMargin
 local notation "ArchS" =>
   queryRepairFamilyBySecondMargin (P := P) obsA obsB targetA defaultB policy decAB
 
+@[simp] theorem chosenAction_eq_policy (w : AutoreflexiveQueryArchitecture.World ArchS) :
+    AutoreflexiveQueryArchitecture.chosenAction ArchS w = policy (targetA w.1) := by
+  rfl
+
+@[simp] theorem preState_eq (w : AutoreflexiveQueryArchitecture.World ArchS) :
+    AutoreflexiveQueryArchitecture.preState ArchS w = (targetA w.1, defaultB) := by
+  rfl
+
+@[simp] theorem env_true (w : AutoreflexiveQueryArchitecture.World ArchS) :
+    AutoreflexiveQueryArchitecture.env ArchS w true = obsB w.2.1 := by
+  rfl
+
+@[simp] theorem env_false (w : AutoreflexiveQueryArchitecture.World ArchS) :
+    AutoreflexiveQueryArchitecture.env ArchS w false = defaultB := by
+  rfl
+
+@[simp] theorem postStateUnder_true (w : AutoreflexiveQueryArchitecture.World ArchS) :
+    AutoreflexiveQueryArchitecture.postStateUnder ArchS w true = (targetA w.1, obsB w.2.1) := by
+  rfl
+
+@[simp] theorem postStateUnder_false (w : AutoreflexiveQueryArchitecture.World ArchS) :
+    AutoreflexiveQueryArchitecture.postStateUnder ArchS w false = (targetA w.1, defaultB) := by
+  rfl
+
+@[simp] theorem runUnder_true (w : AutoreflexiveQueryArchitecture.World ArchS) :
+    AutoreflexiveQueryArchitecture.runUnder ArchS w true = out (decAB (targetA w.1, obsB w.2.1)) := by
+  rfl
+
+@[simp] theorem runUnder_false (w : AutoreflexiveQueryArchitecture.World ArchS) :
+    AutoreflexiveQueryArchitecture.runUnder ArchS w false = out (decAB (targetA w.1, defaultB)) := by
+  rfl
+
+@[simp] theorem run_eq_if (w : AutoreflexiveQueryArchitecture.World ArchS) :
+    AutoreflexiveQueryArchitecture.run ArchS w =
+      out (decAB (targetA w.1, if policy (targetA w.1) then obsB w.2.1 else defaultB)) := by
+  rfl
+
+theorem run_eq_on_policy_true
+    {h : P} (x : FiberPt (P := P) obsA targetA h)
+    (hPolTrue : policy (targetA h) = true) :
+    AutoreflexiveQueryArchitecture.run ArchS ⟨h, x⟩ = out (decAB (targetA h, obsB x.1)) := by
+  dsimp [AutoreflexiveQueryArchitecture.run, AutoreflexiveQueryArchitecture.postState,
+    AutoreflexiveQueryArchitecture.returnedResponse, AutoreflexiveQueryArchitecture.chosenAction,
+    AutoreflexiveQueryArchitecture.preState, queryRepairFamilyBySecondMargin]
+  rw [hPolTrue]
+  rfl
+
+section WithHistoryGraph
+
+variable [HistoryGraph P]
+variable (sem : Semantics P S)
+variable (stepAt : ∀ h : P, Σ k : P, HistoryGraph.Path h k)
+
 def GoodFiber (h : P) : Prop :=
   policy (targetA h) = true
     ∧ StepSeparatesFiber (P := P) sem obsA targetA (stepAt h).2
@@ -78,63 +129,6 @@ structure StrongBridgeHypotheses : Prop where
     ∃ h : P, policy (targetA h) = false ∧ Nonempty (FiberPt (P := P) obsA targetA h)
   exists_response_gap :
     ∃ w : StrongWorld (P := P) obsA targetA, obsB w.2.1 ≠ defaultB
-
-omit [HistoryGraph P] in
-@[simp] theorem chosenAction_eq_policy (w : AutoreflexiveQueryArchitecture.World ArchS) :
-    AutoreflexiveQueryArchitecture.chosenAction ArchS w = policy (targetA w.1) := by
-  rfl
-
-omit [HistoryGraph P] in
-@[simp] theorem preState_eq (w : AutoreflexiveQueryArchitecture.World ArchS) :
-    AutoreflexiveQueryArchitecture.preState ArchS w = (targetA w.1, defaultB) := by
-  rfl
-
-omit [HistoryGraph P] in
-@[simp] theorem env_true (w : AutoreflexiveQueryArchitecture.World ArchS) :
-    AutoreflexiveQueryArchitecture.env ArchS w true = obsB w.2.1 := by
-  rfl
-
-omit [HistoryGraph P] in
-@[simp] theorem env_false (w : AutoreflexiveQueryArchitecture.World ArchS) :
-    AutoreflexiveQueryArchitecture.env ArchS w false = defaultB := by
-  rfl
-
-omit [HistoryGraph P] in
-@[simp] theorem postStateUnder_true (w : AutoreflexiveQueryArchitecture.World ArchS) :
-    AutoreflexiveQueryArchitecture.postStateUnder ArchS w true = (targetA w.1, obsB w.2.1) := by
-  rfl
-
-omit [HistoryGraph P] in
-@[simp] theorem postStateUnder_false (w : AutoreflexiveQueryArchitecture.World ArchS) :
-    AutoreflexiveQueryArchitecture.postStateUnder ArchS w false = (targetA w.1, defaultB) := by
-  rfl
-
-omit [HistoryGraph P] in
-@[simp] theorem runUnder_true (w : AutoreflexiveQueryArchitecture.World ArchS) :
-    AutoreflexiveQueryArchitecture.runUnder ArchS w true = out (decAB (targetA w.1, obsB w.2.1)) := by
-  rfl
-
-omit [HistoryGraph P] in
-@[simp] theorem runUnder_false (w : AutoreflexiveQueryArchitecture.World ArchS) :
-    AutoreflexiveQueryArchitecture.runUnder ArchS w false = out (decAB (targetA w.1, defaultB)) := by
-  rfl
-
-omit [HistoryGraph P] in
-@[simp] theorem run_eq_if (w : AutoreflexiveQueryArchitecture.World ArchS) :
-    AutoreflexiveQueryArchitecture.run ArchS w =
-      out (decAB (targetA w.1, if policy (targetA w.1) then obsB w.2.1 else defaultB)) := by
-  rfl
-
-omit [HistoryGraph P] in
-theorem run_eq_on_policy_true
-    {h : P} (x : FiberPt (P := P) obsA targetA h)
-    (hPolTrue : policy (targetA h) = true) :
-    AutoreflexiveQueryArchitecture.run ArchS ⟨h, x⟩ = out (decAB (targetA h, obsB x.1)) := by
-  dsimp [AutoreflexiveQueryArchitecture.run, AutoreflexiveQueryArchitecture.postState,
-    AutoreflexiveQueryArchitecture.returnedResponse, AutoreflexiveQueryArchitecture.chosenAction,
-    AutoreflexiveQueryArchitecture.preState, queryRepairFamilyBySecondMargin]
-  rw [hPolTrue]
-  rfl
 
 theorem existsAlternativeActionDecisionEffect_of_goodFiber
     {h : P}
@@ -524,6 +518,8 @@ theorem queryLoopOperationality_of_strongBridgeHypotheses
       (defaultB := defaultB) (policy := policy) (decAB := decAB)
       (h := hGood) hPolTrue hSep hCorr) hBypass
 
+end WithHistoryGraph
+
 end QueryRepairFamilyBySecondMargin
 
 end StrongBridge
@@ -541,10 +537,8 @@ non-recoverability (rather than relying on the architecture alone).
 section StrongBridgeBypass
 
 variable {S VA VB : Type w}
-variable (sem : Semantics P S)
 variable (obsA : S → VA) (obsB : S → VB)
 variable (targetA : P → VA)
-variable (stepAt : ∀ h : P, Σ k : P, HistoryGraph.Path h k)
 
 variable (defaultB : VB)
 variable (policy : VA → Bool)
@@ -577,6 +571,12 @@ local notation "ArchB" =>
   queryRepairFamilyBySecondMarginWithBypass
     (P := P) (obsA := obsA) (obsB := obsB) (targetA := targetA)
     (defaultB := defaultB) (policy := policy) (decAB := decAB) (B := B) bypassVisible
+
+section WithHistoryGraph
+
+variable [HistoryGraph P]
+variable (sem : Semantics P S)
+variable (stepAt : ∀ h : P, Σ k : P, HistoryGraph.Path h k)
 
 def GoodFiber (h : P) : Prop :=
   policy (targetA h) = true
@@ -933,6 +933,8 @@ theorem queryLoopOperationality_of_strongBridgeHypotheses
       (defaultB := defaultB) (policy := policy) (decAB := decAB)
       (B := B) (bypassVisible := bypassVisible)
       (h := hGood) hPolTrue hSep hCorr g hg
+
+end WithHistoryGraph
 
 end QueryRepairFamilyBySecondMarginWithBypass
 

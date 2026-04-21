@@ -27,15 +27,14 @@ namespace Examples
 
 universe u w
 
-variable {P : Type u} [HistoryGraph P]
+variable {P : Type u}
 
 section MinimalBridge
 
 variable {S VA VB : Type w}
-variable (sem : Semantics P S)
 variable (obsA : S → VA) (obsB : S → VB)
 variable (targetA : P → VA)
-variable {h k : P} (step : HistoryGraph.Path h k)
+variable (h : P)
 
 variable (defaultB : VB)
 variable (decAB : VA × VB → Bool)
@@ -79,6 +78,42 @@ namespace QueryRepairBySecondMargin
 local notation "Arch" =>
   queryRepairBySecondMargin (P := P) obsA obsB targetA h defaultB decAB
 
+section ArchSimp
+
+/--
+`query` is constant `true`, so the chosen action is always `true`.
+-/
+@[simp] theorem chosenAction_eq_true (world : AutoreflexiveQueryArchitecture.World Arch) :
+    AutoreflexiveQueryArchitecture.chosenAction Arch world = true := by
+  rfl
+
+@[simp] theorem preState_eq (world : AutoreflexiveQueryArchitecture.World Arch) :
+    AutoreflexiveQueryArchitecture.preState Arch world = (targetA h, defaultB) := by
+  rfl
+
+@[simp] theorem runUnder_true (world : AutoreflexiveQueryArchitecture.World Arch) :
+    AutoreflexiveQueryArchitecture.runUnder Arch world true =
+      out (decAB (targetA h, obsB world.1)) := by
+  rfl
+
+@[simp] theorem runUnder_false (world : AutoreflexiveQueryArchitecture.World Arch) :
+    AutoreflexiveQueryArchitecture.runUnder Arch world false =
+      out (decAB (targetA h, defaultB)) := by
+  rfl
+
+@[simp] theorem run_eq (world : AutoreflexiveQueryArchitecture.World Arch) :
+    AutoreflexiveQueryArchitecture.run Arch world =
+      out (decAB (targetA h, obsB world.1)) := by
+  rfl
+
+end ArchSimp
+
+section WithHistoryGraph
+
+variable [HistoryGraph P]
+variable (sem : Semantics P S)
+variable {k : P} (step : HistoryGraph.Path h k)
+
 /--
 Correctness of `decAB` as a decision rule for the left-fiber dynamic truth,
 after enriching the left observation by the response `obsB`.
@@ -88,34 +123,6 @@ def CorrectOnLeftFiber
     (h : P) {k : P} (step : HistoryGraph.Path h k) (decAB : VA × VB → Bool) : Prop :=
   ∀ world : FiberPt (P := P) obsA targetA h,
     (decAB (targetA h, obsB world.1) = true) ↔ Compatible (P := P) sem obsA targetA step world
-
-omit [HistoryGraph P] in
-@[simp] theorem chosenAction_eq_true (world : AutoreflexiveQueryArchitecture.World Arch) :
-    AutoreflexiveQueryArchitecture.chosenAction Arch world = true := by
-  rfl
-
-omit [HistoryGraph P] in
-@[simp] theorem preState_eq (world : AutoreflexiveQueryArchitecture.World Arch) :
-    AutoreflexiveQueryArchitecture.preState Arch world = (targetA h, defaultB) := by
-  rfl
-
-omit [HistoryGraph P] in
-@[simp] theorem runUnder_true (world : AutoreflexiveQueryArchitecture.World Arch) :
-    AutoreflexiveQueryArchitecture.runUnder Arch world true =
-      out (decAB (targetA h, obsB world.1)) := by
-  rfl
-
-omit [HistoryGraph P] in
-@[simp] theorem runUnder_false (world : AutoreflexiveQueryArchitecture.World Arch) :
-    AutoreflexiveQueryArchitecture.runUnder Arch world false =
-      out (decAB (targetA h, defaultB)) := by
-  rfl
-
-omit [HistoryGraph P] in
-@[simp] theorem run_eq (world : AutoreflexiveQueryArchitecture.World Arch) :
-    AutoreflexiveQueryArchitecture.run Arch world =
-      out (decAB (targetA h, obsB world.1)) := by
-  rfl
 
 theorem not_decisionFactorsThroughPreStateChosen_of_stepSeparatesFiber_of_correct
     (hSep : StepSeparatesFiber (P := P) sem obsA targetA step)
@@ -262,6 +269,8 @@ theorem not_decisionRecoverableFromForbiddenChannel_of_stepSeparatesFiber_of_cor
       (P := P) (S := S) (VA := VA) (VB := VB) (sem := sem) (obsA := obsA) (obsB := obsB)
       (targetA := targetA) (h := h) (step := step) (defaultB := defaultB) (decAB := decAB)
       hSep hCorr hCollapse
+
+end WithHistoryGraph
 
 end QueryRepairBySecondMargin
 
