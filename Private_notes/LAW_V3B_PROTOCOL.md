@@ -64,7 +64,7 @@ Code:
 
 ### 2.1 Query time visible token
 
-At query time, the *visible* interface is only `lo_tok`:
+At the query boundary, the only current exogenous visible token is `lo_tok`:
 - `lo_tok = LO_BASE + lo` (env: lines 16 to 18, 76 to 78, 264 to 265)
 
 Code:
@@ -72,6 +72,11 @@ Code:
 - `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/law_v3b/aslmt_env_law_v3b_hard_ood_masks_query_pomdp_family_balanced_split.py:264`
 
 This is deliberately insufficient: `lo` is only the low bits of the index, while `hi` are the high bits (env: lines 69 to 74).
+
+Important nuance (Policy A vs Policy B):
+- Policy B chooses the query action as a function of `lo_tok` (train: line 99)
+- Policy A chooses the query action as a function of its internal memory, which is already built from the prior view stream and delays (train: lines 45 to 55, 59 to 66)
+- Policy A explicitly prevents `lo_tok` from being injected into memory before the query (anti bypass, train: lines 56 to 57)
 
 ### 2.2 Views before query (the parity constraint stream)
 
@@ -240,6 +245,10 @@ Interpretation:
 - if `mem_out` carries the decision relevant information, swapping it should break correctness on original labels (low `swap_vs_orig`)
 - but swapping it should preserve correctness relative to swapped labels (high `swap_vs_perm`)
 
+Nuance:
+- ablation zeros both the query stage memory and the output stage memory (`mem_for_query` and `mem_for_out`) (train: lines 59 and 79, audit call at train: line 141)
+- swap permutes only `mem_out`, so the swap audit specifically targets the decision bearing mediator at the output stage
+
 Code:
 - `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/law_v3b/aslmt_train_law_v3b_hard_ood_masks_query_pomdp_family_balanced_split.py:135`
 
@@ -334,8 +343,9 @@ Code:
 
 It is present if:
 - there exists an internal state that determines an action
-- forcing a different action would change the response stream
+- the protocol structurally instantiates an action conditioned response token (env: line 283)
 - the decision is made after incorporating the response
+- the explicitly reported intervention audit is on memory dependence (ablation and swap), not as a separate action counterfactual metric
 
 In `law_v3b`, this is witnessed by the explicit computation chain in `_rollout_memory_policy` (train: lines 43 to 88).
 
@@ -358,6 +368,10 @@ The README gives a canonical run (solid, seeds 0..4, CUDA) and a canonical verif
 - `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/law_v3b/README_aslmt_law_v3b_hard_ood_masks_balanced_split.md:1`
 
 For reference, the runner accepts either a single seed or a seed range (campaign: lines 135 to 146).
+
+Note on what is considered a strong reference run:
+- the runner supports `profile smoke` and `profile solid` (campaign: line 115)
+- the verifier enforces schema constraints and OOD thresholds for both, but a solid multi seed run is the intended reference for claims that depend on stability across seeds (verify: lines 81 to 84, 90 to 96)
 
 ## 13) Notes for using `law_v3b` as a protocol template
 
