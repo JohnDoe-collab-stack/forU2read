@@ -13,6 +13,11 @@ Key difference:
 * the strong bridge ranges over a family of left fibers, so `historyVisible`, `preState`, and
   `chosenAction` can vary, making the full `QueryLoopOperationality` profile attainable.
 
+Main output (informal):
+* Under `StrongBridgeHypotheses`, the constructed family query architecture satisfies the full
+  operational query-loop contract (`QueryLoopOperationality`). The corresponding theorem is
+  `queryLoopOperationality_of_strongBridgeHypotheses`.
+
 All proofs are constructive; see the `AXIOM_AUDIT` block at the end.
 -/
 

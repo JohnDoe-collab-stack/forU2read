@@ -9,15 +9,22 @@ This file is a minimal bridge between:
 * `COFRS/Examples/IndependenceRelationMediationChain.lean` (dynamic non-closure on a marginal fiber)
 * `COFRS/Examples/AutoreflexiveQueryArchitecture.lean` (query-loop architectural signature)
 
-Scope:
+Scope and contribution:
 
-This bridge does not attempt to restate the full finite mediator story (`CompatDimEq` / `RefiningLift`)
-of the previous file. Instead, it formalizes a simpler mechanism:
+This bridge focuses on a single left fiber and the post-query repair mechanism. Concretely:
 
 * a dynamic truth is posed on the left fiber (`obsA`),
 * the left margin alone does not close it (`StepSeparatesFiber`),
 * a query requests the second margin (`obsB`) as a response,
 * and the post-query state carries enough information to decide the left-fiber truth.
+
+Main outputs (informal):
+* A local non-closure statement on the left fiber is translated into a non-collapse statement for the
+  chosen-action branch of the query architecture.
+* A same-world alternative-action effect witness is produced (`ExistsAlternativeActionDecisionEffect`).
+
+For a bridge that ranges over a family of left fibers and yields the full operational profile
+`QueryLoopOperationality`, see `COFRS/Examples/IndependenceToAutoreflexiveQueryStrongBridge.lean`.
 
 All proofs are constructive; see the `AXIOM_AUDIT` block at the end.
 -/
