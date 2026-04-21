@@ -1,0 +1,10 @@
+/home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v13_phaseA2_unified_nscalable_poswtdice_pairrank_imgcuerank_kdet_spaced2_64_20260418_002902_2b3bdf10b357/verify_aslmt_v13_phaseA2_matrix.py --master-jsonl /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v13_phaseA2_unified_nscalable_poswtdice_pairrank_imgcuerank_kdet_spaced2_64_20260418_002902_2b3bdf10b357/v13_master_20260418_002902_2b3bdf10b357.jsonl --profile smoke --min-seeds 1 --n-classes-list 3 --z-policy A1
+
+
+[FAIL] v13 Phase A2 matrix checks did not pass:
+- ref n=3 z=3 iid: A_img_min=0.0 != 1.0
+- ref n=3 z=3 iid: A_cue_min=0.125 != 1.0
+- ref n=3 z=3 iid: swap_follow_min=0.0 != 1.0
+- ref n=3 z=3 ood: A_img_min=0.0 != 1.0
+- ref n=3 z=3 ood: A_cue_min=0.046875 != 1.0
+- ref n=3 z=3 ood: swap_follow_min=0.0 != 1.0

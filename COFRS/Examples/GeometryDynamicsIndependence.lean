@@ -331,6 +331,28 @@ theorem flat_dynamic_truth_without_geometric_coherence :
   · exact flat_dynamic_truth false
   · exact flat_not_geometric_coherence false
 
+/--
+Dynamic truth does not imply geometric coherence (flat family witness).
+
+This is the second direction needed to read "independence" in the standard sense:
+we exhibit a dynamically correct step while the corresponding commutation witness is flat.
+-/
+theorem dynamic_truth_does_not_imply_geometric_coherence :
+    ¬ (∀ b : Bool,
+      DynamicTruth
+        flatSemantics
+        flatObs
+        flatTargetObs
+        (FlatPath.step b : HistoryGraph.Path (P := FlatPrefix) (FlatPrefix.base b) (FlatPrefix.fut b)) →
+      GeometricCoherence
+        flatSemantics
+        flatObs
+        flatTargetObs
+        (FlatDef.pq b)) := by
+  intro hImp
+  rcases flat_dynamic_truth_without_geometric_coherence with ⟨b, hDyn, hNotGeo⟩
+  exact hNotGeo (hImp b hDyn)
+
 theorem geometric_coherence_and_dynamic_truth_independent :
     (GeometricCoherence
         (dSemantics (n := 2) (hn := by decide) biasPred)
@@ -391,6 +413,29 @@ def StrengthenedReconstructionTarget
     {k' : P} (step : HistoryGraph.Path h k') (X : Prop) : Prop :=
   (GeometricCoherence sem obs target_obs α ∧ X) → DynamicTruth sem obs target_obs step
 
+theorem not_strengthenedReconstructionTarget_true_for_biased_commutation :
+    ¬ StrengthenedReconstructionTarget
+      (dSemantics (n := 2) (hn := by decide) biasPred)
+      (dObs (n := 2))
+      dTargetObs
+      α_pq
+      (DPath.step : HistoryGraph.Path (P := DPrefix) DPrefix.base DPrefix.fut)
+      True := by
+  intro hTarget
+  have hGeo : GeometricCoherence
+      (dSemantics (n := 2) (hn := by decide) biasPred)
+      (dObs (n := 2))
+      dTargetObs
+      α_pq :=
+    biased_commutation_geometric_without_dynamic_truth.1
+  have hDyn : DynamicTruth
+      (dSemantics (n := 2) (hn := by decide) biasPred)
+      (dObs (n := 2))
+      dTargetObs
+      (DPath.step : HistoryGraph.Path (P := DPrefix) DPrefix.base DPrefix.fut) :=
+    hTarget ⟨hGeo, True.intro⟩
+  exact biased_commutation_geometric_without_dynamic_truth.2 hDyn
+
 theorem strengthenedReconstructionTarget_iff
     {P : Type u} [HistoryGraph P] {S : Type w} {V : Type w}
     (sem : Semantics P S) (obs : S → V) (target_obs : P → V)
@@ -416,7 +461,9 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.GeometryDynamicsIndependence.flat_compatible_step_iff
 #print axioms PrimitiveHolonomy.Examples.GeometryDynamicsIndependence.flat_dynamic_truth
 #print axioms PrimitiveHolonomy.Examples.GeometryDynamicsIndependence.flat_dynamic_truth_without_geometric_coherence
+#print axioms PrimitiveHolonomy.Examples.GeometryDynamicsIndependence.dynamic_truth_does_not_imply_geometric_coherence
 #print axioms PrimitiveHolonomy.Examples.GeometryDynamicsIndependence.geometric_coherence_and_dynamic_truth_independent
 #print axioms PrimitiveHolonomy.Examples.GeometryDynamicsIndependence.holonomy_aligned_does_not_imply_dynamic_truth
+#print axioms PrimitiveHolonomy.Examples.GeometryDynamicsIndependence.not_strengthenedReconstructionTarget_true_for_biased_commutation
 #print axioms PrimitiveHolonomy.Examples.GeometryDynamicsIndependence.strengthenedReconstructionTarget_iff
 /- AXIOM_AUDIT_END -/

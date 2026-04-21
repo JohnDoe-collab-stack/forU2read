@@ -1,0 +1,14 @@
+[v10-REF] n=3 z=3 seeds=[0, 1, 2, 3, 4] n_rows=5 iid(bar_img=True, bar_cue=True, A_img_min=1.0000, A_cue_min=1.0000) ood(bar_img=True, bar_cue=True, A_img_min=1.0000, A_cue_min=1.0000)
+[v10-<n] n=3 z=2 seeds=[0, 1, 2, 3, 4] iid_A_img_min=0.6719 ood_A_img_min=0.6719
+[v10-REF] n=4 z=4 seeds=[0, 1, 2, 3, 4] n_rows=5 iid(bar_img=True, bar_cue=True, A_img_min=1.0000, A_cue_min=1.0000) ood(bar_img=True, bar_cue=True, A_img_min=1.0000, A_cue_min=1.0000)
+[v10-<n] n=4 z=2 seeds=[0, 1, 2, 3, 4] iid_A_img_min=0.6719 ood_A_img_min=0.6719
+[v10-<n] n=4 z=3 seeds=[0, 1, 2, 3, 4] iid_A_img_min=0.8281 ood_A_img_min=0.7500
+[v10-REF] n=5 z=5 seeds=[0, 1, 2, 3, 4] n_rows=5 iid(bar_img=True, bar_cue=True, A_img_min=1.0000, A_cue_min=1.0000) ood(bar_img=True, bar_cue=True, A_img_min=1.0000, A_cue_min=1.0000)
+[v10-<n] n=5 z=2 seeds=[0, 1, 2, 3, 4] iid_A_img_min=0.5938 ood_A_img_min=0.5625
+[v10-<n] n=5 z=4 seeds=[0, 1, 2, 3, 4] iid_A_img_min=0.8281 ood_A_img_min=0.8906
+[v10-REF] n=6 z=6 seeds=[0, 1, 2, 3, 4] n_rows=5 iid(bar_img=True, bar_cue=True, A_img_min=1.0000, A_cue_min=1.0000) ood(bar_img=True, bar_cue=True, A_img_min=1.0000, A_cue_min=1.0000)
+[v10-<n] n=6 z=3 seeds=[0, 1, 2, 3, 4] iid_A_img_min=0.7812 ood_A_img_min=0.7969
+[v10-<n] n=6 z=5 seeds=[0, 1, 2, 3, 4] iid_A_img_min=0.9062 ood_A_img_min=0.9375
+
+[OK] v10 Phase A1 matrix checks passed.
+

@@ -1,0 +1,40 @@
+CMD: /home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v11_phaseA2_unified_nscalable_posloss_pairrank_kdet_spaced2_64_20260417_065257_3aae1a0e5740/aslmt_train_v9_unified_double_barrier_minlift_seeded_pair_trainood_posloss_pairrank_nscalable_kdet_spaced2_64.py --seed 2 --steps 9000 --batch-size 64 --lr 0.001 --w-z 5.0 --w-k 0.0 --w-pos 0.25 --w-rank-img 0.25 --rank-n-ctx 8 --rank-ood-ratio 0.5 --train-ood-ratio 0.5 --pair-n-ctx 64 --img-size 64 --n-classes 8 --z-classes 8 --device cuda --out-jsonl /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v11_phaseA2_unified_nscalable_posloss_pairrank_kdet_spaced2_64_20260417_065257_3aae1a0e5740/v11_master_20260417_065257_3aae1a0e5740.jsonl
+SCRIPT_SHA256: 6f355dbcc4d162651743d2eab28e8536a193984404eaf9e58b1c0a617a163878
+step=250/9000 loss=9.839199 (A_seg=0.049204, A_z=1.932045, A_pos=0.018033, A_rank_img=0.501041, Bimg=0.043978, Bcue=0.059887)  z_acc=0.3594 k_acc=1.0000
+step=500/9000 loss=8.207335 (A_seg=0.055219, A_z=1.604215, A_pos=0.011370, A_rank_img=0.512790, Bimg=0.044351, Bcue=0.058670)  z_acc=0.8281 k_acc=1.0000
+step=750/9000 loss=6.288551 (A_seg=0.057736, A_z=1.235850, A_pos=0.006465, A_rank_img=0.199797, Bimg=0.042722, Bcue=0.057584)  z_acc=1.0000 k_acc=1.0000
+step=1000/9000 loss=4.838144 (A_seg=0.057459, A_z=0.945535, A_pos=0.006968, A_rank_img=0.205084, Bimg=0.043482, Bcue=0.059242)  z_acc=1.0000 k_acc=1.0000
+step=1250/9000 loss=4.176958 (A_seg=0.050845, A_z=0.817970, A_pos=0.006077, A_rank_img=0.138970, Bimg=0.042243, Bcue=0.058250)  z_acc=1.0000 k_acc=1.0000
+step=1500/9000 loss=3.518317 (A_seg=0.042320, A_z=0.684361, A_pos=0.003879, A_rank_img=0.212891, Bimg=0.037175, Bcue=0.053774)  z_acc=1.0000 k_acc=1.0000
+step=1750/9000 loss=2.830727 (A_seg=0.041403, A_z=0.551996, A_pos=0.004915, A_rank_img=0.112468, Bimg=0.038468, Bcue=0.054806)  z_acc=1.0000 k_acc=1.0000
+step=2000/9000 loss=2.184128 (A_seg=0.047596, A_z=0.425328, A_pos=0.004301, A_rank_img=0.035265, Bimg=0.044908, Bcue=0.059254)  z_acc=1.0000 k_acc=1.0000
+step=2250/9000 loss=1.970766 (A_seg=0.043999, A_z=0.375941, A_pos=0.004860, A_rank_img=0.183383, Bimg=0.045037, Bcue=0.060310)  z_acc=1.0000 k_acc=1.0000
+step=2500/9000 loss=1.594585 (A_seg=0.044292, A_z=0.307103, A_pos=0.005401, A_rank_img=0.053704, Bimg=0.044459, Bcue=0.058456)  z_acc=0.9844 k_acc=1.0000
+step=2750/9000 loss=1.144200 (A_seg=0.032562, A_z=0.213196, A_pos=0.004384, A_rank_img=0.178250, Bimg=0.037725, Bcue=0.053701)  z_acc=1.0000 k_acc=1.0000
+step=3000/9000 loss=1.026075 (A_seg=0.031705, A_z=0.192178, A_pos=0.003962, A_rank_img=0.129950, Bimg=0.037302, Bcue=0.164963)  z_acc=1.0000 k_acc=1.0000
+step=3250/9000 loss=1.035595 (A_seg=0.043157, A_z=0.197649, A_pos=0.004669, A_rank_img=0.012109, Bimg=0.043392, Bcue=0.076568)  z_acc=0.9844 k_acc=1.0000
+step=3500/9000 loss=0.695409 (A_seg=0.040939, A_z=0.127729, A_pos=0.004200, A_rank_img=0.059110, Bimg=0.043775, Bcue=0.068991)  z_acc=1.0000 k_acc=1.0000
+step=3750/9000 loss=0.624218 (A_seg=0.030162, A_z=0.113001, A_pos=0.004851, A_rank_img=0.111356, Bimg=0.037230, Bcue=0.061952)  z_acc=1.0000 k_acc=1.0000
+step=4000/9000 loss=0.487892 (A_seg=0.030634, A_z=0.090158, A_pos=0.003808, A_rank_img=0.022058, Bimg=0.037328, Bcue=0.062063)  z_acc=1.0000 k_acc=1.0000
+step=4250/9000 loss=0.637094 (A_seg=0.041694, A_z=0.117540, A_pos=0.005954, A_rank_img=0.024843, Bimg=0.042965, Bcue=0.068059)  z_acc=0.9844 k_acc=1.0000
+step=4500/9000 loss=0.389288 (A_seg=0.038794, A_z=0.068867, A_pos=0.005673, A_rank_img=0.018952, Bimg=0.040418, Bcue=0.067601)  z_acc=1.0000 k_acc=1.0000
+step=4750/9000 loss=0.310472 (A_seg=0.029207, A_z=0.055882, A_pos=0.003610, A_rank_img=0.003802, Bimg=0.035455, Bcue=0.062077)  z_acc=1.0000 k_acc=1.0000
+step=5000/9000 loss=0.281627 (A_seg=0.029160, A_z=0.050020, A_pos=0.003957, A_rank_img=0.005522, Bimg=0.034708, Bcue=0.061338)  z_acc=1.0000 k_acc=1.0000
+step=5250/9000 loss=0.275991 (A_seg=0.041552, A_z=0.044595, A_pos=0.008943, A_rank_img=0.036912, Bimg=0.040622, Bcue=0.068408)  z_acc=1.0000 k_acc=1.0000
+step=5500/9000 loss=0.290230 (A_seg=0.038163, A_z=0.047655, A_pos=0.003722, A_rank_img=0.051454, Bimg=0.039444, Bcue=0.068137)  z_acc=1.0000 k_acc=1.0000
+step=5750/9000 loss=0.278996 (A_seg=0.039614, A_z=0.041495, A_pos=0.004695, A_rank_img=0.122925, Bimg=0.039870, Bcue=0.068409)  z_acc=1.0000 k_acc=1.0000
+step=6000/9000 loss=0.390004 (A_seg=0.038360, A_z=0.061220, A_pos=0.003426, A_rank_img=0.178747, Bimg=0.039331, Bcue=0.068071)  z_acc=0.9844 k_acc=1.0000
+step=6250/9000 loss=0.168579 (A_seg=0.029295, A_z=0.023149, A_pos=0.004091, A_rank_img=0.090060, Bimg=0.034321, Bcue=0.061671)  z_acc=1.0000 k_acc=1.0000
+step=6500/9000 loss=0.156543 (A_seg=0.029534, A_z=0.024467, A_pos=0.004686, A_rank_img=0.014015, Bimg=0.034822, Bcue=0.062006)  z_acc=1.0000 k_acc=1.0000
+step=6750/9000 loss=0.150501 (A_seg=0.028959, A_z=0.020180, A_pos=0.005101, A_rank_img=0.077468, Bimg=0.035236, Bcue=0.061805)  z_acc=1.0000 k_acc=1.0000
+step=7000/9000 loss=0.129731 (A_seg=0.040461, A_z=0.017160, A_pos=0.004496, A_rank_img=0.009375, Bimg=0.039483, Bcue=0.068279)  z_acc=1.0000 k_acc=1.0000
+step=7250/9000 loss=0.129161 (A_seg=0.042804, A_z=0.016061, A_pos=0.003843, A_rank_img=0.020359, Bimg=0.039457, Bcue=0.068210)  z_acc=1.0000 k_acc=1.0000
+step=7500/9000 loss=0.100665 (A_seg=0.039257, A_z=0.011910, A_pos=0.004811, A_rank_img=0.002625, Bimg=0.039622, Bcue=0.068002)  z_acc=1.0000 k_acc=1.0000
+step=7750/9000 loss=0.115521 (A_seg=0.026763, A_z=0.014200, A_pos=0.005018, A_rank_img=0.066015, Bimg=0.034909, Bcue=0.061815)  z_acc=1.0000 k_acc=1.0000
+step=8000/9000 loss=0.220882 (A_seg=0.036665, A_z=0.026957, A_pos=0.003835, A_rank_img=0.193888, Bimg=0.039154, Bcue=0.068274)  z_acc=1.0000 k_acc=1.0000
+step=8250/9000 loss=0.162026 (A_seg=0.037030, A_z=0.022933, A_pos=0.004737, A_rank_img=0.036591, Bimg=0.039691, Bcue=0.068129)  z_acc=1.0000 k_acc=1.0000
+step=8500/9000 loss=0.074332 (A_seg=0.026993, A_z=0.009255, A_pos=0.003177, A_rank_img=0.001071, Bimg=0.034717, Bcue=0.061739)  z_acc=1.0000 k_acc=1.0000
+step=8750/9000 loss=0.101277 (A_seg=0.035950, A_z=0.007716, A_pos=0.002698, A_rank_img=0.104293, Bimg=0.039218, Bcue=0.067529)  z_acc=1.0000 k_acc=1.0000
+step=9000/9000 loss=0.114967 (A_seg=0.036542, A_z=0.008031, A_pos=0.002326, A_rank_img=0.150750, Bimg=0.039181, Bcue=0.068127)  z_acc=1.0000 k_acc=1.0000
+{"kind": "aslmt_v9_unified_double_barrier_minlift_posloss_pairrank_spaced2_64", "seed": 2, "n_classes": 8, "z_classes": 8, "train_ood_ratio": 0.5, "rank_ood_ratio": 0.5, "rank_n_ctx": 8, "w_z": 5.0, "w_k": 0.0, "w_pos": 0.25, "w_rank_img": 0.25, "metrics": {"iid": {"A_iou": 0.20639293268322945, "B_img_iou": 0.0, "B_cue_iou": 0.0, "z_acc": 1.0, "k_acc": 1.0}, "ood": {"A_iou": 0.12381399422883987, "B_img_iou": 0.0, "B_cue_iou": 0.0, "z_acc": 1.0, "k_acc": 1.0}}, "pair_eval": {"iid": {"n_ctx": 64, "ood": false, "obs_image_barrier_ok": true, "obs_cue_barrier_ok": true, "A_both_image_pair_rate": 1.0, "A_both_cue_pair_rate": 1.0, "B_image_only_both_rate": 0.0, "B_cue_only_both_rate": 0.0, "A_ablated_both_image_pair_rate": 0.0, "A_swap_follow_image_pair_rate": 1.0, "A_swap_orig_both_image_pair_rate": 0.0, "seed": 2}, "ood": {"n_ctx": 64, "ood": true, "obs_image_barrier_ok": true, "obs_cue_barrier_ok": true, "A_both_image_pair_rate": 0.9375, "A_both_cue_pair_rate": 1.0, "B_image_only_both_rate": 0.0, "B_cue_only_both_rate": 0.0, "A_ablated_both_image_pair_rate": 0.0, "A_swap_follow_image_pair_rate": 0.9375, "A_swap_orig_both_image_pair_rate": 0.0, "seed": 2}}}
+

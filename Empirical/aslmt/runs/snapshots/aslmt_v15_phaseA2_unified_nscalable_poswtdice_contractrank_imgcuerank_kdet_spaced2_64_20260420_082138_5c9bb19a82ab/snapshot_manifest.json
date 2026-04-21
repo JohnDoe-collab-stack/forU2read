@@ -1,0 +1,28 @@
+{
+  "kind": "aslmt_v15_phaseA2_unified_nscalable_poswtdice_contractrank_imgcuerank_kdet_spaced2_64_snapshot",
+  "timestamp": "20260420_082138",
+  "bundle_hash_sha256": "5c9bb19a82ab5d2508a23d11b8ea0b07803819b5aed49036f85262824bd148d8",
+  "snapshot_dir": "/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v15_phaseA2_unified_nscalable_poswtdice_contractrank_imgcuerank_kdet_spaced2_64_20260420_082138_5c9bb19a82ab",
+  "sources": [
+    {
+      "name": "aslmt_model_v9_unified_double_barrier_minlift_kdet.py",
+      "sha256": "4c3186566d23d341aa3038dc3e3f9413f13d6c4ff1c7e52a7e4fedfae9f814c3"
+    },
+    {
+      "name": "aslmt_env_v15_unified_double_barrier_minlift_nscalable_spaced2_64.py",
+      "sha256": "2ade19fb2e6dede4a384dca2a27ea7c2329e4f73f495de9e03176eab7ce4d52f"
+    },
+    {
+      "name": "render_v15_unified_paired_ctx_nscalable_spaced2_64.py",
+      "sha256": "3e81bbdd0d1b19a23e503a372b6d714118488b8dd379ef85bd6d96578e0e700e"
+    },
+    {
+      "name": "aslmt_train_v15_unified_double_barrier_minlift_seeded_pair_trainood_poswtdice_contractrank_imgcuerank_nscalable_kdet_spaced2_64_diag.py",
+      "sha256": "976cdf3342e87096b6ca82f22e9d8420831ab796842861ac43a3e60c879fc77d"
+    },
+    {
+      "name": "verify_aslmt_v15_phaseA2_matrix.py",
+      "sha256": "826b80bcc8eef07371e12e0378d5e6d2455c6c390324a4c818fb24dcd58bc973"
+    }
+  ]
+}

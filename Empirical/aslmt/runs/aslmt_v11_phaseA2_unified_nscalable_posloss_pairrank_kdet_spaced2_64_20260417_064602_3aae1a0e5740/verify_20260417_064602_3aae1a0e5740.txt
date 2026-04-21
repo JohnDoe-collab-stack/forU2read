@@ -1,0 +1,24 @@
+
+[FAIL] v11 Phase A2 matrix checks did not pass:
+- ref n=8 z=8 iid: A_img_min=0.15625 != 1.0
+- ref n=8 z=8 iid: A_cue_min=0.015625 != 1.0
+- ref n=8 z=8 iid: swap_follow_min=0.15625 != 1.0
+- ref n=8 z=8 iid: swap_orig_max=0.03125 != 0.0
+- ref n=8 z=8 ood: A_img_min=0.265625 != 1.0
+- ref n=8 z=8 ood: A_cue_min=0.0 != 1.0
+- ref n=8 z=8 ood: swap_follow_min=0.265625 != 1.0
+- ref n=8 z=8 ood: swap_orig_max=0.03125 != 0.0
+- ref n=12 z=12 iid: A_img_min=0.40625 != 1.0
+- ref n=12 z=12 iid: A_cue_min=0.0 != 1.0
+- ref n=12 z=12 iid: swap_follow_min=0.40625 != 1.0
+- ref n=12 z=12 ood: A_img_min=0.5 != 1.0
+- ref n=12 z=12 ood: A_cue_min=0.0 != 1.0
+- ref n=12 z=12 ood: swap_follow_min=0.5 != 1.0
+- ref n=16 z=16 iid: A_img_min=0.734375 != 1.0
+- ref n=16 z=16 iid: A_cue_min=0.140625 != 1.0
+- ref n=16 z=16 iid: swap_follow_min=0.734375 != 1.0
+- ref n=16 z=16 iid: swap_orig_max=0.015625 != 0.0
+- ref n=16 z=16 ood: A_img_min=0.6875 != 1.0
+- ref n=16 z=16 ood: A_cue_min=0.0625 != 1.0
+- ref n=16 z=16 ood: swap_follow_min=0.6875 != 1.0
+

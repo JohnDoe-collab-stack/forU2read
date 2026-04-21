@@ -1,0 +1,4 @@
+/home/frederick/.venvs/cofrs-gpu/bin/python3 -u /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v15_phaseA2_unified_nscalable_poswtdice_contractrank_imgcuerank_kdet_spaced2_64_20260420_082149_5c9bb19a82ab/verify_aslmt_v15_phaseA2_matrix.py --master-jsonl /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v15_phaseA2_unified_nscalable_poswtdice_contractrank_imgcuerank_kdet_spaced2_64_20260420_082149_5c9bb19a82ab/v15_master_20260420_082149_5c9bb19a82ab.jsonl --profile solid --min-seeds 1 --n-classes-list 8 --z-policy explicit --z-classes-list 8
+
+
+[OK] v15 Phase A2 matrix checks passed.
