@@ -79,6 +79,14 @@ theorem run_factors_through_historyVisible (A : AutoreferentialArchitecture) :
   intro world
   rfl
 
+/-!
+## Nontrivial operational predicates (mediator audit)
+
+The factorization lemma above is definitional. The following predicates are nontrivial: they are
+used to express when an internal mediator is operationally relevant under explicit interventions
+on that mediator (ablation / swap).
+-/
+
 /-- Minimal operational hooks for the base / ablation / swap audit on the mediator. -/
 structure Audit (A : AutoreferentialArchitecture) where
   ablate : A.Mediator
@@ -101,6 +109,22 @@ def swappedDecision {A : AutoreferentialArchitecture} (audit : A.Audit) (world :
 @[simp] theorem baseDecision_eq_run
     {A : AutoreferentialArchitecture} (audit : A.Audit) (world : A.World) :
     audit.baseDecision world = A.run world := rfl
+
+/-- Nontriviality witness: ablation changes the decision on some world. -/
+def AblationChangesDecision {A : AutoreferentialArchitecture} (audit : A.Audit) : Prop :=
+  ∃ world : A.World, audit.baseDecision world ≠ audit.ablatedDecision world
+
+/-- Nontriviality witness: swap changes the decision on some world. -/
+def SwapChangesDecision {A : AutoreferentialArchitecture} (audit : A.Audit) : Prop :=
+  ∃ world : A.World, audit.baseDecision world ≠ audit.swappedDecision world
+
+theorem not_all_eq_ablatedDecision_of_ablationChangesDecision
+    {A : AutoreferentialArchitecture} {audit : A.Audit}
+    (h : audit.AblationChangesDecision) :
+    ¬ (∀ world : A.World, audit.baseDecision world = audit.ablatedDecision world) := by
+  intro hall
+  rcases h with ⟨world, hne⟩
+  exact hne (hall world)
 
 end Audit
 
@@ -583,6 +607,8 @@ end PrimitiveHolonomy
 
 /- AXIOM_AUDIT_BEGIN -/
 #print axioms PrimitiveHolonomy.Examples.AutoreferentialArchitecture.run
+#print axioms PrimitiveHolonomy.Examples.AutoreferentialArchitecture.Audit.AblationChangesDecision
+#print axioms PrimitiveHolonomy.Examples.AutoreferentialArchitecture.Audit.not_all_eq_ablatedDecision_of_ablationChangesDecision
 #print axioms PrimitiveHolonomy.Examples.AutoreflexiveQueryArchitecture.runUnder_chosenAction_eq_run
 #print axioms PrimitiveHolonomy.Examples.AutoreflexiveQueryArchitecture.postStateFactorsThroughPreStateUnder_of_responseFactorsThroughPreStateUnder
 #print axioms PrimitiveHolonomy.Examples.AutoreflexiveQueryArchitecture.not_responseFactorsThroughPreStateUnder_of_queryLoopOperationality
