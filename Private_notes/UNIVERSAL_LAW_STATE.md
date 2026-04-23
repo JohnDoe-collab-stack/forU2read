@@ -229,10 +229,12 @@ Variante qforced+zread (objectif : requête opérationnellement nécessaire + ac
   - `aslmt_campaign_*_zread_matrix_diagstop_v3.py`
   - `verify_*_qforced_matrix.py`
 
-Run en cours (solid) au 2026-04-23 :
+Run de référence (solid) au 2026-04-23 (matrice `z∈{n, ⌊n/2⌋, n-1}`) :
 
 - `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_solid_20260423_102039_9f958bfafaad/`
-  - `seed0` montre déjà une stabilisation “noyau query” (`z_acc/q_acc/res_acc`), et l’orchestration `diagstop` enchaîne seeds et vérification partielle.
+  - Référence `n=8, z=8, seed=0..4` : passes strictes sur IID ∪ OOD pour `q_acc/res_acc/z_acc` et pour les gates `pair_eval`
+    (barrières valides, baselines à 0, ablation à 0, swap-follow à 1.0, swap-orig à 0.0, `query_action_rate` équilibré).
+  - Les runs sous-capacité `z<n` font partie du même master JSONL (utilisés par le verifier `--z-policy A1`).
 
 ---
 
@@ -280,4 +282,3 @@ Empirique :
 - Phase A2 : voir `UNIVERSALITY_PLAN.md`.
 - Phase B : outillage prêt (`v16`, `v17`).
 - law_v3b : protocole + variante qforced+zread + run `solid` en cours.
-

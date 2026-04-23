@@ -62,6 +62,8 @@ Un test “consistant” doit vérifier simultanément :
 - `v15_phaseA2_kdet_spaced2_64_contractrank_poswtdice_diag` : montée en échelle A2 (`n ∈ {8,12,16}`) avec witness-level fix (OOD cue corruption contract-preserving) ;
   sur le run `aslmt_v15_phaseA2_unified_nscalable_poswtdice_contractrank_imgcuerank_kdet_spaced2_64_20260420_082149_5c9bb19a82ab`,
   **Phase A2 est fermée** sur `n ∈ {8,12,16}` avec `seed=0..4` (référence `z=n` OK sur IID/OOD, `z<n` FAIL sur l’image-barrier, causal gates OK).
+- `law_v3b_unified_v2_strong_qforced_zread` : instanciation explicite d’un régime **autoreflexif** (action→réponse) dont l’action est une lecture du médiateur interne `z` (zread),
+  avec audit ablation/swap sur le médiateur, et vérification stricte en `solid` (IID ∪ OOD, multi-seeds, matrice `z∈{n,n-1,⌊n/2⌋}`).
 - `v16_phaseB_temporal_zigzag_64` : **famille Phase B** (sans occlusion, vérité dynamique = trajectoire zigzag temporelle) ; outillage prêt (renderer+env+trainer+campaign+verifier).
 - `v17_phaseB_symbolic_orbit_64` : **famille Phase B** (sans occlusion, vérité dynamique = orbite symbolique affine) ; outillage prêt (renderer+env+trainer+campaign+verifier).
 
