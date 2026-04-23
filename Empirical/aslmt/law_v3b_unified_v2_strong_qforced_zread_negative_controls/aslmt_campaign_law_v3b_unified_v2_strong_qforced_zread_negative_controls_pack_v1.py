@@ -1,0 +1,199 @@
+import argparse
+import hashlib
+import json
+import shutil
+from datetime import datetime
+from pathlib import Path
+from subprocess import run
+
+
+HERE = Path(__file__).resolve().parent
+ASLMT_DIR = HERE.parent
+RUNS_DIR = ASLMT_DIR / "runs"
+SNAP_DIR = RUNS_DIR / "snapshots"
+
+
+def _sha256_file(p: Path) -> str:
+    h = hashlib.sha256()
+    h.update(p.read_bytes())
+    return h.hexdigest()
+
+
+def _bundle_hash(paths: list[Path]) -> str:
+    h = hashlib.sha256()
+    for p in paths:
+        h.update(p.name.encode("utf-8"))
+        h.update(_sha256_file(p).encode("utf-8"))
+    return h.hexdigest()
+
+
+def main() -> None:
+    p = argparse.ArgumentParser()
+    p.add_argument("--profile", type=str, default="solid", choices=["smoke", "solid"])
+    p.add_argument("--device", type=str, default="cpu")
+    p.add_argument("--seed-from", type=int, default=0)
+    p.add_argument("--seed-to", type=int, default=0)
+    p.add_argument("--n-classes", type=int, default=8)
+    p.add_argument("--steps", type=int, default=9000)
+    p.add_argument("--batch-size", type=int, default=64)
+    p.add_argument("--train-ood-ratio", type=float, default=0.5)
+    p.add_argument("--pair-n-ctx", type=int, default=64)
+    p.add_argument("--img-size", type=int, default=64)
+    p.add_argument("--w-z", type=float, default=5.0)
+    p.add_argument("--w-k", type=float, default=0.0)
+    p.add_argument("--w-q", type=float, default=1.0)
+    p.add_argument("--w-pos", type=float, default=0.25)
+    p.add_argument("--w-rank-img", type=float, default=0.25)
+    p.add_argument("--w-rank-cue", type=float, default=0.25)
+    p.add_argument("--rank-n-ctx", type=int, default=8)
+    p.add_argument("--rank-margin", type=float, default=1.0)
+    p.add_argument("--rank-ood-ratio", type=float, default=0.5)
+    p.add_argument("--w-bce", type=float, default=1.0)
+    p.add_argument("--w-dice", type=float, default=0.0)
+    p.add_argument("--bce-pos-weight", type=str, default="none")
+    args = p.parse_args()
+
+    profile = str(args.profile)
+    n = int(args.n_classes)
+    z = int(n)
+    seeds = list(range(int(args.seed_from), int(args.seed_to) + 1))
+    if not seeds:
+        raise SystemExit(2)
+
+    sources = [
+        (HERE / "aslmt_model_law_v3b_unified_v2_strong_qforced_query_zread.py"),
+        (HERE / "aslmt_model_law_v3b_unified_v2_strong_qforced_query_zread_forced_action0.py"),
+        (HERE / "render_law_v3b_unified_v2_strong_qforced_paired_ctx_nscalable_spaced2_64.py"),
+        (HERE / "render_law_v3b_unified_v2_strong_qforced_paired_ctx_nscalable_spaced2_64_cue_zero.py"),
+        (HERE / "render_law_v3b_unified_v2_strong_qforced_paired_ctx_nscalable_spaced2_64_leak_h_to_image.py"),
+        (HERE / "aslmt_env_law_v3b_unified_v2_strong_qforced_nscalable_spaced2_64.py"),
+        (HERE / "aslmt_env_law_v3b_unified_v2_strong_qforced_nscalable_spaced2_64_cue_zero.py"),
+        (HERE / "aslmt_env_law_v3b_unified_v2_strong_qforced_nscalable_spaced2_64_leak_h_to_image.py"),
+        (HERE / "aslmt_train_law_v3b_unified_v2_strong_qforced_seeded_pair_trainood_poswtdice_contractrank_diag_zread_forced_action0.py"),
+        (HERE / "aslmt_train_law_v3b_unified_v2_strong_qforced_seeded_pair_trainood_poswtdice_contractrank_diag_zread_cue_zero.py"),
+        (HERE / "aslmt_train_law_v3b_unified_v2_strong_qforced_seeded_pair_trainood_poswtdice_contractrank_diag_zread_leak_h_to_image.py"),
+        (HERE / "verify_aslmt_law_v3b_unified_v2_strong_qforced_matrix.py"),
+    ]
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    bundle_hash = _bundle_hash(sources)
+    tag = f"aslmt_law_v3b_unified_v2_strong_qforced_zread_negative_controls_pack_{profile}_{ts}_{bundle_hash[:12]}"
+
+    snap_root = SNAP_DIR / f"{tag}"
+    snap_root.mkdir(parents=True, exist_ok=False)
+    for pth in sources:
+        shutil.copy2(pth, snap_root / pth.name)
+
+    manifest = {
+        "kind": "aslmt_law_v3b_unified_v2_strong_qforced_zread_negative_controls_pack_snapshot",
+        "timestamp": ts,
+        "profile": str(profile),
+        "bundle_hash_sha256": bundle_hash,
+        "snapshot_dir": str(snap_root),
+        "sources": [{"name": p.name, "sha256": _sha256_file(p)} for p in sources],
+    }
+    (snap_root / "snapshot_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    run_dir = RUNS_DIR / f"{tag}"
+    run_dir.mkdir(parents=True, exist_ok=False)
+
+    variants = {
+        "forced_action0": "aslmt_train_law_v3b_unified_v2_strong_qforced_seeded_pair_trainood_poswtdice_contractrank_diag_zread_forced_action0.py",
+        "cue_zero": "aslmt_train_law_v3b_unified_v2_strong_qforced_seeded_pair_trainood_poswtdice_contractrank_diag_zread_cue_zero.py",
+        "leak_h_to_image": "aslmt_train_law_v3b_unified_v2_strong_qforced_seeded_pair_trainood_poswtdice_contractrank_diag_zread_leak_h_to_image.py",
+    }
+
+    for name, train_name in variants.items():
+        master_jsonl = run_dir / f"law_v3b_unified_v2_strong_qforced_zread_negctrl_{name}_{profile}_master_{ts}_{bundle_hash[:12]}.jsonl"
+
+        for seed in seeds:
+            train = snap_root / train_name
+            log = run_dir / f"train_{name}_{ts}_{bundle_hash[:12]}_n{int(n)}_z{int(z)}_seed{int(seed)}.txt"
+            cmd = [
+                "/home/frederick/.venvs/cofrs-gpu/bin/python3",
+                "-u",
+                str(train),
+                "--profile",
+                str(profile),
+                "--seed",
+                str(int(seed)),
+                "--steps",
+                str(int(args.steps)),
+                "--batch-size",
+                str(int(args.batch_size)),
+                "--lr",
+                "0.001",
+                "--w-z",
+                str(float(args.w_z)),
+                "--w-k",
+                str(float(args.w_k)),
+                "--w-q",
+                str(float(args.w_q)),
+                "--w-pos",
+                str(float(args.w_pos)),
+                "--w-rank-img",
+                str(float(args.w_rank_img)),
+                "--w-rank-cue",
+                str(float(args.w_rank_cue)),
+                "--rank-n-ctx",
+                str(int(args.rank_n_ctx)),
+                "--rank-ood-ratio",
+                str(float(args.rank_ood_ratio)),
+                "--rank-margin",
+                str(float(args.rank_margin)),
+                "--train-ood-ratio",
+                str(float(args.train_ood_ratio)),
+                "--pair-n-ctx",
+                str(int(args.pair_n_ctx)),
+                "--img-size",
+                str(int(args.img_size)),
+                "--n-classes",
+                str(int(n)),
+                "--z-classes",
+                str(int(z)),
+                "--w-bce",
+                str(float(args.w_bce)),
+                "--w-dice",
+                str(float(args.w_dice)),
+                "--bce-pos-weight",
+                str(args.bce_pos_weight),
+                "--device",
+                str(args.device),
+                "--out-jsonl",
+                str(master_jsonl),
+            ]
+
+            log.write_text(" ".join(cmd) + "\n\n", encoding="utf-8")
+            with open(log, "a", encoding="utf-8") as f:
+                run(cmd, check=True, stdout=f, stderr=f)
+
+        # Strict verify is expected to FAIL for negative controls.
+        verify = snap_root / "verify_aslmt_law_v3b_unified_v2_strong_qforced_matrix.py"
+        verify_out = run_dir / f"verify_{name}_{ts}_{bundle_hash[:12]}.txt"
+        verify_cmd = [
+            "/home/frederick/.venvs/cofrs-gpu/bin/python3",
+            "-u",
+            str(verify),
+            "--master-jsonl",
+            str(master_jsonl),
+            "--profile",
+            "solid",
+            "--min-seeds",
+            str(int(len(seeds))),
+            "--n-classes-list",
+            str(int(n)),
+            "--z-policy",
+            "explicit",
+            "--z-classes-list",
+            str(int(z)),
+        ]
+        verify_out.write_text(" ".join(verify_cmd) + "\n\n", encoding="utf-8")
+        with open(verify_out, "a", encoding="utf-8") as f:
+            r = run(verify_cmd, check=False, stdout=f, stderr=f)
+        if int(r.returncode) == 0:
+            raise SystemExit(2)
+
+
+if __name__ == "__main__":
+    main()
+
