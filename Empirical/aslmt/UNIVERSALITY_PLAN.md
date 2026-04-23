@@ -59,9 +59,13 @@ Un test “consistant” doit vérifier simultanément :
 - `v10_phaseA1_kdet_spaced2` : même protocole A1 avec un témoin **spaced2** (anti-overlap) ; sur le run
   `aslmt_v10_phaseA1_unified_nscalable_posloss_pairrank_kdet_spaced2_20260416_074821_9fcd16977fda`,
   **Phase A1 est fermée** sur `n ∈ {3,4,5,6}` avec `seed=0..4` (référence `z=n` OK sur IID/OOD, `z<n` FAIL sur l’image-barrier, causal gates OK).
+- `v15_phaseA2_kdet_spaced2_64_contractrank_poswtdice_diag` : montée en échelle A2 (`n ∈ {8,12,16}`) avec witness-level fix (OOD cue corruption contract-preserving) ;
+  sur le run `aslmt_v15_phaseA2_unified_nscalable_poswtdice_contractrank_imgcuerank_kdet_spaced2_64_20260420_082149_5c9bb19a82ab`,
+  **Phase A2 est fermée** sur `n ∈ {8,12,16}` avec `seed=0..4` (référence `z=n` OK sur IID/OOD, `z<n` FAIL sur l’image-barrier, causal gates OK).
+- `v16_phaseB_temporal_zigzag_64` : **famille Phase B** (sans occlusion, vérité dynamique = trajectoire zigzag temporelle) ; outillage prêt (renderer+env+trainer+campaign+verifier).
+- `v17_phaseB_symbolic_orbit_64` : **famille Phase B** (sans occlusion, vérité dynamique = orbite symbolique affine) ; outillage prêt (renderer+env+trainer+campaign+verifier).
 
-Conclusion : le spine est présent (et il existe déjà une fermeture stricte à `n=4`), mais l’universalité demande encore
-la fermeture de **Phase A1** (stabilité sur `n`) puis la généralisation (familles / solveurs / converse).
+Conclusion : le spine est présent, Phase A1 est fermée, Phase A2 est fermée ; le prochain travail est la généralisation (familles / solveurs / converse).
 
 ### 2.1 Résultat A1 (tableau minimal)
 
@@ -82,6 +86,24 @@ Table (min sur seeds 0..4, deux splits) :
 | 4 | PASS | `z=3`, `z=2` | `1.0 / 1.0` | `0.8281/0.7500`, `0.6719/0.6719` |
 | 5 | PASS | `z=4`, `z=2` | `1.0 / 1.0` | `0.8281/0.8906`, `0.5938/0.5625` |
 | 6 | PASS | `z=5`, `z=3` | `1.0 / 1.0` | `0.9062/0.9375`, `0.7812/0.7969` *(OOD cue drops to `0.9688` for `z=3`)* |
+
+### 2.2 Résultat A2 (v15, tableau minimal)
+
+Run : `Empirical/aslmt/runs/aslmt_v15_phaseA2_unified_nscalable_poswtdice_contractrank_imgcuerank_kdet_spaced2_64_20260420_082149_5c9bb19a82ab/`
+Master : `Empirical/aslmt/runs/aslmt_v15_phaseA2_unified_nscalable_poswtdice_contractrank_imgcuerank_kdet_spaced2_64_20260420_082149_5c9bb19a82ab/v15_master_20260420_082149_5c9bb19a82ab.jsonl`
+
+Lecture (résultat “publisable” au niveau Phase A2) :
+
+> Sous `profile=solid`, pour `n=8,12,16` et `seed=0..4`, le groupe de référence `z=n` ferme strictement (IID ∪ OOD) avec barrières valides,
+> baselines à 0, ablation à 0, swap-follow à 1.0, swap-orig à 0.0 ; et des groupes `z<n` échouent strictement sur l’image-barrier.
+
+Table (min sur seeds 0..4, deux splits, sous-capacité : `A_img_min`) :
+
+| `n` | `z=n` (réf) | `z<n` testés | Sous-capacité : `A_img_min` (IID/OOD) |
+|---:|:--:|:--|:--|
+| 8  | PASS | `z=7`, `z=4`  | `0.9531/0.9531`, `0.6875/0.7031` |
+| 12 | PASS | `z=11`, `z=6` | `0.9844/0.9844`, `0.8125/0.8438` |
+| 16 | PASS | `z=15`, `z=8` | `0.9844/0.9844`, `0.9375/0.9375` |
 
 ## 3) Roadmap (ordre recommandé)
 
@@ -123,10 +145,12 @@ Table (min sur seeds 0..4, deux splits) :
 
 **But :** montrer que l’invariant n’est pas un artefact “occluder+cue+marks”.
 
-Définir au moins **2 nouvelles familles** réellement différentes, par exemple :
+Définir au moins **2 nouvelles familles** réellement différentes.
 
-- **Famille T1 (temporel discret)** : tâche séquentielle (plusieurs pas), où la vérité future dépend d’un résumé fini `n`-aire (parité/automate fini), avec OOD défini par longueur/horizon.
-- **Famille T2 (structure non-visuelle)** : monde symbolique (tokens/graphes) où l’“observable” est une projection qui identifie une fibre, et où la séparation future est une propriété de continuation.
+Familles candidates déjà préparées :
+
+- `v16_phaseB_temporal_zigzag_64` (**temporel discret**) : vérité dynamique = trajectoire zigzag de longueur `horizon` ; OOD = horizons plus longs + bruit de fond non porteur de `h`.
+- `v17_phaseB_symbolic_orbit_64` (**structure non-occlusion**) : vérité dynamique = orbite de points sous une dynamique affine ; OOD = horizons plus longs + densité de bruit plus élevée.
 
 Chaque famille doit réimplémenter : barrières, min-lift, causal gates.
 

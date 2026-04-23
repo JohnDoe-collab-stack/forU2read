@@ -1,0 +1,301 @@
+import argparse
+import hashlib
+import json
+import shutil
+from datetime import datetime
+from pathlib import Path
+from subprocess import run
+
+
+HERE = Path(__file__).resolve().parent
+ASLMT_DIR = HERE.parent
+RUNS_DIR = ASLMT_DIR / "runs"
+SNAP_DIR = RUNS_DIR / "snapshots"
+
+
+def _sha256_file(p: Path) -> str:
+    h = hashlib.sha256()
+    h.update(p.read_bytes())
+    return h.hexdigest()
+
+
+def _bundle_hash(paths: list[Path]) -> str:
+    h = hashlib.sha256()
+    for p in paths:
+        h.update(p.name.encode("utf-8"))
+        h.update(_sha256_file(p).encode("utf-8"))
+    return h.hexdigest()
+
+
+def _parse_int_list(s: str) -> list[int]:
+    out: list[int] = []
+    for part in str(s).split(","):
+        part = part.strip()
+        if not part:
+            continue
+        out.append(int(part))
+    if not out:
+        raise ValueError("empty list")
+    return out
+
+
+def _zs_for_n_A1(n: int) -> list[int]:
+    zs = [int(n), int(n - 1), int(n // 2)]
+    zs = [z for z in zs if z >= 2]
+    return sorted(set(zs))
+
+
+def _zs_ref_first(n: int) -> list[int]:
+    zs = _zs_for_n_A1(int(n))
+    if int(n) in zs:
+        zs = [int(n)] + [z for z in zs if z != int(n)]
+    return zs
+
+
+def _partial_verify_ref_or_die(
+    *,
+    snap_root: Path,
+    run_dir: Path,
+    master_jsonl: Path,
+    ts: str,
+    bundle_short: str,
+    n: int,
+    seed: int,
+    profile: str,
+) -> None:
+    verify = snap_root / "verify_aslmt_law_v3b_unified_v2_strong_qforced_matrix.py"
+    verify_cmd = [
+        "/home/frederick/.venvs/cofrs-gpu/bin/python3",
+        "-u",
+        str(verify),
+        "--master-jsonl",
+        str(master_jsonl),
+        "--profile",
+        str(profile),
+        "--min-seeds",
+        "1",
+        "--n-classes-list",
+        str(int(n)),
+        "--z-policy",
+        "explicit",
+        "--z-classes-list",
+        str(int(n)),
+    ]
+    out = run_dir / f"partial_verify_{ts}_{bundle_short}_n{int(n)}_seed{int(seed)}.txt"
+    out.write_text(" ".join(verify_cmd) + "\n\n", encoding="utf-8")
+    with open(out, "a", encoding="utf-8") as f:
+        r = run(verify_cmd, check=False, stdout=f, stderr=f)
+    if int(r.returncode) != 0:
+        raise SystemExit(2)
+
+
+def main() -> None:
+    p = argparse.ArgumentParser()
+    p.add_argument("--profile", type=str, default="solid", choices=["smoke", "solid"])
+    p.add_argument("--device", type=str, default="cpu")
+    p.add_argument("--seed-from", type=int, default=0)
+    p.add_argument("--seed-to", type=int, default=4)
+    p.add_argument("--n-classes-list", type=str, required=True)
+    p.add_argument("--steps", type=int, default=9000)
+    p.add_argument("--batch-size", type=int, default=64)
+    p.add_argument("--train-ood-ratio", type=float, default=0.5)
+    p.add_argument("--pair-n-ctx", type=int, default=64)
+    p.add_argument("--img-size", type=int, default=64)
+    p.add_argument("--w-z", type=float, default=5.0)
+    p.add_argument("--w-k", type=float, default=0.0)
+    p.add_argument("--w-q", type=float, default=1.0)
+    p.add_argument("--w-pos", type=float, default=0.25)
+    p.add_argument("--w-rank-img", type=float, default=0.25)
+    p.add_argument("--w-rank-cue", type=float, default=0.25)
+    p.add_argument("--rank-n-ctx", type=int, default=8)
+    p.add_argument("--rank-margin", type=float, default=1.0)
+    p.add_argument("--rank-ood-ratio", type=float, default=0.5)
+    p.add_argument("--w-bce", type=float, default=1.0)
+    p.add_argument("--w-dice", type=float, default=0.0)
+    p.add_argument("--bce-pos-weight", type=str, default="none")
+    args = p.parse_args()
+    profile = str(args.profile)
+    steps = int(args.steps)
+    batch_size = int(args.batch_size)
+    pair_n_ctx = int(args.pair_n_ctx)
+    img_size = int(args.img_size)
+    rank_n_ctx = int(args.rank_n_ctx)
+
+    if profile == "smoke":
+        if steps == 9000:
+            steps = 300
+        if batch_size == 64:
+            batch_size = 32
+        if pair_n_ctx == 64:
+            pair_n_ctx = 16
+        if rank_n_ctx <= 0 or rank_n_ctx > pair_n_ctx:
+            rank_n_ctx = 1
+        if pair_n_ctx % rank_n_ctx != 0:
+            rank_n_ctx = 1
+
+    if profile == "solid":
+        if rank_n_ctx <= 0 or rank_n_ctx > pair_n_ctx:
+            raise SystemExit("profile=solid requires 1 <= --rank-n-ctx <= --pair-n-ctx")
+        if pair_n_ctx % rank_n_ctx != 0:
+            raise SystemExit("profile=solid requires --pair-n-ctx to be a multiple of --rank-n-ctx")
+
+    sources = [
+        (HERE / "aslmt_model_law_v3b_unified_v2_strong_qforced_query_zread.py"),
+        (HERE / "aslmt_env_law_v3b_unified_v2_strong_qforced_nscalable_spaced2_64.py"),
+        (HERE / "render_law_v3b_unified_v2_strong_qforced_paired_ctx_nscalable_spaced2_64.py"),
+        (HERE / "aslmt_train_law_v3b_unified_v2_strong_qforced_seeded_pair_trainood_poswtdice_contractrank_diag_zread.py"),
+        (HERE / "verify_aslmt_law_v3b_unified_v2_strong_qforced_matrix.py"),
+    ]
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    bundle_hash = _bundle_hash(sources)
+    tag = f"aslmt_law_v3b_unified_v2_strong_qforced_zread_{profile}_{ts}_{bundle_hash[:12]}"
+
+    snap_root = SNAP_DIR / f"{tag}"
+    snap_root.mkdir(parents=True, exist_ok=False)
+    for pth in sources:
+        shutil.copy2(pth, snap_root / pth.name)
+
+    manifest = {
+        "kind": "aslmt_law_v3b_unified_v2_strong_qforced_zread_snapshot",
+        "timestamp": ts,
+        "profile": str(profile),
+        "bundle_hash_sha256": bundle_hash,
+        "snapshot_dir": str(snap_root),
+        "sources": [{"name": p.name, "sha256": _sha256_file(p)} for p in sources],
+    }
+    (snap_root / "snapshot_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    run_dir = RUNS_DIR / f"{tag}"
+    run_dir.mkdir(parents=True, exist_ok=False)
+    master_jsonl = run_dir / f"law_v3b_unified_v2_strong_qforced_zread_{profile}_master_{ts}_{bundle_hash[:12]}.jsonl"
+
+    n_list = _parse_int_list(args.n_classes_list)
+    seeds = list(range(int(args.seed_from), int(args.seed_to) + 1))
+
+    for n in n_list:
+        zs = _zs_ref_first(int(n))
+        if str(profile) == "smoke":
+            zs = [int(n)]
+        for z in zs:
+            for seed in seeds:
+                train = snap_root / "aslmt_train_law_v3b_unified_v2_strong_qforced_seeded_pair_trainood_poswtdice_contractrank_diag_zread.py"
+                log = run_dir / f"train_{ts}_{bundle_hash[:12]}_n{int(n)}_z{int(z)}_seed{int(seed)}.txt"
+
+                ckpt_path = ""
+                faildump_path = ""
+                if int(z) == int(n):
+                    ckpt_path = str(run_dir / f"ckpt_{ts}_{bundle_hash[:12]}_n{int(n)}_z{int(z)}_seed{int(seed)}.pt")
+                    faildump_path = str(run_dir / f"faildump_{ts}_{bundle_hash[:12]}_n{int(n)}_z{int(z)}_seed{int(seed)}.jsonl")
+
+                cmd = [
+                    "/home/frederick/.venvs/cofrs-gpu/bin/python3",
+                    "-u",
+                    str(train),
+                    "--profile",
+                    str(profile),
+                    "--seed",
+                    str(int(seed)),
+                    "--steps",
+                    str(int(steps)),
+                    "--batch-size",
+                    str(int(batch_size)),
+                    "--lr",
+                    "0.001",
+                    "--w-z",
+                    str(float(args.w_z)),
+                    "--w-k",
+                    str(float(args.w_k)),
+                    "--w-q",
+                    str(float(args.w_q)),
+                    "--w-pos",
+                    str(float(args.w_pos)),
+                    "--w-rank-img",
+                    str(float(args.w_rank_img)),
+                    "--w-rank-cue",
+                    str(float(args.w_rank_cue)),
+                    "--rank-n-ctx",
+                    str(int(rank_n_ctx)),
+                    "--rank-ood-ratio",
+                    str(float(args.rank_ood_ratio)),
+                    "--rank-margin",
+                    str(float(args.rank_margin)),
+                    "--train-ood-ratio",
+                    str(float(args.train_ood_ratio)),
+                    "--pair-n-ctx",
+                    str(int(pair_n_ctx)),
+                    "--img-size",
+                    str(int(img_size)),
+                    "--n-classes",
+                    str(int(n)),
+                    "--z-classes",
+                    str(int(z)),
+                    "--w-bce",
+                    str(float(args.w_bce)),
+                    "--w-dice",
+                    str(float(args.w_dice)),
+                    "--bce-pos-weight",
+                    str(args.bce_pos_weight),
+                    "--device",
+                    str(args.device),
+                    "--out-jsonl",
+                    str(master_jsonl),
+                ]
+                if ckpt_path:
+                    cmd += ["--out-ckpt", str(ckpt_path)]
+                if faildump_path:
+                    cmd += ["--out-faildump-jsonl", str(faildump_path)]
+
+                log.write_text(" ".join(cmd) + "\n\n", encoding="utf-8")
+                with open(log, "a", encoding="utf-8") as f:
+                    run(cmd, check=True, stdout=f, stderr=f)
+
+                if int(z) == int(n) and profile == "solid":
+                    _partial_verify_ref_or_die(
+                        snap_root=snap_root,
+                        run_dir=run_dir,
+                        master_jsonl=master_jsonl,
+                        ts=str(ts),
+                        bundle_short=str(bundle_hash[:12]),
+                        n=int(n),
+                        seed=int(seed),
+                        profile=str(profile),
+                    )
+
+    verify = snap_root / "verify_aslmt_law_v3b_unified_v2_strong_qforced_matrix.py"
+    verify_out = run_dir / f"verify_{ts}_{bundle_hash[:12]}.txt"
+
+    z_policy = "A1"
+    z_classes_list = ""
+    if str(profile) == "smoke":
+        if len(n_list) != 1:
+            raise SystemExit("profile=smoke requires a single value in --n-classes-list (so verifier can use --z-policy explicit)")
+        z_policy = "explicit"
+        z_classes_list = str(int(n_list[0]))
+
+    verify_cmd = [
+        "/home/frederick/.venvs/cofrs-gpu/bin/python3",
+        "-u",
+        str(verify),
+        "--master-jsonl",
+        str(master_jsonl),
+        "--profile",
+        str(profile),
+        "--min-seeds",
+        "5" if str(profile) == "solid" else "1",
+        "--n-classes-list",
+        ",".join(str(int(x)) for x in n_list),
+        "--z-policy",
+        str(z_policy),
+    ]
+    if str(z_policy) == "explicit":
+        verify_cmd += ["--z-classes-list", str(z_classes_list)]
+
+    verify_out.write_text(" ".join(verify_cmd) + "\n\n", encoding="utf-8")
+    with open(verify_out, "a", encoding="utf-8") as f:
+        run(verify_cmd, check=False, stdout=f, stderr=f)
+
+
+if __name__ == "__main__":
+    main()
+

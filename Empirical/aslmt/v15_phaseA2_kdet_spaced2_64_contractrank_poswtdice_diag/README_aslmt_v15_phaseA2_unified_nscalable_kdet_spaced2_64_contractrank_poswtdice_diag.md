@@ -40,3 +40,25 @@ Notes:
 - This campaign stops early on any strict reference failure (irreversible min or max under `solid`).
 - For any strict gate miss, it writes a fail dump JSONL and a model checkpoint into the run directory.
 - Under `solid`, `rank_n_ctx` must divide 64 (for example 1,2,4,8,16,32,64).
+
+## Reference run (verified)
+
+Run directory:
+
+- `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v15_phaseA2_unified_nscalable_poswtdice_contractrank_imgcuerank_kdet_spaced2_64_20260420_082149_5c9bb19a82ab`
+
+Verifier output:
+
+- `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v15_phaseA2_unified_nscalable_poswtdice_contractrank_imgcuerank_kdet_spaced2_64_20260420_082149_5c9bb19a82ab/verify_20260420_082149_5c9bb19a82ab.txt`
+
+Re-run the verifier on that run:
+
+```bash
+/home/frederick/.venvs/cofrs-gpu/bin/python3 -u \
+  /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v15_phaseA2_unified_nscalable_poswtdice_contractrank_imgcuerank_kdet_spaced2_64_20260420_082149_5c9bb19a82ab/verify_aslmt_v15_phaseA2_matrix.py \
+  --master-jsonl /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v15_phaseA2_unified_nscalable_poswtdice_contractrank_imgcuerank_kdet_spaced2_64_20260420_082149_5c9bb19a82ab/v15_master_20260420_082149_5c9bb19a82ab.jsonl \
+  --profile solid \
+  --min-seeds 3 \
+  --n-classes-list 8,12,16 \
+  --z-policy A1
+```
