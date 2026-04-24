@@ -38,3 +38,18 @@ cd /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt
 The campaign writes verifier output for each variant and checks that the verifier **returns non-zero**.
 If the verifier unexpectedly passes for any negative control, the campaign aborts with exit code 2.
 
+## Reference run (solid)
+
+Run directory:
+
+- `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_negative_controls_pack_solid_20260423_202040_d1fe51a4eefa`
+
+Verifier outputs (one per variant):
+
+- `verify_forced_action0_20260423_202040_d1fe51a4eefa.txt`
+- `verify_cue_zero_20260423_202040_d1fe51a4eefa.txt`
+- `verify_leak_h_to_image_20260423_202040_d1fe51a4eefa.txt`
+
+Observed outcome:
+
+- each variant is rejected by the strict verifier with an explicit reason (query degeneracy / mediator unlearnable / barrier broken).

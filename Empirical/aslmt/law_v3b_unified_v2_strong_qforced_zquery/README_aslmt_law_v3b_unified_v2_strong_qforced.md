@@ -63,3 +63,14 @@ For `n=8, z=8, seed=0..4`, both splits (IID and OOD) satisfy:
 - baselines are zero (`B_* = 0.0`)
 - ablation is zero (`A_ablated_* = 0.0`)
 - swap follows and swap-orig breaks (`swap_follow = 1.0`, `swap_orig = 0.0`)
+
+## Negative controls (v3b closure)
+
+To close v3b at the same standard as A1/A2 (falsifiable, not just reproducible), we keep a small dedicated pack of
+negative-control variants for `qforced_zread`:
+
+- `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/law_v3b_unified_v2_strong_qforced_zread_negative_controls`
+
+Reference run (solid):
+
+- `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_negative_controls_pack_solid_20260423_202040_d1fe51a4eefa`
