@@ -588,7 +588,7 @@ Y
 sur :
 
 ```text
-(O, r)
+(O, R_alpha)
 ```
 
 ---
@@ -659,7 +659,7 @@ Dans ce cadre, dire que `D_P(Y ; O) > 0` est un “certificat d’impossibilité
 
 # 12. Phrase exacte
 
-L’entropie conditionnelle `H(Y | O)` mesure le défaut probabiliste de clôture de la vérité cible `Y` sur l’interface observable `O`.
+Le défaut entropique `D_P(Y ; O) = H_P(Y | O)` mesure le défaut probabiliste de clôture de la vérité cible `Y` sur l’interface observable `O`.
 
 Un médiateur `z` calculé depuis `O` ne réduit pas cette entropie par lui-même.
 
