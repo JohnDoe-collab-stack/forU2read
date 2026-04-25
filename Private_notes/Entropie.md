@@ -124,23 +124,18 @@ Contradiction.
 
 ---
 
-# 2. Entropie générale (défaut de clôture)
+# 2. Défaut entropique de clôture
 
-Définition (entropie générale). Pour une vérité cible `Y` et une interface `O`, sous une loi `P` sur `S`, on appelle **entropie** :
-
-```text
-Ent_P(Y ; O) := H_P(Y | O)
-```
-
-Cette entropie est, par définition, le **défaut probabiliste de clôture** (relatif à `P`) de `Y` sur `O`.
-
-On notera aussi :
+Définition. Pour une vérité cible `Y` et une interface `O`, sous une loi `P` sur `S`, on définit le **défaut entropique de clôture** par :
 
 ```text
-D_P(Y ; O) := Ent_P(Y ; O)
+D_P(Y ; O) := H_P(Y | O)
 ```
 
-(même quantité, notée “défaut de clôture”).
+Conventions techniques :
+
+- on utilise `0 log 0 = 0`,
+- les termes `P(Y = y | O = v)` ne sont évalués que pour `P(O = v) > 0`.
 
 Définition (rappel) :
 
@@ -194,21 +189,20 @@ signifie :
 O does not determine Y under P.
 ```
 
-Donc l’entropie conditionnelle mesure le défaut probabiliste de clôture.
+Donc `D_P(Y ; O)` mesure le défaut probabiliste de clôture.
 
 ---
 
-## 2bis. Plus générale (sans perte) que la définition classique
+## 2bis. Lecture sans perte des quantités de Shannon discrètes
 
-Cette définition est **plus générale** (et **sans perte**) que la définition classique `H(Y)` au sens suivant :
-les entropies usuelles se récupèrent **exactement** comme cas particuliers (ou combinaisons canoniques) de `Ent_P(Y ; O)`.
+Dans le cas fini/discret, les quantités de Shannon usuelles (dès qu’on fixe une variable-cible et une interface de conditionnement) se relisent à partir du défaut de clôture `D_P(Y ; O)`, ou comme différences de défauts de clôture.
 
 Exemples (égalités exactes) :
 
 - Shannon :
 
 ```text
-H_P(Y) = Ent_P(Y ; *)
+H_P(Y) = D_P(Y ; *)
 ```
 
 où `*` désigne une interface triviale (constante).
@@ -216,23 +210,22 @@ où `*` désigne une interface triviale (constante).
 - Entropie conditionnelle :
 
 ```text
-H_P(Y | O) = Ent_P(Y ; O)
+H_P(Y | O) = D_P(Y ; O)
 ```
 
 - Information mutuelle (forme canonique) :
 
 ```text
-I_P(Y ; O) = Ent_P(Y ; *) - Ent_P(Y ; O)
+I_P(Y ; O) = D_P(Y ; *) - D_P(Y ; O)
 ```
 
 - Information mutuelle conditionnelle (forme canonique) :
 
 ```text
-I_P(Y ; R | O) = Ent_P(Y ; O) - Ent_P(Y ; (O, R))
+I_P(Y ; R | O) = D_P(Y ; O) - D_P(Y ; (O, R))
 ```
 
-Ce point “sans perte” est ce qui autorise une lecture uniforme :
-**toute entropie est un défaut de clôture, relativement à une interface.**
+Donc l’information mutuelle mesure une réduction de défaut de clôture.
 
 # 3. Différence entre clôture logique et clôture entropique
 
@@ -516,13 +509,13 @@ r = R(s, a)
 La clôture pertinente est donc :
 
 ```text
-H(Y | O, r) = 0
+H(Y | O, R_alpha) = 0
 ```
 
 ou :
 
 ```text
-Y factors through (O, r).
+Y factors through (O, R_alpha).
 ```
 
 ---
@@ -534,6 +527,12 @@ Dans ton expérience, la réponse est de type :
 ```text
 r = k if a = h mod 2
 r = 0 otherwise
+```
+
+Hypothèse (structure de la tâche) :
+
+```text
+Y factors through (O, k).
 ```
 
 Donc :
@@ -556,14 +555,14 @@ Si la vérité cible dépend de `k`, alors :
 
 ```text
 wrong action:
-    H(Y | O, r) > 0
+    H(Y | O, R_alpha) > 0
 ```
 
 mais :
 
 ```text
 correct action:
-    H(Y | O, r) = 0
+    H(Y | O, R_alpha) = 0
 ```
 
 dans le cas idéal.
@@ -668,14 +667,14 @@ Son rôle est de choisir une action `a`.
 
 La réponse `r = R(s,a)` peut enrichir l’interface.
 
-Le problème est résolu lorsque l’interface enrichie `(O,r)` ferme `Y`, c’est-à-dire lorsque :
+Le problème est résolu lorsque l’interface enrichie `(O, R_alpha)` ferme `Y` (intuitivement : quand on observe une réalisation `r = R_alpha(s)`), c’est-à-dire lorsque :
 
 ```text
-H(Y | O, r) = 0
+H(Y | O, R_alpha) = 0
 ```
 
 ou, structurellement :
 
 ```text
-Y factors through (O,r).
+Y factors through (O, R_alpha).
 ```
