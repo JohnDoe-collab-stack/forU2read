@@ -553,6 +553,18 @@ wrong action:
 
 Si la vérité cible dépend de `k`, alors :
 
+Hypothèse (distribution). On suppose que `P` donne une masse positive à au moins une fibre de `O`
+où deux valeurs pertinentes de `k` ont une masse positive et changent `Y` :
+
+```text
+exists v in V, exists k0 != k1:
+    P(O = v, k = k0) > 0
+    and
+    P(O = v, k = k1) > 0
+    and
+    Y differs between k0 and k1 inside that fiber
+```
+
 ```text
 wrong action:
     H(Y | O, R_alpha) > 0
@@ -594,15 +606,15 @@ sur :
 ---
 
 # 11. Loi centrale
-
-Non-clôture visible :
-
+	
+Non-clôture visible probabiliste (relative à `P`) :
+	
 ```text
 H(Y | O) > 0
 ```
-
-ou plus fort :
-
+	
+Non-clôture visible structurelle (distribution-free) :
+	
 ```text
 exists s1 s2:
     O(s1) = O(s2)
