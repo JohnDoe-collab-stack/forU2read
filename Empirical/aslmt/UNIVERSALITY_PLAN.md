@@ -65,7 +65,9 @@ Un test “consistant” doit vérifier simultanément :
 - `law_v3b_unified_v2_strong_qforced_zread` : instanciation explicite d’un régime **autoreflexif** (action→réponse) dont l’action est une lecture du médiateur interne `z` (zread),
   avec audit ablation/swap sur le médiateur, et vérification stricte en `solid` (IID ∪ OOD, multi-seeds, matrice `z∈{n,n-1,⌊n/2⌋}`).
   Référence fermée en `n=8` : `Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_solid_20260423_102039_9f958bfafaad/` (matrix `z∈{8,7,4}`, `seed=0..4`, verifier strict OK).
-  Prochaine fermeture : stabilité en `n` via `law_v3b_unified_v2_strong_qforced_zread_stability_n` (ex. `n=12,16`).
+  Stabilité en `n` : le bloc `n=12` est fermé en `solid` (multi-seeds, verifier strict OK) via `law_v3b_unified_v2_strong_qforced_zread_stability_n` :
+  `Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_stability_n_solid_20260424_213134_9f958bfafaad/`.
+  Prochaine fermeture : bloc `n=16` sous le même protocole/verifier (stabilité-in-n complète).
   Axe orthogonal : ajouter une famille OOD supplémentaire via `law_v3b_unified_v2_strong_qforced_zread_ood2_family` (verifier strict IID+OOD+OOD2).
 - `v16_phaseB_temporal_zigzag_64` : **famille Phase B** (sans occlusion, vérité dynamique = trajectoire zigzag temporelle) ; outillage prêt (renderer+env+trainer+campaign+verifier).
 - `v17_phaseB_symbolic_orbit_64` : **famille Phase B** (sans occlusion, vérité dynamique = orbite symbolique affine) ; outillage prêt (renderer+env+trainer+campaign+verifier).
