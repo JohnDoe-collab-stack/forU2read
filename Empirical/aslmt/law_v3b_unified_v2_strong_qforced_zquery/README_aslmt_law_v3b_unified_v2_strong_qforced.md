@@ -28,6 +28,10 @@ Operational note:
 This folder includes a `zread` variant where the query action is a readout from the discrete mediator `z`
 (one-hot), rather than a readout from continuous `z_logits`.
 
+Status:
+
+- strict verifier PASS on the full `solid` matrix for `n=8`, `seed=0..4`, and `z ∈ {n, n-1, ⌊n/2⌋} = {8,7,4}`.
+
 Run directory:
 
 - `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_solid_20260423_102039_9f958bfafaad`
@@ -74,3 +78,10 @@ negative-control variants for `qforced_zread`:
 Reference run (solid):
 
 - `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_negative_controls_pack_solid_20260423_202040_d1fe51a4eefa`
+
+## Additional OOD family (orthogonal axis)
+
+To extend v3b scope beyond the built-in OOD split (without changing the core protocol), an additional OOD family
+`ood2` is provided in a self-contained folder with an extended strict verifier:
+
+- `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/law_v3b_unified_v2_strong_qforced_zread_ood2_family`
