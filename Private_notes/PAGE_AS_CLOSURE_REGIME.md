@@ -1,7 +1,7 @@
 # Page as a closure regime (interface relative truth)
 
 This note reformulates the Page viewpoint in the language of interface relative closure.
-It avoids "computation" framing and focuses on what is decidable from a given interface.
+It avoids "computation" framing and focuses on what is **closed / determined** by a given interface.
 
 ## 0) Lean map (where this structure already lives)
 
@@ -118,7 +118,8 @@ Lean reading:
 - "respect of Sig" is `SigFactorsThrough` in `/mnt/c/Users/frederick/Documents/forU2read/COFRS/Dynamics.lean:133`.
 - finite exact compression at the global layer is `CompatSigDimLe` and `CompatSigDimEq`.
 - the abstract forced step that packages "diagonal witness plus finite mediator" is `InductionStep` in `ReferentialInduction.lean`.
-- if you want a stage by stage notion that is not mere indexing, the core object is `DisciplinedReferentialDerivation`, which forces re targeting to use the extension via `UsesExtension`.
+- if you want a stage by stage notion that is not mere indexing, the core object is `DisciplinedReferentialDerivation`:
+  it requires re-targeting to not be already closed in the old quotient view, via `UsesExtension` (a diagonal witness in `oldView`).
 
 ## 6) Induction viewpoint (stage by stage, interface by interface)
 

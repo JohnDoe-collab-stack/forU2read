@@ -1,5 +1,8 @@
 ## Incompletude
 
+Note de terminologie : dans ce projet, “décider” / “décidable depuis une interface” signifie **clôture / factorisation**
+ (existence d’une règle dépendant seulement de la valeur d’interface). Ce n’est pas “décidable” au sens calculabilité.
+
 Dans les cas diagonaux formalises ici, une interface observable est dite incomplete lorsqu une diagonalisation exhibe un echec de cloture sur le visible, c est a dire une situation ou la verite dynamique visee varie a visible fixe. Dans ce cas, aucune regle visible only ne peut etre correcte partout sur la fibre pertinente. L insuffisance est ensuite quantifiee par la plus petite capacite de mediation finie necessaire pour reparer la decision, autrement dit la dimension minimale du relevement mediateur requis.
 
 ## Completude

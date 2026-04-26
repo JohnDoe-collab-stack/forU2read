@@ -23,6 +23,13 @@ This whole document is relative to a fixed referential frame:
 - a decision interface (what is considered visible at decision time)
 - a targeted dynamic truth (what the solver must decide correctly)
 
+Terminology note: “decide from an interface” means **closure / factorization** (a rule depending only on the interface value),
+not computability-theoretic decidability.
+
+Scope note on minimality: “minimal capacity / minimal dimension” is always relative to an explicit contract.
+Step-local minimality is `CompatDimEq … step n` (on a fixed fiber and step). Global minimality, when used, is at the `Sig`
+layer via `CompatSigDimEq … h n`.
+
 In this frame, the goal is not to classify architectures by syntactic family, but to stratify admissible solver regimes by the closure regime of the truth relative to the interface.
 
 Working formulation:

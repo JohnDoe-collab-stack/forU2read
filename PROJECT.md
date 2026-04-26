@@ -10,7 +10,12 @@ The entire development is intended to remain constructive: no `Classical`, no ax
 
 ## Problem solved
 
-When a diagonalization shows that the observable interface `obs : S → V` is insufficient to decide a dynamic truth, namely future compatibility along a chosen `step` as formalized by `Compatible sem obs target_obs step x`, the repository resolves three problems in one formal chain:
+Terminology note: throughout, “decide from an interface” means **closure / factorization** (existence of a
+decision rule that depends only on the interface value). It is not “decidable” in the computability sense.
+
+When a diagonalization shows that the observable interface `obs : S → V` is insufficient to decide a dynamic truth,
+namely future compatibility along a chosen `step` as formalized by `Compatible sem obs target_obs step x`,
+the repository resolves three problems in one formal chain:
 
 1. it certifies the failure of any `obs`-only decision rule, in the precise sense of `ObsPredictsStep`;
 2. it identifies and quantifies the minimal missing information as a finite supplement `Fin n` on the observable fiber;

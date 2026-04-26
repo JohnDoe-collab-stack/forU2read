@@ -8,6 +8,12 @@ This repository is intended to stay **axiom-free** and **non-classical**.
 
 ## What this formalizes (high level)
 
+### Terminology (to avoid ambiguity)
+
+In this repository, “decide from an interface” means **closure / factorization**:
+there exists a decision rule whose value depends only on the interface value.
+It is not “decidable” in the Turing / computability sense.
+
 ### 1) Static regime is destroyed (no closed obs-only decisions)
 
 A `LagEvent` yields a separation inside a single observable fiber, hence forbids even the strongest obs-only decision interface:
@@ -19,7 +25,8 @@ A `LagEvent` yields a separation inside a single observable fiber, hence forbids
 
 The project introduces an _internal_ (not necessarily visible) finite mediation measure:
 
-- `CompatDimLe … step n` : compatibility along `step` is decidable from a finite index `Fin n` on the observable fiber.
+- `CompatDimLe … step n` : compatibility along `step` is **closed** by a finite index `Fin n` on the observable fiber
+  (i.e. there exists a decision rule factoring through that finite index).
 
 This is made canonical via an explicit “refining lift” living **on the observable fiber**:
 

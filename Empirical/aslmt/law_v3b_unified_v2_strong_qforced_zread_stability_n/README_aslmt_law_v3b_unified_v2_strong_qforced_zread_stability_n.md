@@ -56,6 +56,10 @@ Reference run (n=12 block, strict ref-gates satisfied on all seeds 0..4):
 
 - `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_stability_n_solid_20260424_213134_9f958bfafaad/`
 
+Reference run (n=16 block, strict ref-gates satisfied on all seeds 0..4):
+
+- `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_stability_n_solid_20260425_135327_9f958bfafaad/`
+
 Final verification (strict, all 5 seeds):
 
 ```bash
@@ -77,3 +81,23 @@ snap_dir="runs/snapshots/aslmt_law_v3b_unified_v2_strong_qforced_zread_stability
 Output:
 - `runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_stability_n_*` (master jsonl + per-seed logs + final verify)
 - `runs/snapshots/aslmt_law_v3b_unified_v2_strong_qforced_zread_stability_n_*` (snapshot bundle)
+
+## Final verification (n=16)
+
+```bash
+cd /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt
+
+run_dir="runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_stability_n_solid_20260425_135327_9f958bfafaad"
+snap_dir="runs/snapshots/aslmt_law_v3b_unified_v2_strong_qforced_zread_stability_n_solid_20260425_135327_9f958bfafaad"
+
+/home/frederick/.venvs/cofrs-gpu/bin/python3 -u \
+  "$snap_dir/verify_aslmt_law_v3b_unified_v2_strong_qforced_matrix.py" \
+  --master-jsonl "$run_dir/law_v3b_unified_v2_strong_qforced_zread_stability_n_solid_master_20260425_135327_9f958bfafaad.jsonl" \
+  --profile solid \
+  --min-seeds 5 \
+  --n-classes-list 16 \
+  --z-policy A1
+```
+
+Expected output:
+- `[OK] law_v3b_unified_v2_strong matrix checks passed.`

@@ -1,5 +1,8 @@
 # Current definitions
 
+Terminology note: in this project, “decide” / “decidable from an interface” means **closure / factorization**
+(a rule depending only on the interface value). It is not “decidable” in the computability sense.
+
 ## Incompleteness
 
 In the diagonal cases formalized here, an observable interface is called incomplete when a diagonalization exhibits a failure of visible closure: the targeted dynamic truth varies at fixed visible value. In that situation, no visible only rule can be correct everywhere on the relevant fiber. The insufficiency is then quantified by the smallest capacity of finite mediation needed to repair the decision, that is, the minimal dimension of the required mediator lift.

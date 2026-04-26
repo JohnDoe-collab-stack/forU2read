@@ -98,7 +98,8 @@ Ce fichier fixe la loi universelle dans sa forme constructive abstraite :
 
 **(G) Discipline du stage suivant (usage effectif de l’extension)**
 - `StageTransition.oldView` : l’ancienne vue (quotient ancien) équipée de `Tnext`.
-- `UsesExtension` : un témoin diagonal de non-clôture dans `oldView`.
+- `UsesExtension` : un témoin diagonal de non-clôture dans `oldView` (donc `Tnext` n’est pas déjà clos
+  dans l’ancienne vue ; cela ne prétend pas que `Tnext` est clos dans la vue étendue).
 - `DisciplinedStageTransition` + `DisciplinedReferentialDerivation`.
 
 **(H) Transition autoportante (re-ciblage + réparation suivante)**
@@ -247,7 +248,7 @@ La fermeture visée est une conjonction de trois fermetures, chacune avec son cr
 Critère : la loi existe comme mécanisme explicite, constructif, auditée (`AXIOM_AUDIT`) :
 
 - pas (`InductionStep`) : obstruction → médiation → non-descente → clôture après extension,
-- chaîne (`DisciplinedReferentialDerivation`) : re-ciblage + usage effectif de l’extension (`UsesExtension`),
+- chaîne (`DisciplinedReferentialDerivation`) : re-ciblage + non-clôture dans l’ancienne vue via `UsesExtension` (diagonal witness dans `oldView`),
 - raccord à `Dynamics` via `Compatible` + `Sig`.
 
 ### 5.2 Fermeture (Empirique) — universalité contrôlée

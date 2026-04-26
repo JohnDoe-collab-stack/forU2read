@@ -14,6 +14,7 @@ import COFRS.Examples.DynamicCompatDimN
 import COFRS.Examples.DiagonalizationMediationCausalityThesis
 import COFRS.Examples.AutoreflexiveQueryArchitecture
 import COFRS.Examples.ReferentialInduction
+import COFRS.Examples.EntropicClosureDefect
 
 
 

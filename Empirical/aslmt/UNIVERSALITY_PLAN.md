@@ -67,7 +67,9 @@ Un test “consistant” doit vérifier simultanément :
   Référence fermée en `n=8` : `Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_solid_20260423_102039_9f958bfafaad/` (matrix `z∈{8,7,4}`, `seed=0..4`, verifier strict OK).
   Stabilité en `n` : le bloc `n=12` est fermé en `solid` (multi-seeds, verifier strict OK) via `law_v3b_unified_v2_strong_qforced_zread_stability_n` :
   `Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_stability_n_solid_20260424_213134_9f958bfafaad/`.
-  Prochaine fermeture : bloc `n=16` sous le même protocole/verifier (stabilité-in-n complète).
+  Stabilité en `n` : le bloc `n=16` est fermé en `solid` (multi-seeds, verifier strict OK) via `law_v3b_unified_v2_strong_qforced_zread_stability_n` :
+  `Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_stability_n_solid_20260425_135327_9f958bfafaad/`.
+  Conclusion : stabilité-in-`n` (12,16) fermée sous le même protocole/verifier.
   Axe orthogonal : ajouter une famille OOD supplémentaire via `law_v3b_unified_v2_strong_qforced_zread_ood2_family` (verifier strict IID+OOD+OOD2).
 - `v16_phaseB_temporal_zigzag_64` : **famille Phase B** (sans occlusion, vérité dynamique = trajectoire zigzag temporelle) ; outillage prêt (renderer+env+trainer+campaign+verifier).
 - `v17_phaseB_symbolic_orbit_64` : **famille Phase B** (sans occlusion, vérité dynamique = orbite symbolique affine) ; outillage prêt (renderer+env+trainer+campaign+verifier).

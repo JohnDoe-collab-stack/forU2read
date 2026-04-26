@@ -4,6 +4,9 @@ This document is a paper-style explanation of the repository’s mathematical co
 
 The development is constructive throughout (no `Classical`, no axioms), with `AXIOM_AUDIT` blocks in key `.lean` files.
 
+Terminology note: throughout, “decide from an interface” means **closure / factorization**: there exists a rule whose
+value depends only on the interface value. It is not “decidable” in the computability sense.
+
 ## Abstract
 
 We develop a constructive, mechanized theory of dynamic decision problems in which a given observable interface is insufficient to decide a truth determined by future compatibility along admissible continuations. The central object is a canonical future mediator: the full future-compatibility signature `Sig`, which assigns to each admissible future whether a micro-state remains compatible with it. We prove a universal respect property: any summary that correctly decides future compatibility must respect `Sig`; in particular, it cannot identify micro-states with different future signatures. When exact finite mediation exists, it is not an ad hoc latent: it is an exact finite compression of `Sig`. We formalize global compressibility and capacity-minimality via global signature dimension (`CompatSigDimLe/Eq`) and relate it to step-local prediction and canonical fiber lifts. In the two-interface setting, we isolate irreducible joint mediation: the information required for correctness can be genuinely relational and fail to descend to either marginal interface. In the binary case, forced mediation yields an intervention-auditable signature (swap/ablation). All results are mechanized in Lean without classical axioms.

@@ -145,7 +145,8 @@ Dans `ReferentialInduction.lean`, la notion “le nouveau contenu utilise réell
 - puis `DisciplinedStageTransition` = une `StageTransition` + une preuve `usesExtension`.
 
 L’idée est exactement celle-ci (en français) :
-“vu depuis l’ancienne vue (oldView), le nouveau contenu n’est pas clos, donc la transition force l’usage du nouveau quotient étendu”.
+“vu depuis l’ancienne vue (oldView), le nouveau contenu n’est pas clos : la transition interdit donc le re-ciblage trivial
+qui serait déjà clos dans l’ancienne vue ; elle ne prétend pas que `Tplus` est clos dans la vue étendue”.
 
 ### 2.4 Dérivation disciplinée finie (DisciplinedReferentialDerivation)
 

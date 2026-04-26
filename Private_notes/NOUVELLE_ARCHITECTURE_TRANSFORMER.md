@@ -23,6 +23,13 @@ Tout ce document est relatif a un referentiel fixe :
 - une interface de decision (ce qui est considere comme visible au moment de la decision)
 - une verite dynamique visee (ce que le solveur doit decider correctement)
 
+Note de terminologie : “décider depuis une interface” signifie **clôture / factorisation** (existence d’une règle dépendant
+seulement de la valeur d’interface), pas “décidable” au sens calculabilité.
+
+Note de portée sur la minimalité : “dimension/capacité minimale” est toujours relative à un contrat explicite.
+La minimalité step-locale est `CompatDimEq … step n` (sur une fibre et un step fixés). La minimalité globale, quand elle est
+utilisée, est au niveau de `Sig` via `CompatSigDimEq … h n`.
+
 Dans ce cadre, l enjeu n est pas de classer des architectures par famille syntaxique, mais de stratifier les regimes admissibles de solveurs selon le regime de cloture de la verite relativement a l interface.
 
 Formulation de travail :

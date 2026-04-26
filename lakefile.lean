@@ -26,6 +26,7 @@ lean_lib «CompatObstructions» where
     `COFRS.Examples.IndependenceToAutoreflexiveQueryStrongBridge,
     `COFRS.Examples.IndependenceToAutoreflexiveQueryRefiningLiftBridge,
     `COFRS.Examples.ReferentialInduction,
+    `COFRS.Examples.EntropicClosureDefect,
     `COFRS.Combinatorics.FinCompression,
     `COFRS.Main,
     ]

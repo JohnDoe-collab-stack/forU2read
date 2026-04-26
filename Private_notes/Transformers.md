@@ -71,7 +71,7 @@ Definition (operational):
 
 > A system is in Class C if it closes a full package of invariants:
 > 1) a certified obstruction against interface-only closure (a separating witness),
-> 2) a quantified *minimal* finite mediator capacity (`Fin n` via compatibility dimension),
+> 2) a quantified *minimal* finite mediator capacity (`Fin n` via step-local compatibility dimension, i.e. `CompatDimEq … step n`),
 > 3) irreducibility of the mediator to each marginal interface (non-descend),
 > 4) and (in the binary case) an intervention audit showing the decision follows the mediator (swap/ablation).
 
