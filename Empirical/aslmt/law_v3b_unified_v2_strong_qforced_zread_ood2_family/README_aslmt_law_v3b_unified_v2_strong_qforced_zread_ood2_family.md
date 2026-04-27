@@ -29,3 +29,10 @@ Notes:
 - `ood2` is **evaluation-only** by default (`--train-ood2-ratio 0.0` in the trainer).
 - The strict verifier checks all three splits (`iid`, `ood`, `ood2`) on the reference group `z=n`.
 
+## Closure achieved (solid)
+
+Reference run:
+- `Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_ood2_solid_20260426_134944_fd96063506f9/`
+
+Verifier output:
+- `Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_ood2_solid_20260426_134944_fd96063506f9/verify_20260426_134944_fd96063506f9.txt` (`[OK]`)
