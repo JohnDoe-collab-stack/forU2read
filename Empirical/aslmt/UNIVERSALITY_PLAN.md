@@ -73,6 +73,9 @@ Un test “consistant” doit vérifier simultanément :
   Axe orthogonal : ajouter une famille OOD supplémentaire via `law_v3b_unified_v2_strong_qforced_zread_ood2_family` (verifier strict IID+OOD+OOD2).
 - `v16_phaseB_temporal_zigzag_64` : **famille Phase B** (sans occlusion, vérité dynamique = trajectoire zigzag temporelle) ; outillage prêt (renderer+env+trainer+campaign+verifier).
 - `v17_phaseB_symbolic_orbit_64` : **famille Phase B** (sans occlusion, vérité dynamique = orbite symbolique affine) ; outillage prêt (renderer+env+trainer+campaign+verifier).
+- `v18_algebra_total` : **famille Phase B (algèbre directe)** : environnement discret (sans images) qui instancie directement
+  “distinctions → pertes → intersection résiduelle → clôture”, avec policy de requête multi-interface et verifier strict IID ∪ OOD.
+  Objectif : obtenir un axe Phase B très peu coûteux (CPU-friendly) et un outillage de diagnostic direct sur la politique de requête.
 
 Conclusion : le spine est présent, Phase A1 est fermée, Phase A2 est fermée ; le prochain travail est la généralisation (familles / solveurs / converse).
 
