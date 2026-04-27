@@ -13,7 +13,8 @@ pour améliorer un protocole du type `law_v3b`.
 - `E` : une interface (partition sur `X`), avec :
   - `C_E` : confusions induites par l’interface,
   - `L_σ(E) := R_σ ∩ C_E` : pertes requises sous `E`.
-- `R_σ := {(x,x') | σ(x) ≠ σ(x')}` : distinctions requises.
+- `ΔX` : espace des distinctions non ordonnées `{x,x'}` avec `x ≠ x'`.
+- `R_σ := {{x,x'} ∈ ΔX | σ(x) ≠ σ(x')}` : distinctions requises.
 
 Vue conjointe (meet) :
 
@@ -183,6 +184,15 @@ plus on ajoute des vues, plus la perte résiduelle peut seulement diminuer
 ```
 
 (monotonie vers le bas).
+
+Formulation structurale : si l’agrégateur est une t-norm `T` (ex. produit sur `[0,1]`), on veut :
+
+```text
+T(a,b) ≤ a
+T(a,b) ≤ b
+```
+
+ce qui garantit que chaque vue ajoutée contracte bien la confusion résiduelle.
 
 ### 3.3 Politique de requête guidée par “réduction d’intersection”
 
@@ -373,3 +383,16 @@ Le solveur devient une machine qui :
 3. maintient une perte résiduelle `L_res(I)`,
 4. choisit la vue qui maximise `Δ_j(I)`,
 5. ferme la cible lorsque `ρ_σ(I)` atteint `0`.
+
+Formulation de conclusion :
+
+```text
+Une architecture de médiation est algébriquement correcte lorsque ses requêtes
+maximisent la transformation des confusions résiduelles en distinctions accessibles.
+```
+
+Version compacte :
+
+```text
+La requête est un opérateur de clôture.
+```
