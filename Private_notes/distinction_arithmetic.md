@@ -19,6 +19,13 @@ Point central :
 la clôture conjointe dépend de L_A ∩ L_B, pas seulement de #L_A et #L_B.
 ```
 
+Deux slogans (dualité pertes / accessibilités) :
+
+```text
+perte conjointe        = intersection des pertes marginales
+accessibilité conjointe = union des accessibilités marginales
+```
+
 Noyau formel :
 
 ```text
@@ -339,11 +346,16 @@ Cette écriture “par distinctions” est un calcul utile, avec deux précision
    “fermeture transitive / composantes connexes” de la relation engendrée,
    afin de rester une relation d’équivalence.
 
+Remarque : si `ΔX` est défini en excluant la diagonale `{(x,x)}`, alors les opérations de “fermeture en relation
+d’équivalence” doivent être comprises comme portant implicitement sur `X×X` (avec la diagonale), puis restreintes
+à `ΔX`. C’est ce qui fait fonctionner la lecture “composantes connexes / EqClosure”.
+
 ---
 
 ## 11) Généralisation à `n` interfaces (multi-interface)
 
-Soit une famille finie d’interfaces (partitions) `(E_i)_{i∈I}` sur `X` (où `I` est un ensemble fini d’indices).
+Soit une famille finie **non vide** d’interfaces (partitions) `(E_i)_{i∈I}` sur `X`
+(où `I` est un ensemble fini d’indices, `I ≠ ∅`).
 
 ### Vue conjointe multi-interface
 
@@ -425,6 +437,15 @@ et à :
 a_{∧i A_i} = r_σ.
 ```
 
+Convention (cas vide, si besoin). Si l’on autorise `I = ∅`, on fixe :
+
+```text
+⋂_{i∈∅} L_i := R_σ
+```
+
+ce qui correspond à une “vue conjointe vide” sans information additionnelle, donc à une perte totale
+des distinctions requises.
+
 ---
 
 ## 12) Propriétés algébriques (morphismes de treillis)
@@ -459,6 +480,38 @@ est inclus dans celui confondu par `F`.
 C_{∧i E_i} = ⋂i C_{E_i}.
 ```
 
+Formulation précise : `E ↦ C_E` est un morphisme d’ordre qui préserve les rencontres finies
+(un homomorphisme de *meet-semilattice* vers `(𝒫(ΔX), ⊆, ∩)`).
+
+Pour la jonction, une écriture pleinement propre sépare deux niveaux :
+
+1) `C_E ⊆ ΔX` encode des **paires non ordonnées** `{x,x'}` (distinctions confondues).
+2) Une fermeture d’équivalence vit naturellement sur des **paires ordonnées** `(x,x') ∈ X×X`.
+
+On introduit donc :
+
+```text
+Δ_X^diag := {(x,x) | x ∈ X}
+
+Rel(C) := Δ_X^diag ∪ {(x,x'), (x',x) | {x,x'} ∈ C}
+```
+
+Alors la jonction des partitions s’écrit :
+
+```text
+E_A ∨ E_B = EqClosure(Rel(C_{E_A}) ∪ Rel(C_{E_B}))
+```
+
+où `EqClosure` désigne la fermeture réflexive-symétrique-transitive (équivalemment : les composantes connexes
+du graphe engendré).
+
+Et, en revenant aux distinctions non ordonnées :
+
+```text
+C_{E_A ∨ E_B}
+= {{x,x'} ∈ ΔX | (x,x') ∈ EqClosure(Rel(C_{E_A}) ∪ Rel(C_{E_B}))}.
+```
+
 ### Morphisme “pertes relatives” : `L_σ`
 
 Pour une signature fixée `σ`, définir :
@@ -482,3 +535,27 @@ L_σ(∧i E_i) = ⋂i L_σ(E_i).
 
 Ces deux propriétés expliquent pourquoi l’algèbre de clôture multi-interface se réduit à une arithmétique
 d’intersections avant cardinalisation.
+
+### Formule duale (accessibilités)
+
+Poser :
+
+```text
+Acc_i := A_σ(E_i) = R_σ \ L_σ(E_i).
+```
+
+Alors, par De Morgan :
+
+```text
+A_σ(∧i E_i)
+= R_σ \ ⋂i L_σ(E_i)
+= ⋃i (R_σ \ L_σ(E_i))
+= ⋃i A_σ(E_i).
+```
+
+Donc :
+
+```text
+accessibilité conjointe = union des accessibilités marginales
+perte conjointe         = intersection des pertes marginales
+```
