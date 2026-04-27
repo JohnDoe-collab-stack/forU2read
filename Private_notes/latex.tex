@@ -1,0 +1,971 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\title{Minimal Dynamic Partitions and Marginal Irreducibility}
+\author{}
+\date{}
+
+\newcommand{\Obs}{\operatorname{obs}}
+\newcommand{\Fin}{\operatorname{Fin}}
+\newcommand{\Future}{\operatorname{Future}}
+\newcommand{\Sig}{\operatorname{Sig}}
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\two}{\mathbf{2}}
+\newcommand{\id}{\operatorname{id}}
+
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+\newtheorem{example}{Example}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We define a relative invariant for a system observed through two marginal interfaces and their joint refinement.
+Given a joint fiber \(X=F_{AB}(h)\), two marginal projections
+\[
+p_A:X\to Y_A,
+\qquad
+p_B:X\to Y_B,
+\]
+and a full future-signature map
+\[
+\Sig:X\to \two^{\Future(h)},
+\]
+the central object is the simultaneous configuration of three equivalence relations on \(X\):
+\[
+E_A=\Ker(p_A),
+\qquad
+E_B=\Ker(p_B),
+\qquad
+E_\Sig=\{(x,x')\in X\times X:\Sig(x)=\Sig(x')\}.
+\]
+The invariant is the configuration
+\[
+\mathcal I_{AB}(h):=[X;E_A,E_B,E_\Sig],
+\]
+taken up to isomorphism of partition configurations.
+Equivalently, it is the intrinsic diagram
+\[
+X\longrightarrow X/E_A\times X/E_B\times X/E_\Sig.
+\]
+Its dimension is
+\[
+\dim \mathcal I_{AB}(h)=|X/E_\Sig|=|\im(\Sig)|.
+\]
+Marginal irreducibility is the relative-position condition
+\[
+E_A\nsubseteq E_\Sig,
+\qquad
+E_B\nsubseteq E_\Sig.
+\]
+Thus, the invariant is not merely a cardinal. It is a configuration of partitions: the two marginal partitions and the coarsest dynamic quotient preserving the full future signature.
+Scientifically, the quotient \(X/E_\Sig\) can be read as the minimal dynamically sufficient state space, while the full invariant \(\mathcal I_{AB}(h)\) records its position relative to the observed marginal state spaces.
+\end{abstract}
+
+\section{Interfaces and Observational Equivalence}
+
+Let \(S\) be a state space. An observable interface is a map
+\[
+\pi:S\to V.
+\]
+
+It induces an observational equivalence relation
+\[
+s\sim_\pi s'
+\iff
+\pi(s)=\pi(s').
+\]
+
+Thus, an interface determines a partition of the state space into observational classes.
+
+\section{Marginal Interfaces and Joint Refinement}
+
+Let
+\[
+\Obs_A:S\to V_A,
+\qquad
+\Obs_B:S\to V_B
+\]
+be two marginal interfaces.
+
+They induce equivalence relations
+\[
+s\sim_A s'
+\iff
+\Obs_A(s)=\Obs_A(s'),
+\]
+and
+\[
+s\sim_B s'
+\iff
+\Obs_B(s)=\Obs_B(s').
+\]
+
+The joint interface is
+\[
+\Obs_{AB}:S\to V_A\times V_B,
+\]
+defined by
+\[
+\Obs_{AB}(s)=\bigl(\Obs_A(s),\Obs_B(s)\bigr).
+\]
+
+It induces
+\[
+s\sim_{AB}s'
+\iff
+s\sim_A s'\wedge s\sim_B s'.
+\]
+
+Hence
+\[
+\sim_{AB}=\sim_A\cap\sim_B.
+\]
+
+In the refinement order on interfaces,
+\[
+AB\preceq A,
+\qquad
+AB\preceq B,
+\]
+where \(X\preceq Y\) means that \(X\) is finer than \(Y\).
+
+Thus, the joint interface is the meet of the two marginals:
+\[
+AB=A\wedge B.
+\]
+
+\section{Joint Fiber and Marginal Projections}
+
+Fix a prefix or context \(h\).
+
+Let
+\[
+F_A(h),
+\qquad
+F_B(h),
+\qquad
+F_{AB}(h)
+\]
+be the fibers associated with the interfaces \(A\), \(B\), and \(AB\).
+
+Set
+\[
+X:=F_{AB}(h),
+\qquad
+Y_A:=F_A(h),
+\qquad
+Y_B:=F_B(h).
+\]
+
+The joint fiber carries canonical projections
+\[
+p_A:X\to Y_A,
+\qquad
+p_B:X\to Y_B.
+\]
+
+Define
+\[
+E_A:=\Ker(p_A),
+\qquad
+E_B:=\Ker(p_B),
+\]
+that is
+\[
+E_A=\{(x,x')\in X\times X\mid p_A(x)=p_A(x')\},
+\]
+and
+\[
+E_B=\{(x,x')\in X\times X\mid p_B(x)=p_B(x')\}.
+\]
+
+Equivalently,
+\[
+x\equiv_A x'
+\iff
+(x,x')\in E_A,
+\]
+and
+\[
+x\equiv_B x'
+\iff
+(x,x')\in E_B.
+\]
+
+\section{Future Signatures}
+
+Let
+\[
+\Future(h)
+\]
+be the space of admissible future continuations from \(h\).
+
+The full dynamic signature of a point \(x\in X\) is a function
+\[
+\Sig(x):\Future(h)\to\two.
+\]
+
+Equivalently,
+\[
+\Sig:X\to \two^{\Future(h)}.
+\]
+
+For each \(u\in\Future(h)\), the coordinate
+\[
+\Sig(x)(u)\in\two
+\]
+records the dynamic compatibility of \(x\) with the future continuation \(u\).
+
+Thus, the future signature is the complete dynamic profile
+\[
+\Sig(x)=\bigl(\Sig(x)(u)\bigr)_{u\in\Future(h)}.
+\]
+
+\section{The Coarsest Dynamic Quotient}
+
+The signature map induces an equivalence relation
+\[
+x\sim_\Sig x'
+\iff
+\Sig(x)=\Sig(x').
+\]
+
+Let
+\[
+Q_\Sig:=X/{\sim_\Sig}.
+\]
+
+Let
+\[
+q_\Sig:X\twoheadrightarrow Q_\Sig
+\]
+be the canonical quotient map.
+
+Then
+\[
+q_\Sig(x)=q_\Sig(x')
+\iff
+\Sig(x)=\Sig(x').
+\]
+
+Define
+\[
+E_\Sig:=\Ker(q_\Sig).
+\]
+
+Thus,
+\[
+E_\Sig=\{(x,x')\in X\times X\mid \Sig(x)=\Sig(x')\}.
+\]
+
+The relation \(E_\Sig\) is the coarsest dynamic quotient of the joint fiber preserving the full future signature.
+
+\section{The Relative Invariant}
+
+\begin{definition}[Isomorphism of configurations]
+Two configurations
+\[
+[X;E_A,E_B,E_\Sig]
+\qquad\text{and}\qquad
+[X';E_A',E_B',E_\Sig']
+\]
+are isomorphic if there exists a bijection
+\[
+\varphi:X\to X'
+\]
+such that, for all \(x,x'\in X\),
+\[
+(x,x')\in E_A
+\iff
+(\varphi(x),\varphi(x'))\in E_A',
+\]
+\[
+(x,x')\in E_B
+\iff
+(\varphi(x),\varphi(x'))\in E_B',
+\]
+and
+\[
+(x,x')\in E_\Sig
+\iff
+(\varphi(x),\varphi(x'))\in E_\Sig'.
+\]
+\end{definition}
+
+\begin{definition}[Dynamic-interface invariant]
+The dynamic-interface invariant at \(h\) is the isomorphism class
+\[
+\boxed{
+\mathcal I_{AB}(h):=[X;E_A,E_B,E_\Sig].
+}
+\]
+
+Equivalently, it is the intrinsic diagram
+\[
+\boxed{
+X\longrightarrow X/E_A\times X/E_B\times X/E_\Sig
+}
+\]
+up to isomorphism.
+\end{definition}
+
+This invariant records the relative position of three partitions on the same set \(X\):
+\[
+E_A=\Ker(p_A),
+\qquad
+E_B=\Ker(p_B),
+\qquad
+E_\Sig=\Ker(q_\Sig).
+\]
+
+The quotient \(X/E_\Sig\) gives the dynamic partition. The full invariant keeps track of how this dynamic partition sits relative to the two marginal partitions.
+
+\section{Dimension}
+
+Assume that
+\[
+|\im(\Sig)|<\infty.
+\]
+
+Then
+\[
+Q_\Sig\cong \im(\Sig),
+\]
+and hence
+\[
+|Q_\Sig|=|\im(\Sig)|.
+\]
+
+\begin{definition}[Dimension]
+The dimension of the invariant is
+\[
+\boxed{
+\dim\mathcal I_{AB}(h):=|X/E_\Sig|=|Q_\Sig|=|\im(\Sig)|.
+}
+\]
+\end{definition}
+
+Thus, the dimension is the number of distinct future signatures realized on the joint fiber.
+
+The full invariant is the configuration
+\[
+[X;E_A,E_B,E_\Sig],
+\]
+while the dimension is only its cardinal shadow.
+
+\section{Finite Mediators}
+
+A finite mediator for the signature is a map
+\[
+M:X\to \Fin(m)
+\]
+such that \(\Sig\) factors through \(M\):
+\[
+\Sig=\widehat{\Sig}_M\circ M
+\]
+for some map
+\[
+\widehat{\Sig}_M:\Fin(m)\to \two^{\Future(h)}.
+\]
+
+Thus, \(M\) is a finite coding of points in \(X\) sufficient to reconstruct their full future signatures.
+
+\begin{proposition}[Minimal dynamic quotient]
+Let \(X\) be a set and let
+\[
+\Sig:X\to Z
+\]
+be a map with finite image.
+Let
+\[
+q_\Sig:X\twoheadrightarrow Q_\Sig=X/{\sim_\Sig}
+\]
+where
+\[
+x\sim_\Sig x'
+\iff
+\Sig(x)=\Sig(x').
+\]
+Then \(q_\Sig\) is the coarsest quotient of \(X\) through which \(\Sig\) factors.
+
+Moreover, every finite mediator
+\[
+M:X\to\Fin(m)
+\]
+through which \(\Sig\) factors satisfies
+\[
+m\ge |Q_\Sig|.
+\]
+
+If
+\[
+m=|Q_\Sig|,
+\]
+then \(M\) is equivalent to \(q_\Sig\) up to a bijection of labels.
+\end{proposition}
+
+\begin{proof}
+Since \(q_\Sig(x)=q_\Sig(x')\) exactly when \(\Sig(x)=\Sig(x')\), the map \(\Sig\) factors through \(q_\Sig\):
+\[
+\Sig=\widehat{\Sig}_q\circ q_\Sig
+\]
+where
+\[
+\widehat{\Sig}_q([x])=\Sig(x).
+\]
+
+Let
+\[
+M:X\to\Fin(m)
+\]
+be any finite mediator such that
+\[
+\Sig=\widehat{\Sig}_M\circ M.
+\]
+
+If
+\[
+M(x)=M(x'),
+\]
+then
+\[
+\Sig(x)=\widehat{\Sig}_M(M(x))
+=
+\widehat{\Sig}_M(M(x'))
+=
+\Sig(x').
+\]
+
+Hence every fiber of \(M\) is contained in a fiber of \(\Sig\). Therefore \(M\) must distinguish all distinct elements of \(\im(\Sig)\), so
+\[
+|\im(M)|\ge |\im(\Sig)|=|Q_\Sig|.
+\]
+
+Since
+\[
+|\im(M)|\le m,
+\]
+we get
+\[
+m\ge |Q_\Sig|.
+\]
+
+If equality holds, then the fibers of \(M\) coincide exactly with the fibers of \(\Sig\). Therefore \(M\) differs from \(q_\Sig\) only by a bijective relabeling of the quotient classes.
+\end{proof}
+
+\section{Descent Along a Marginal Projection}
+
+Let
+\[
+C\in\{A,B\}.
+\]
+
+Write
+\[
+p_C:X\to Y_C
+\]
+for the corresponding marginal projection and
+\[
+E_C:=\Ker(p_C).
+\]
+
+\begin{definition}[Descent]
+The dynamic quotient \(q_\Sig\) descends to the marginal \(C\) when there exists a map
+\[
+\rho_C:Y_C\to Q_\Sig
+\]
+such that
+\[
+q_\Sig=\rho_C\circ p_C.
+\]
+
+We write
+\[
+q_\Sig\leq C
+\]
+when this descent exists.
+\end{definition}
+
+\begin{proposition}[Marginal descent criterion]
+For \(C\in\{A,B\}\), the following are equivalent:
+\[
+q_\Sig\leq C,
+\]
+\[
+\Ker(p_C)\subseteq \Ker(q_\Sig),
+\]
+and
+\[
+\Sig \text{ factors through } p_C.
+\]
+\end{proposition}
+
+\begin{proof}
+The condition
+\[
+q_\Sig\leq C
+\]
+means that there exists
+\[
+\rho_C:Y_C\to Q_\Sig
+\]
+such that
+\[
+q_\Sig=\rho_C\circ p_C.
+\]
+
+This is equivalent to constancy of \(q_\Sig\) on every fiber of \(p_C\), namely
+\[
+p_C(x)=p_C(x')
+\Rightarrow
+q_\Sig(x)=q_\Sig(x').
+\]
+
+In kernel notation, this is exactly
+\[
+\Ker(p_C)\subseteq\Ker(q_\Sig).
+\]
+
+Since
+\[
+q_\Sig(x)=q_\Sig(x')
+\iff
+\Sig(x)=\Sig(x'),
+\]
+the condition becomes
+\[
+p_C(x)=p_C(x')
+\Rightarrow
+\Sig(x)=\Sig(x').
+\]
+
+This is exactly the condition for the existence of a map
+\[
+\widehat{\Sig}_C:Y_C\to \two^{\Future(h)}
+\]
+such that
+\[
+\Sig=\widehat{\Sig}_C\circ p_C.
+\]
+\end{proof}
+
+\section{Marginal Irreducibility}
+
+\begin{definition}[Marginal irreducibility]
+The invariant
+\[
+\mathcal I_{AB}(h)=[X;E_A,E_B,E_\Sig]
+\]
+is marginally irreducible when
+\[
+\boxed{
+E_A\nsubseteq E_\Sig
+\qquad
+\text{and}
+\qquad
+E_B\nsubseteq E_\Sig.
+}
+\]
+
+Equivalently,
+\[
+\boxed{
+\Ker(p_A)\nsubseteq\Ker(q_\Sig)
+\qquad
+\text{and}
+\qquad
+\Ker(p_B)\nsubseteq\Ker(q_\Sig).
+}
+\]
+\end{definition}
+
+This says that each marginal identifies at least one pair of joint-fiber points that the future signature separates.
+
+Explicitly, irreducibility along \(A\) means:
+\[
+\exists x,x'\in X,
+\qquad
+p_A(x)=p_A(x'),
+\qquad
+q_\Sig(x)\neq q_\Sig(x').
+\]
+
+Since \(q_\Sig\) classifies future signatures, this is equivalent to:
+\[
+\exists x,x'\in X,
+\qquad
+p_A(x)=p_A(x'),
+\qquad
+\Sig(x)\neq\Sig(x').
+\]
+
+Equivalently:
+\[
+\exists x,x'\in X,
+\quad
+\exists u\in\Future(h),
+\qquad
+p_A(x)=p_A(x'),
+\qquad
+\Sig(x)(u)\neq\Sig(x')(u).
+\]
+
+The same formulation applies to \(B\).
+
+\section{Diagonal Obstruction}
+
+A diagonal obstruction along \(A\) is the existence of
+\[
+x,x'\in X
+\]
+such that
+\[
+p_A(x)=p_A(x')
+\]
+and
+\[
+\Sig(x)\neq\Sig(x').
+\]
+
+Equivalently,
+\[
+E_A\nsubseteq E_\Sig.
+\]
+
+Thus,
+\[
+\boxed{
+\text{diagonal obstruction along }A
+\iff
+q_\Sig \text{ descends to } A \text{ fails}
+}
+\]
+or, in kernel form,
+\[
+\boxed{
+\text{diagonal obstruction along }A
+\iff
+\Ker(p_A)\nsubseteq\Ker(q_\Sig).
+}
+\]
+
+Likewise,
+\[
+\boxed{
+\text{diagonal obstruction along }B
+\iff
+\Ker(p_B)\nsubseteq\Ker(q_\Sig).
+}
+\]
+
+Hence diagonal obstruction is the witness form of marginal irreducibility.
+
+\section{Relation to Boolean Step Tests}
+
+For a single future
+\[
+u\in\Future(h),
+\]
+define the Boolean step test
+\[
+T_u:X\to\two,
+\qquad
+T_u(x)=\Sig(x)(u).
+\]
+
+A step-level obstruction along \(A\) is:
+\[
+p_A(x)=p_A(x'),
+\qquad
+T_u(x)\neq T_u(x').
+\]
+
+This shows that the single Boolean test \(T_u\) separates a pair collapsed by \(p_A\).
+
+The full future signature collects the entire family of tests:
+\[
+\Sig(x)=\bigl(T_u(x)\bigr)_{u\in\Future(h)}.
+\]
+
+The dynamic quotient
+\[
+q_\Sig:X\twoheadrightarrow Q_\Sig
+\]
+is therefore the common coarsest dynamic quotient induced by all step tests at once.
+
+For a single Boolean predicate
+\[
+T:X\to\two,
+\]
+the quotient has at most two classes. For the full signature
+\[
+\Sig:X\to\two^{\Future(h)},
+\]
+the quotient size is
+\[
+|Q_\Sig|=|\im(\Sig)|.
+\]
+
+This cardinal can exceed \(2\), even though each coordinate \(T_u\) is Boolean.
+
+\section{A Finite Example}
+
+Let
+\[
+X=\{00,01,10,11\}.
+\]
+
+Define binary marginal projections
+\[
+p_A(ab)=a,
+\qquad
+p_B(ab)=b.
+\]
+
+Then the marginal equivalence relations are
+\[
+E_A=\bigl\{\{00,01\},\{10,11\}\bigr\},
+\]
+and
+\[
+E_B=\bigl\{\{00,10\},\{01,11\}\bigr\}.
+\]
+
+Let
+\[
+\Future(h)=\{u_1,u_2\},
+\]
+and define the future signature by
+\[
+\Sig(00)=(0,0),
+\qquad
+\Sig(01)=(0,1),
+\]
+\[
+\Sig(10)=(1,0),
+\qquad
+\Sig(11)=(1,1).
+\]
+
+Then all four future signatures are distinct. Hence
+\[
+E_\Sig=\Delta_X,
+\]
+where \(\Delta_X\) is the equality relation on \(X\).
+
+Thus,
+\[
+Q_\Sig\cong X,
+\qquad
+\dim\mathcal I_{AB}(h)=4.
+\]
+
+However,
+\[
+E_A\nsubseteq E_\Sig,
+\qquad
+E_B\nsubseteq E_\Sig.
+\]
+
+Indeed, \(00\) and \(01\) are identified by \(p_A\), but
+\[
+\Sig(00)\neq\Sig(01).
+\]
+
+Similarly, \(00\) and \(10\) are identified by \(p_B\), but
+\[
+\Sig(00)\neq\Sig(10).
+\]
+
+Therefore the invariant
+\[
+\mathcal I_{AB}(h)=[X;E_A,E_B,E_\Sig]
+\]
+is marginally irreducible, with
+\[
+\dim\mathcal I_{AB}(h)=4.
+\]
+
+This example shows that two binary marginals can induce a joint dynamic-signature partition with four classes, and that the irreducibility is a property of the relative position of the partitions, not merely of the cardinality.
+
+\section{Main Statement}
+
+The invariant associated with the two marginal interfaces and the future signature is:
+\[
+\boxed{
+\mathcal I_{AB}(h):=[X;E_A,E_B,E_\Sig].
+}
+\]
+
+Equivalently:
+\[
+\boxed{
+\mathcal I_{AB}(h)
+=
+\left[
+X\longrightarrow X/E_A\times X/E_B\times X/E_\Sig
+\right].
+}
+\]
+
+Its dimension is:
+\[
+\boxed{
+\dim\mathcal I_{AB}(h)=|X/E_\Sig|=|\im(\Sig)|.
+}
+\]
+
+It is marginally irreducible exactly when:
+\[
+\boxed{
+E_A\nsubseteq E_\Sig,
+\qquad
+E_B\nsubseteq E_\Sig.
+}
+\]
+
+In kernel notation:
+\[
+\boxed{
+\Ker(p_A)\nsubseteq\Ker(q_\Sig),
+\qquad
+\Ker(p_B)\nsubseteq\Ker(q_\Sig).
+}
+\]
+
+In words:
+
+\begin{quote}
+The invariant is the relative configuration of the two marginal partitions and the coarsest dynamic-signature partition on the same joint fiber.
+\end{quote}
+
+\begin{quote}
+Marginal irreducibility means that each marginal projection collapses at least one pair that the full future signature separates.
+\end{quote}
+
+\section{Conceptual Chain}
+
+The conceptual chain is:
+\[
+\text{marginal projection}
+\Rightarrow
+\text{identification}
+\Rightarrow
+\text{future-signature separation}
+\Rightarrow
+\text{diagonal obstruction}
+\Rightarrow
+\text{coarsest dynamic quotient}
+\Rightarrow
+\text{relative partition invariant}
+\Rightarrow
+\text{marginal irreducibility}.
+\]
+
+Equivalently:
+
+\begin{quote}
+A marginal projection collapses points.  
+The future signature separates them.  
+The quotient by future-signature equality gives the coarsest dynamic quotient.  
+The invariant is the configuration of this dynamic partition relative to the marginal partitions.  
+Marginal irreducibility is the failure of inclusion
+\[
+E_A\subseteq E_\Sig
+\qquad
+\text{and}
+\qquad
+E_B\subseteq E_\Sig.
+\]
+\end{quote}
+
+\section{Scientific Interpretation: Minimal Dynamic State Variables}
+
+The invariant
+\[
+\mathcal I_{AB}(h)=[X;E_A,E_B,E_\Sig]
+\]
+can be interpreted as a formal device for identifying the minimal state variable required to preserve the future dynamics.
+
+The marginal partitions
+\[
+E_A=\Ker(p_A),
+\qquad
+E_B=\Ker(p_B)
+\]
+represent the information retained by the two partial observations. The dynamic partition
+\[
+E_\Sig
+\]
+represents the distinctions that are required to preserve the full future-signature profile.
+
+Thus the quotient
+\[
+X/E_\Sig
+\]
+is the minimal dynamic state space associated with the future signature. It groups together exactly those present states that have identical future behavior (as measured by \(\Sig\)).
+
+The relative invariant \(\mathcal I_{AB}(h)\) records how this dynamically sufficient state space sits relative to the observed marginal state spaces \(X/E_A\) and \(X/E_B\).
+
+In scientific terms, this construction separates three notions:
+\[
+\text{available observation},
+\qquad
+\text{marginal information},
+\qquad
+\text{dynamically sufficient state}.
+\]
+
+Marginal irreducibility,
+\[
+E_A\nsubseteq E_\Sig,
+\qquad
+E_B\nsubseteq E_\Sig,
+\]
+means that each marginal observation collapses distinctions that are required for dynamic prediction.
+
+Consequently, the invariant identifies the minimal dynamic partition that closes prediction at the joint level, together with the precise obstruction to recovering that partition from either marginal observation alone.
+
+This interpretation is relevant whenever one seeks a coarse-grained state variable that preserves future behavior: statistical physics, dynamical systems, biological state spaces, neuroscience, epidemiology, control, and representation learning.
+
+\section{Status of the Construction}
+
+The quotient construction itself is standard: every map induces a quotient by equality of its values.
+
+The object defined here is the relative configuration:
+\[
+[X;E_A,E_B,E_\Sig],
+\]
+where
+\[
+E_A=\Ker(p_A),
+\qquad
+E_B=\Ker(p_B),
+\qquad
+E_\Sig=\Ker(q_\Sig).
+\]
+
+Thus, the invariant is a configuration of partitions on the joint fiber, while its dimension is the cardinal
+\[
+|X/E_\Sig|=|\im(\Sig)|.
+\]
+
+The irreducibility conditions
+\[
+E_A\nsubseteq E_\Sig,
+\qquad
+E_B\nsubseteq E_\Sig
+\]
+express the precise sense in which the coarsest dynamic partition is joint relative to the two marginal projections.
+
+\end{document}
