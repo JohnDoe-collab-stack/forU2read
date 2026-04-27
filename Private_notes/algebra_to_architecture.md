@@ -79,7 +79,7 @@ donne un principe de composition :
 
 Le critère “complémentarité” devient exact dès qu’on le formule relativement au résidu courant.
 
-Pour un ensemble de vues déjà conjointe `I`, définir la perte résiduelle :
+Pour un ensemble `I` de vues déjà conjointes, définir la perte résiduelle :
 
 ```text
 L_res(I) := ⋂_{i∈I} L_i
@@ -129,7 +129,7 @@ Phrase de design compacte :
 Une requête vaut par son intersection avec la perte résiduelle courante.
 ```
 
-### 2.3 Diagnostic d’échec structuré (3 causes)
+### 2.4 Diagnostic d’échec structuré (3 causes)
 
 Quand un run échoue, l’algèbre force une classification de cause :
 
@@ -203,24 +203,34 @@ Une traduction directe du critère greedy consiste à apprendre des scores pairw
 - quelles paires sont **requises** par la signature (`R_σ`),
 - quelles paires restent **perdues** sous chaque interface.
 
-Une forme pratique (scores probabilistes) :
+Séparation propre des objets :
 
 ```text
-q_θ(x,x')    ≈ P[(x,x') ∈ R_σ]
-l_θ(i,x,x')  ≈ P[(x,x') ∈ L_i]
-a_θ(i,x,x')  ≈ P[(x,x') ∈ A_i] ≈ 1 - l_θ(i,x,x')
+R_σ = distinctions requises
+C_i = confusions induites par la vue i
+L_i = R_σ ∩ C_i
 ```
+
+Une forme probabiliste propre factorise donc :
+
+```text
+q_θ(p)   ≈ P[p ∈ R_σ]
+c_θ(i,p) ≈ P[p ∈ C_i]
+```
+
+où `p ∈ ΔX` représente une paire (distinction) `{x,x'}`.
 
 Pour un ensemble de vues `I`, un score de perte résiduelle pairwise peut être agrégé par une t-norm (ex. produit) :
 
 ```text
-l_res,θ(I,x,x') ≈ ∏_{i∈I} l_θ(i,x,x')
+c_res,θ(I,p) := ∏_{i∈I} c_θ(i,p)
+l_res,θ(I,p) := q_θ(p) · c_res,θ(I,p)
 ```
 
 Une estimation de la perte résiduelle globale :
 
 ```text
-ρ_θ(I) := Σ_{x,x'} q_θ(x,x') · l_res,θ(I,x,x')
+ρ_θ(I) := Σ_{p∈ΔX} l_res,θ(I,p)
 ```
 
 La politique choisit alors une requête `j` qui minimise :
@@ -235,7 +245,21 @@ ou maximise la réduction :
 ρ_θ(I) - ρ_θ(I ∪ {j}).
 ```
 
-Cette écriture est l’analogue neurale de :
+Avec la factorisation `q_θ · ∏ c_θ`, la réduction estimée s’écrit aussi :
+
+```text
+Δ_θ(j | I)
+= ρ_θ(I) - ρ_θ(I ∪ {j})
+= Σ_{p∈ΔX} q_θ(p) · ∏_{i∈I} c_θ(i,p) · (1 - c_θ(j,p)).
+```
+
+Lecture :
+
+```text
+la requête j vaut par les distinctions requises encore confondues qu’elle sépare.
+```
+
+Cette écriture est l’analogue neurale direct de :
 
 ```text
 Δ_j(I) = #(L_res(I) ∩ A_j).
@@ -291,6 +315,45 @@ En plus du “pass/fail” final, on peut instrumenter :
 
 Ces mesures ne remplacent pas les audits ; elles rendent l’échec diagnostiquable plus vite.
 
+Une propriété attendue quand la politique ajoute des vues successivement (greedy ou quasi-greedy) :
+
+```text
+ρ_θ(I_0) ≥ ρ_θ(I_1) ≥ … ≥ ρ_θ(I_T)
+```
+
+où `I_t` est l’ensemble des vues sélectionnées après `t` requêtes.
+
+On peut aussi instrumenter le rendement marginal :
+
+```text
+η_t := ρ_θ(I_t) - ρ_θ(I_{t+1})
+```
+
+Lecture :
+
+```text
+η_t mesure la quantité de perte résiduelle supprimée par la requête t.
+```
+
+### 5.4 Contrat expérimental (audit algébrisé)
+
+Un protocole de type `law_v3b` peut être relu comme un test de causalité structurelle :
+la performance suit la contraction de `ρ`.
+
+Un contrat simple à vérifier (qualitatif, puis quantitatif) :
+
+```text
+ρ_θ(base)                          élevé
+ρ_θ(base ∧ query utile)            fortement réduit (idéalement ≈ 0)
+ρ_θ(base ∧ query swap)             élevé
+ρ_θ(base ∧ query ablatée)          élevé
+Δ_θ(query utile | base)            élevé
+Δ_θ(query swap | base)             faible
+```
+
+Ce contrat exprime que le gain vient de la réduction de perte résiduelle par conjonction de vues,
+et que l’intervention (swap/ablation) détruit précisément ce mécanisme.
+
 ---
 
 ## 6) Résumé (ce qui est réellement nouveau côté design)
@@ -305,6 +368,8 @@ optimiser la clôture = optimiser l’incidence des pertes de distinctions requi
 
 Le solveur devient une machine qui :
 
-- identifie une signature pertinente `σ`,
-- choisit des interfaces dont les pertes se recouvrent le moins possible,
-- ferme la cible lorsque l’intersection des pertes s’éteint.
+1. estime les distinctions requises `R_σ`,
+2. estime les confusions `C_i` propres aux vues disponibles,
+3. maintient une perte résiduelle `L_res(I)`,
+4. choisit la vue qui maximise `Δ_j(I)`,
+5. ferme la cible lorsque `ρ_σ(I)` atteint `0`.
