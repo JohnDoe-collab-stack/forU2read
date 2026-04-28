@@ -50,6 +50,41 @@ La clôture conjointe équivaut à :
 Le document définit une **algèbre dérivée** : les objets de calcul sont des partitions et des sous-ensembles de
 distinctions, et les nombres n’interviennent qu’après transport du calcul dans l’espace des pertes.
 
+### Définition canonique (structure multi-sortée)
+
+Pour `X` fini et `σ : X → S`, définir l’algèbre de clôture par distinctions (relative à `σ`) comme la structure :
+
+```text
+𝔠_σ(X)
+:=
+(
+  Part(X), 𝒫(ΔX), 𝒫(R_σ), ℕ ;
+  ≤, ∧, ∨ ; ⊆, ∩, ∪, \, # ;
+  C, L_σ, A_σ, ρ_σ
+)
+```
+
+où :
+
+```text
+C(E)      = C_E
+L_σ(E)    = R_σ ∩ C_E
+A_σ(E)    = R_σ \ L_σ(E)
+ρ_σ(A,B)  = #(L_σ(E_A) ∩ L_σ(E_B))
+```
+
+et, plus généralement (multi-interface) :
+
+```text
+ρ_σ(A₁,…,Aₙ) := #(⋂_{i=1}^n L_σ(E_{A_i})).
+```
+
+La clôture conjointe se décide par :
+
+```text
+ρ_σ(A₁,…,Aₙ) = 0  ⇔  (∧_{i=1}^n E_{A_i}) ≤ E_σ.
+```
+
 ### Sortes (types d’objets)
 
 ```text
@@ -300,6 +335,53 @@ L_{A∧B} = L_A ∩ L_B = ∅
 #L_{A∧B} = 0
 a_{A∧B} = 4 - 0 = 4
 ```
+
+---
+
+## 7bis) Exemple séparateur (cas explicite avec ρ=1)
+
+Le cas XOR donne un exemple canonique où `ρ_σ(A,B)=0`. Un second exemple minimal montre un **résidu strict**.
+
+Toujours avec :
+
+```text
+X = {00,01,10,11}
+σ(x) = xor(x)
+R_σ = {00|01, 00|10, 01|11, 10|11}
+```
+
+Prendre :
+
+```text
+E_A = {{00,01},{10,11}}
+```
+
+donc :
+
+```text
+L_A = {00|01, 10|11}.
+```
+
+Prendre :
+
+```text
+E_B = {{00,01,10},{11}}.
+```
+
+Alors :
+
+```text
+L_B = {00|01, 00|10}.
+```
+
+Donc :
+
+```text
+L_A ∩ L_B = {00|01}
+ρ_σ(A,B) = 1.
+```
+
+Lecture : les pertes marginales ont une intersection non vide, donc la conjonction ne ferme pas totalement `σ`.
 
 ---
 
@@ -614,6 +696,37 @@ Donc :
 accessibilité conjointe = union des accessibilités marginales
 perte conjointe         = intersection des pertes marginales
 ```
+
+---
+
+## 12bis) Image des partitions dans `𝒫(ΔX)` (objets admissibles)
+
+Une partition `E ∈ Part(X)` induit un ensemble de confusions `C_E ⊆ ΔX`. L’inverse n’est pas vrai : un sous-ensemble
+arbitraire de `ΔX` ne correspond pas forcément à une relation d’équivalence.
+
+Définir l’ensemble des confusions admissibles :
+
+```text
+EqConf(X) := { C_E ⊆ ΔX | E ∈ Part(X) }.
+```
+
+Alors :
+
+```text
+C : Part(X) → EqConf(X)
+E ↦ C_E
+```
+
+est bijectif (chaque partition correspond à exactement un ensemble de paires confondues).
+
+Au niveau des opérations, la rencontre est transportée sans perte :
+
+```text
+C_{E ∧ F} = C_E ∩ C_F.
+```
+
+Pour la jonction, l’opération transportée doit passer par une fermeture d’équivalence au niveau relationnel
+(`X×X`), puis être restreinte aux distinctions `ΔX` (cf. section 12 pour `Rel(·)` et `EqClosure`).
 
 ---
 
