@@ -31,16 +31,20 @@ flowchart LR
     Ci["C_E ⊆ ΔX : confusions induites par E\n(u~_E v)"]
     Lmap["Restriction à la signature\nL_σ(E) := R_σ ∩ C_E"]
     Li["L_σ(E) := R_σ ∩ C_E\n(pertes requises sous E)"]
-    Acc["A_σ(E) := R_σ \\ L_σ(E)\n(distinctions requises accessibles)"]
+    Acc["Acc_σ(E) := R_σ \\ L_σ(E)\n(distinctions requises accessibles)"]
 
     Meet["Conjonction d’interfaces (meet)\nE_{∧I} := ∧_{i∈I} E_i"]
     Lres["Résidu courant\nL_res(I) := ⋂_{i∈I} L_σ(E_i)"]
     rho["Invariant résiduel\nρ_σ(I) := # L_res(I)"]
-    delta["Gain marginal d’une vue j\nΔ_j(I) := #(L_res(I) ∩ A_σ(E_j))"]
+    delta["Gain marginal d’une vue j\nΔ_j(I) := #(L_res(I) ∩ Acc_σ(E_j))"]
     closeCrit["Critère de clôture\nρ_σ(I)=0 ⇔ σ se lit sur ∧_{i∈I} O_i"]
+    dynEq["Équation dynamique\nρ_{t+1} = ρ_t - Δ_{a_t}(I_t)"]
+    oracle["Oracle algébrique\nopt_action_t = argmax_j Δ_j(I_t)"]
+    init["Initialisation\nI_0 := {base}\nL_res(0) := L_σ(E_base)\nρ_0 := #L_res(0)"]
 
     DX --> Rsig
     Ei --> Cmap --> Ci
+    Ebase --> Cmap
     Ci --> Li
     Rsig --> Lmap --> Li
     Rsig --> Li
@@ -48,10 +52,17 @@ flowchart LR
 
     Li --> Lres
     Meet --> Lres
+    Ebase --> Meet
     Lres --> rho
     Lres --> delta
     Acc --> delta
     rho --> closeCrit
+    delta --> oracle
+    rho --> dynEq
+    delta --> dynEq
+    Ebase --> init
+    init --> Lres
+    init --> rho
 
     law1["Loi centrale\nL_σ(∧_i E_i) = ⋂_i L_σ(E_i)"]
     law2["Dualité\nA_σ(∧_i E_i) = ⋃_i A_σ(E_i)"]
@@ -83,6 +94,7 @@ flowchart LR
     delta --> pi
     rho --> contract
     contract --> pi
+    act --> dynEq
   end
 
   %% =========================
@@ -140,6 +152,7 @@ flowchart LR
   Ei --> Meet
   sig --> Rsig
 
+  oracle --> opt
   opt --> pi
   verify --> contract
   strong --> delta
