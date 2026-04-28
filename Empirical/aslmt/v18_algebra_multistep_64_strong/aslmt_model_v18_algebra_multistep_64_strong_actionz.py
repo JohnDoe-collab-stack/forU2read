@@ -218,9 +218,9 @@ class V18AlgebraMultistepModelA_ActionZ_Strong(nn.Module):
                 responses_prefix=responses_prefix,
                 forbid_view0=True,
             )
-            feat = torch.stack([amb, sz], dim=-1)  # (V,2)
+            feat = torch.stack([amb, sz], dim=-1).to(device=tables.device, dtype=torch.float32)  # (V,2)
             logits = self.view_mlp(feat).squeeze(-1)  # (V,)
-            out[b] = logits.to(device=tables.device, dtype=torch.float32)
+            out[b] = logits
         return out
 
     def _z_from_logits(self, z_logits: torch.Tensor) -> torch.Tensor:
