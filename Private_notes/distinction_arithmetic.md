@@ -60,7 +60,7 @@ Pour `X` fini et `σ : X → S`, définir l’algèbre de clôture par distincti
 (
   Part(X), EqConf(X), 𝒫(R_σ), ℕ ;
   ≤, ∧, ∨ ; ⊆, ∩, ∪, \, # ;
-  C, L_σ, A_σ, ρ_σ
+  C, L_σ, Acc_σ, ρ_σ
 )
 ```
 
@@ -69,7 +69,7 @@ où :
 ```text
 C(E)      = C_E
 L_σ(E)    = R_σ ∩ C_E
-A_σ(E)    = R_σ \ L_σ(E)
+Acc_σ(E)  = R_σ \ L_σ(E)
 
 ρ_σ(E₁,…,Eₙ)
   := #(⋂_{i=1}^n L_σ(E_i))
@@ -82,7 +82,7 @@ Remarques de typage (compléments).
 
 ```text
 D_E      := ΔX \ C_E
-A_σ(E)   := R_σ \ L_σ(E)
+Acc_σ(E) := R_σ \ L_σ(E)
 ```
 
 La clôture conjointe (multi-interface) se décide par :
@@ -123,7 +123,7 @@ Relativement à `σ` :
 
 ```text
 L_σ(E) ⊆ R_σ : pertes requises (R_σ ∩ C_E)
-A_σ(E) ⊆ R_σ : accessibilités requises (R_σ \ L_σ(E))
+Acc_σ(E) ⊆ R_σ : accessibilités requises (R_σ \ L_σ(E))
 ```
 
 Projection numérique :
@@ -137,7 +137,7 @@ Projection numérique :
 
 ```text
 L_σ(E_A ∧ E_B) = L_σ(E_A) ∩ L_σ(E_B)
-A_σ(E_A ∧ E_B) = A_σ(E_A) ∪ A_σ(E_B)
+Acc_σ(E_A ∧ E_B) = Acc_σ(E_A) ∪ Acc_σ(E_B)
 
 ρ_σ(A,B) = 0  ⇔  clôture conjointe de σ par A∧B
 ```
@@ -213,8 +213,8 @@ L_σ(E) := R_σ ∩ C_E
 Distinctions requises accessibles sous `E` :
 
 ```text
-A_σ(E) := R_σ \ L_σ(E)
-a_σ(E) := #A_σ(E) = r_σ - ℓ_σ(E)
+Acc_σ(E) := R_σ \ L_σ(E)
+a_σ(E) := #Acc_σ(E) = r_σ - ℓ_σ(E)
 ```
 
 Forme canonique :
@@ -293,7 +293,7 @@ Clôture prédictive par `E` :
 ```text
 E ⊆ E_σ
 ⇔ L_σ(E) = ∅
-⇔ A_σ(E) = R_σ
+⇔ Acc_σ(E) = R_σ
 ⇔ a_σ(E) = r_σ
 ```
 
@@ -451,6 +451,35 @@ g_σ(A,B) := min(ℓ_σ(E_A), ℓ_σ(E_B)) - ρ_σ(A,B).
 ```
 
 Dans XOR : `ℓ_A=2`, `ℓ_B=2`, `ρ_σ(A,B)=0`, donc `g_σ(A,B)=2`.
+
+---
+
+## 8bis) Bornes universelles sur `ρ_σ` (ce que la cardinalisation marginale ne fixe pas)
+
+Notations :
+
+```text
+ℓ_A := #L_A
+ℓ_B := #L_B
+ρ   := ρ_σ(A,B) = #(L_A ∩ L_B)
+```
+
+Comme `L_A, L_B ⊆ R_σ`, l’intersection `L_A ∩ L_B` satisfait les bornes générales :
+
+```text
+max(0, ℓ_A + ℓ_B - r_σ) ≤ ρ ≤ min(ℓ_A, ℓ_B).
+```
+
+Lecture : les données “peaniennes” `r_σ, ℓ_A, ℓ_B` déterminent seulement un intervalle possible pour `ρ`.
+L’incidence (le recouvrement effectif `L_A ∩ L_B`) est la donnée qui tranche.
+
+Dans XOR : `r_σ=4`, `ℓ_A=2`, `ℓ_B=2`, donc :
+
+```text
+0 ≤ ρ ≤ 2,
+```
+
+et les cas `ρ=0,1,2` correspondent aux trois diagnostics : clôture / résidu strict / alignement maximal.
 
 ---
 
@@ -685,16 +714,16 @@ d’intersections avant cardinalisation.
 Poser :
 
 ```text
-Acc_i := A_σ(E_i) = R_σ \ L_σ(E_i).
+Acc_i := Acc_σ(E_i) = R_σ \ L_σ(E_i).
 ```
 
 Alors, par De Morgan :
 
 ```text
-A_σ(∧i E_i)
+Acc_σ(∧i E_i)
 = R_σ \ ⋂i L_σ(E_i)
 = ⋃i (R_σ \ L_σ(E_i))
-= ⋃i A_σ(E_i).
+= ⋃i Acc_σ(E_i).
 ```
 
 Donc :
