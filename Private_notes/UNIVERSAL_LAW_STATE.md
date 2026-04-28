@@ -237,6 +237,12 @@ Run de référence (solid) au 2026-04-23 (matrice `z∈{n, ⌊n/2⌋, n-1}`) :
     (barrières valides, baselines à 0, ablation à 0, swap-follow à 1.0, swap-orig à 0.0, `query_action_rate` équilibré).
   - Les runs sous-capacité `z<n` font partie du même master JSONL (utilisés par le verifier `--z-policy A1`).
 
+Run axe orthogonal “policy non-triviale” (solid) au 2026-04-27 (même matrice A1, target query remplacée par `policy(h)`):
+
+- `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_law_v3b_unified_v2_strong_qforced_zread_policy_nontrivial_solid_20260427_141932_8eec3ea2e04e/`
+  - `verify_20260427_141932_8eec3ea2e04e.txt` : `[OK] law_v3b_unified_v2_strong matrix checks passed.`
+  - Interface scripts + explication : `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/law_v3b_unified_v2_strong_qforced_zread_policy_nontrivial/README_aslmt_law_v3b_unified_v2_strong_qforced_zread_policy_nontrivial.md`
+
 ---
 
 ## 5) Visée : fermeture “universelle” (ce qui compte comme clôture complète)
