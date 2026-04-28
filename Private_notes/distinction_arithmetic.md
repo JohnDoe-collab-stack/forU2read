@@ -58,7 +58,7 @@ Pour `X` fini et `σ : X → S`, définir l’algèbre de clôture par distincti
 𝔠_σ(X)
 :=
 (
-  Part(X), 𝒫(ΔX), 𝒫(R_σ), ℕ ;
+  Part(X), EqConf(X), 𝒫(R_σ), ℕ ;
   ≤, ∧, ∨ ; ⊆, ∩, ∪, \, # ;
   C, L_σ, A_σ, ρ_σ
 )
@@ -70,19 +70,25 @@ où :
 C(E)      = C_E
 L_σ(E)    = R_σ ∩ C_E
 A_σ(E)    = R_σ \ L_σ(E)
-ρ_σ(A,B)  = #(L_σ(E_A) ∩ L_σ(E_B))
+
+ρ_σ(E₁,…,Eₙ)
+  := #(⋂_{i=1}^n L_σ(E_i))
+
+ρ_σ(A,B)
+  := ρ_σ(E_A, E_B)
 ```
 
-et, plus généralement (multi-interface) :
+Remarques de typage (compléments).
 
 ```text
-ρ_σ(A₁,…,Aₙ) := #(⋂_{i=1}^n L_σ(E_{A_i})).
+D_E      := ΔX \ C_E
+A_σ(E)   := R_σ \ L_σ(E)
 ```
 
-La clôture conjointe se décide par :
+La clôture conjointe (multi-interface) se décide par :
 
 ```text
-ρ_σ(A₁,…,Aₙ) = 0  ⇔  (∧_{i=1}^n E_{A_i}) ≤ E_σ.
+ρ_σ(E₁,…,Eₙ) = 0  ⇔  (∧_{i=1}^n E_i) ≤ E_σ.
 ```
 
 ### Sortes (types d’objets)
@@ -93,6 +99,7 @@ Part(X)   : treillis des partitions (relations d’équivalence) sur X
 ΔX        : espace des distinctions {x,x'} avec x ≠ x'
 σ : X → S : signature (cible dynamique)
 R_σ ⊆ ΔX  : distinctions requises par σ
+EqConf(X) : { C_E ⊆ ΔX | E ∈ Part(X) } (confusions admissibles)
 ```
 
 ### Opérations (côté partitions et distinctions)
@@ -719,14 +726,40 @@ E ↦ C_E
 
 est bijectif (chaque partition correspond à exactement un ensemble de paires confondues).
 
+De plus, c’est un isomorphisme d’ensembles ordonnés :
+
+```text
+E ≤ F   ⇔   C_E ⊆ C_F.
+```
+
 Au niveau des opérations, la rencontre est transportée sans perte :
 
 ```text
 C_{E ∧ F} = C_E ∩ C_F.
 ```
 
+On peut donc équiper `EqConf(X)` d’un *meet* transporté :
+
+```text
+U ∧_Δ V := U ∩ V.
+```
+
 Pour la jonction, l’opération transportée doit passer par une fermeture d’équivalence au niveau relationnel
-(`X×X`), puis être restreinte aux distinctions `ΔX` (cf. section 12 pour `Rel(·)` et `EqClosure`).
+(`X×X`), puis être restreinte aux distinctions `ΔX` (cf. section 12 pour `Rel(·)` et `EqClosure`). On peut la noter :
+
+```text
+U ∨_Δ V
+:=
+C_{ EqClosure(Rel(U) ∪ Rel(V)) }.
+```
+
+Avec ces opérations transportées, on peut lire :
+
+```text
+Part(X) ≅ EqConf(X)
+```
+
+comme treillis (via transport).
 
 ---
 
@@ -752,7 +785,7 @@ L_σ(E) ↔ L_{σ'}(E')
 Donc :
 
 ```text
-ρ_σ(A,B) = ρ_{σ'}(A',B')
+ρ_σ(E_A, E_B) = ρ_{σ'}(E'_A, E'_B)
 ```
 
 Lecture : `ρ` dépend uniquement de la **configuration relative** des partitions, pas des noms des états.
