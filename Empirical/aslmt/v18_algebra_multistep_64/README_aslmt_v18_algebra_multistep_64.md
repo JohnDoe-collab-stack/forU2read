@@ -80,3 +80,11 @@ To re-check a master JSONL:
   --master-jsonl Empirical/aslmt/runs/<run_dir>/<master>.jsonl \
   --profile solid --min-seeds 5 --n-states-list 8
 ```
+
+## Results (solid)
+
+Completed solid run (n=8, seeds 0..4):
+- Run dir: `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v18_algebra_multistep_64_actionz_solid_20260428_155907_579302681f91/`
+- Master JSONL: `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v18_algebra_multistep_64_actionz_solid_20260428_155907_579302681f91/v18_algebra_multistep_64_actionz_solid_master_20260428_155907_579302681f91.jsonl`
+- Snapshot verifier: `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/snapshots/aslmt_v18_algebra_multistep_64_actionz_solid_20260428_155907_579302681f91/verify_aslmt_v18_algebra_multistep_64_matrix.py`
+- Verifier status: `[OK] v18 algebra multistep matrix checks passed.`
