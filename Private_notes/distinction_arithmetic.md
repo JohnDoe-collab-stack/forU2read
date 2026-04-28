@@ -45,6 +45,61 @@ La clôture conjointe équivaut à :
 
 ---
 
+## 0) Signature abstraite (sortes, opérations, invariants)
+
+Le document définit une **algèbre dérivée** : les objets de calcul sont des partitions et des sous-ensembles de
+distinctions, et les nombres n’interviennent qu’après transport du calcul dans l’espace des pertes.
+
+### Sortes (types d’objets)
+
+```text
+X         : ensemble fini d’états
+Part(X)   : treillis des partitions (relations d’équivalence) sur X
+ΔX        : espace des distinctions {x,x'} avec x ≠ x'
+σ : X → S : signature (cible dynamique)
+R_σ ⊆ ΔX  : distinctions requises par σ
+```
+
+### Opérations (côté partitions et distinctions)
+
+Sur `Part(X)` :
+
+```text
+E ≤ F     : ordre “plus fin que”
+E ∧ F     : meet (rencontre) = intersection de relations
+E ∨ F     : join (jonction) = fermeture d’équivalence de l’union engendrée
+```
+
+Transport vers les distinctions :
+
+```text
+C_E ⊆ ΔX  : confusions induites par E
+D_E       : distinctions conservées (= ΔX \ C_E)
+```
+
+Relativement à `σ` :
+
+```text
+L_σ(E) ⊆ R_σ : pertes requises (R_σ ∩ C_E)
+A_σ(E) ⊆ R_σ : accessibilités requises (R_σ \ L_σ(E))
+```
+
+Projection numérique :
+
+```text
+#        : cardinal (sur ensembles finis)
+ρ_σ(A,B) : #(L_σ(E_A) ∩ L_σ(E_B))
+```
+
+### Lois (schéma minimal)
+
+```text
+L_σ(E_A ∧ E_B) = L_σ(E_A) ∩ L_σ(E_B)
+A_σ(E_A ∧ E_B) = A_σ(E_A) ∪ A_σ(E_B)
+
+ρ_σ(A,B) = 0  ⇔  clôture conjointe de σ par A∧B
+```
+
 ## 1) Espace des distinctions `ΔX`
 
 Soit `X` un ensemble fini d’états.
@@ -559,3 +614,89 @@ Donc :
 accessibilité conjointe = union des accessibilités marginales
 perte conjointe         = intersection des pertes marginales
 ```
+
+---
+
+## 13) Théorèmes caractéristiques (propriétés d’invariance et de comparaison)
+
+### 13.1) Invariance par renommage (isomorphisme d’états)
+
+Soient `X` et `X'` des ensembles finis et `φ : X ≃ X'` une bijection.
+En transportant :
+
+```text
+σ' := σ ∘ φ⁻¹
+E' := transport(E, φ)   (relation : x' E' y' ⇔ φ⁻¹(x') E φ⁻¹(y'))
+```
+
+on a un transport canonique des distinctions et des pertes :
+
+```text
+R_σ  ↔ R_{σ'}
+L_σ(E) ↔ L_{σ'}(E')
+```
+
+Donc :
+
+```text
+ρ_σ(A,B) = ρ_{σ'}(A',B')
+```
+
+Lecture : `ρ` dépend uniquement de la **configuration relative** des partitions, pas des noms des états.
+
+### 13.2) Cardinalisation immédiate vs différée (perte d’information)
+
+La donnée marginale :
+
+```text
+#L_A, #L_B
+```
+
+ne détermine pas la quantité conjointe :
+
+```text
+#(L_A ∩ L_B).
+```
+
+Donc la cardinalisation immédiate (type “Peano”) écrase l’incidence. La cardinalisation différée conserve :
+
+```text
+L_A ⊂ R_σ,  L_B ⊂ R_σ,  L_A ∩ L_B.
+```
+
+### 13.3) Classification minimale (clôture vs résidu)
+
+Le diagnostic de clôture conjointe se réduit à :
+
+```text
+ρ_σ(A,B) = 0   (clôture)
+ρ_σ(A,B) > 0   (résidu strict)
+```
+
+Et le contre-exemple de la section 8 montre que deux systèmes peuvent partager les mêmes
+valeurs marginales tout en tombant de part et d’autre de ce seuil.
+
+---
+
+## 14) Calcul effectif (complexité)
+
+Le calcul peut être implémenté directement sur des bitsets indexant `R_σ ⊆ ΔX`.
+
+Pour une paire `(x,x')`, indexer une coordonnée `p ∈ {0,…,|ΔX|-1}`.
+Alors :
+
+```text
+bitset(R_σ)         : masque des distinctions requises
+bitset(C_E)         : masque des distinctions confondues par E
+bitset(L_σ(E))      = bitset(R_σ) AND bitset(C_E)
+bitset(L_res)       = AND_i bitset(L_σ(E_i))
+ρ_σ(A_1,…,A_n)       = popcount(bitset(L_res))
+```
+
+La complexité est linéaire en taille de bitset :
+
+```text
+O(|ΔX| / w)
+```
+
+où `w` est la taille de mot machine (ex. 64), avec une constante faible (`AND` + `popcount`).
