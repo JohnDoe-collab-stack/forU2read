@@ -49,6 +49,56 @@ Coh(U) := “U is consistent relative to a designated semantic class”
 For such `Coh`, the equivalences with `T ⊢ φ` may fail. This is the regime where the spectrum view
 does **not** reduce to syntactic decidability.
 
+## 0ter. A standard “semantic” Coh and derived stability lemmas (recommended)
+
+If you want `Coh` to carry *semantic* content (and to avoid treating “stability assumptions” as axioms),
+the cleanest move is to define `Coh` from an explicit class of models.
+
+Fix a class `C` of structures for the language of `T` (examples: transitive models of set theory,
+ω-models, models produced by a forcing class, admissible sets, etc.). Define:
+
+```text
+Coh_C(U) := “there exists M ∈ C such that M ⊨ U”.
+```
+
+Then the “minimal stability assumptions” that one is tempted to postulate are *lemmas*:
+
+**(L1) Branch-totality (derived):**
+
+```text
+Coh_C(T) ⇒ Coh_C(T+φ) or Coh_C(T+¬φ).
+```
+
+Reason: if `M ⊨ T`, then (classical semantics) `M ⊨ φ` or `M ⊨ ¬φ`, so the same witness `M` proves one branch
+coherent.
+
+**(L2) Downward heredity (derived):**
+
+```text
+If U ⊆ V and Coh_C(V), then Coh_C(U).
+```
+
+Reason: any model of `V` is a model of every subset `U`.
+
+**(L3) Theorem stability (derived):**
+
+```text
+If Coh_C(U) and U ⊢ χ, then Coh_C(U+χ).
+```
+
+Reason: by soundness, any model of `U` satisfies `χ`, hence is also a model of `U+χ`.
+
+**(L4) Soundness against contradiction (derived):**
+
+```text
+Coh_C(U) ⇒ Con_syn(U).
+```
+
+Reason: if `U` had a syntactic contradiction proof, soundness would imply no model exists.
+
+In short: in the semantic regime, you can keep the note fully precise by (i) fixing `C`, (ii) setting
+`Coh := Coh_C`, and (iii) treating these properties as derived facts rather than extra axioms.
+
 ## 1. Binary coherence spectrum
 
 Define:
