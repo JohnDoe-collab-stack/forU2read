@@ -39,7 +39,8 @@ flowchart LR
     delta["Marginal gain of view j\nΔ_j(I) := #(L_res(I) ∩ Acc_σ(E_j))"]
     closeCrit["Closure criterion\nρ_σ(I)=0 ⇔ σ is readable on ∧_{i∈I} O_i"]
     dynEq["Dynamics\nρ_{t+1} = ρ_t - Δ_{a_t}(I_t)"]
-    oracle["Algebraic oracle\nopt_action_t = argmax_j Δ_j(I_t)"]
+    oracle["Algebraic oracle (base, greedy)\nopt_action_t = argmax_j Δ_j(I_t)"]
+    oracleH["Horizon oracle (STRONG)\nopt_action_t = argmin_j Q_{H-t}(j | τ_t)"]
     init["Initialization\nI_0 := {base}\nL_res(0) := L_σ(E_base)\nρ_0 := #L_res(0)"]
 
     DX --> Rsig
@@ -58,6 +59,7 @@ flowchart LR
     Acc --> delta
     rho --> closeCrit
     delta --> oracle
+    delta --> oracleH
     rho --> dynEq
     delta --> dynEq
     Ebase --> init
@@ -102,7 +104,7 @@ flowchart LR
   %% =========================
   subgraph T["Training (supervision + schedule)"]
     opt["Action labels\n(opt_actions) from generator"]
-    lossq["Query loss\nL_q = CE(logits_query, opt_action_t)"]
+    lossq["Query loss\n- base: CE(logits_query, opt_action_t)\n- STRONG v2: set-valued target at t=0"]
     lossy["Target loss\nL_y = CE(y_logits, σ(x))"]
     tf["Teacher forcing schedule\np_tf decays to 0"]
     train["Optimization (AdamW)\nsolver params + baselines"]
@@ -121,7 +123,7 @@ flowchart LR
     barriers["Barriers\nbase-only keeps ambiguity"]
     baselines["Baselines\nvisible-only and cue-only stay at chance"]
     ablate["Ablation\nz→0 ⇒ collapse"]
-    swap["Swap\npermute z ⇒ action follows permuted z\nand performance tracks intervention"]
+    swap["Swap\npermute z ⇒ action follows permuted z\nand performance tracks intervention\n(note: action-as-z ⇒ follow-rate ≈ 1)"]
     iidood["IID + OOD"]
     multiseed["Multi-seeds"]
     verify["Strict verifier\nthresholds on A_acc / baselines / ablation / swap / follow-rate\n(min-seeds=5 in solid)"]
@@ -155,6 +157,7 @@ flowchart LR
   oracle --> opt
   opt --> pi
   verify --> contract
+  easy --> oracle
+  strong --> oracleH
   strong --> delta
 ```
-

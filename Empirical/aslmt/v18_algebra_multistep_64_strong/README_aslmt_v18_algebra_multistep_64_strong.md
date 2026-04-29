@@ -2,6 +2,16 @@
 
 This folder defines a “strong” variant of `v18_algebra_multistep_64` whose purpose is to **exercise multi-step closure selection** rather than a local refinement heuristic.
 
+## Recommended (solid): STRONG v2
+
+For solid runs, use `../v18_algebra_multistep_64_strong_v2/`, which adds:
+
+- set-valued supervision at `t=0` (intrinsic tie between the two bit views),
+- horizon-consistent scoring (2-step lookahead only when 2 steps remain).
+
+For additional hardening without protocol drift, use `../v18_algebra_multistep_64_strong_v3/`
+(no base collisions, distractors strictly varying, stricter verifier + algebra audit).
+
 ## What changes vs the base v18
 
 In the base v18 constructive core (`steps=2`), distractor views are **base-only** (constant inside the base fiber). This makes a simple local rule sufficient:
@@ -50,4 +60,3 @@ Same audit shape as v18:
 - `aslmt_train_v18_algebra_multistep_64_strong_matrix_diagstop_actionz.py`: trainer producing master JSONL rows
 - `verify_aslmt_v18_algebra_multistep_64_strong_matrix.py`: strict verifier for `solid`
 - `aslmt_campaign_v18_algebra_multistep_64_strong_matrix_diagstop_actionz.py`: snapshot + hash runner
-

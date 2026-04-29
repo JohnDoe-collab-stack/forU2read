@@ -58,12 +58,17 @@ The verifier checks, per `n` and over multiple seeds, for both IID and OOD:
 
 ## Strong variant
 
-The folder `../v18_algebra_multistep_64_strong/` defines a **strong** variant that removes the shortcut:
+The folder `../v18_algebra_multistep_64_strong_v2/` defines a **strong** variant that removes the shortcut:
 
 > “pick the two views with `uniq>1` in the base fiber”.
 
 In the strong variant, distractor views also vary inside the base fiber but do not help close `σ`, so
 view selection must track **closure**, not just local refinement.
+
+The `*_strong_v2` folder also includes two correctness fixes that make the `steps=2` supervision well-posed:
+
+- set-valued query target at `t=0` (intrinsic tie between the two bit views),
+- horizon-consistent scoring (2-step lookahead only when 2 steps remain).
 
 ## Run tracking
 

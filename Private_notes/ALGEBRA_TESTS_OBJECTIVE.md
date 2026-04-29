@@ -79,3 +79,7 @@ on peut conclure :
 - `Private_notes/distinction_arithmetic.md` : algèbre “distinctions → pertes → incidence → cardinalisation”.
 - `Private_notes/algebra_to_architecture.md` : traduction directe “algèbre → politique de requête → architecture + audit”.
 
+## 7) Où lire les implémentations “strong”
+
+- `Empirical/aslmt/v18_algebra_multistep_64_strong_v2/` : première version strong valide (solid cité). Ne pas modifier.
+- `Empirical/aslmt/v18_algebra_multistep_64_strong_v3/` : version durcie (no base collisions, distracteurs strictement variables, vérifieur plus strict, audit algébrique exact).

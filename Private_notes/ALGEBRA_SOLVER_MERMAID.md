@@ -39,7 +39,8 @@ flowchart LR
     delta["Gain marginal d’une vue j\nΔ_j(I) := #(L_res(I) ∩ Acc_σ(E_j))"]
     closeCrit["Critère de clôture\nρ_σ(I)=0 ⇔ σ se lit sur ∧_{i∈I} O_i"]
     dynEq["Équation dynamique\nρ_{t+1} = ρ_t - Δ_{a_t}(I_t)"]
-    oracle["Oracle algébrique\nopt_action_t = argmax_j Δ_j(I_t)"]
+    oracle["Oracle algébrique (base, greedy)\nopt_action_t = argmax_j Δ_j(I_t)"]
+    oracleH["Oracle à horizon (STRONG)\nopt_action_t = argmin_j Q_{H-t}(j | τ_t)"]
     init["Initialisation\nI_0 := {base}\nL_res(0) := L_σ(E_base)\nρ_0 := #L_res(0)"]
 
     DX --> Rsig
@@ -58,6 +59,7 @@ flowchart LR
     Acc --> delta
     rho --> closeCrit
     delta --> oracle
+    delta --> oracleH
     rho --> dynEq
     delta --> dynEq
     Ebase --> init
@@ -102,7 +104,7 @@ flowchart LR
   %% =========================
   subgraph T["Entraînement (supervision + schedule)"]
     opt["Labels d’action\n(opt_actions) issus du générateur"]
-    lossq["Loss requête\nL_q = CE(logits_query, opt_action_t)"]
+    lossq["Loss requête\n- base: CE(logits_query, opt_action_t)\n- STRONG v2: target en ensemble à t=0"]
     lossy["Loss cible\nL_y = CE(y_logits, σ(x))"]
     tf["Teacher forcing (schedule)\np_tf décroît vers 0"]
     train["Optimisation (AdamW)\nparamètres du solveur + baselines"]
@@ -121,7 +123,7 @@ flowchart LR
     barriers["Barrières\nbase seule maintient ambiguïté"]
     baselines["Baselines\nvisible-only et cue-only restent à chance"]
     ablate["Ablation\nz mis à zéro ⇒ collapse"]
-    swap["Swap\npermutation de z ⇒ action suit z permuté\net performance suit l’intervention"]
+    swap["Swap\npermutation de z ⇒ action suit z permuté\net performance suit l’intervention\n(note: action-as-z ⇒ follow-rate ≈ 1)"]
     iidood["IID + OOD"]
     multiseed["Multi-seeds"]
     verify["Vérifieur strict\nseuils sur A_acc / baselines / ablation / swap / follow-rate\n(min-seeds=5 en solid)"]
@@ -155,5 +157,7 @@ flowchart LR
   oracle --> opt
   opt --> pi
   verify --> contract
+  easy --> oracle
+  strong --> oracleH
   strong --> delta
 ```
