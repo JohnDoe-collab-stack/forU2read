@@ -44,6 +44,22 @@ Spec^Coh_T(Φ) ≠ ∅
 
 and, in protocol dynamics, `Spec^Coh_{T_t}(Φ) ≠ ∅` whenever we need the defect to stay in a fixed range.
 
+### A canonical semantic choice (one fixed reference case)
+
+To make the framework **portable** (not “just a parameterized schema”), it helps to fix one canonical
+semantic coherence predicate as a reference point.
+
+In this note, the reference case will be:
+
+```text
+C := the class of transitive models of ZFC
+Coh_C(U) := “U has a transitive model”.
+```
+
+This choice is canonical in set theory because it is the smallest standard semantic strengthening of
+syntactic consistency that (i) supports absolute arithmetic facts, and (ii) separates semantic
+branch admissibility from syntactic provability in a clean way (see §7.1).
+
 ---
 
 ## 1. Branches for a family of sentences
@@ -293,6 +309,44 @@ Coh_C(U) := “U has a transitive model”
 ```
 
 Assume `Coh_C(ZFC)` (i.e. there exists a transitive model of ZFC).
+
+### 7.1 Separation theorem (clean statement with explicit meta-assumptions)
+
+Let:
+
+```text
+T := ZFC
+φ := Con_syn(ZFC)
+```
+
+Assume the following meta-level hypotheses:
+
+```text
+(H1) Coh_C(ZFC) holds, i.e. there exists a transitive model of ZFC.
+(H2) Con_syn(ZFC) holds (ordinary syntactic consistency).
+```
+
+Then:
+
+```text
+Spec^Coh_C_ZFC(Con_syn(ZFC)) = {1}
+and
+Spec^Con_syn_ZFC(Con_syn(ZFC)) = {0,1}.
+```
+
+Equivalently:
+
+```text
+D^Coh_C_ZFC(Con_syn(ZFC)) = 0
+but
+D^Con_syn_ZFC(Con_syn(ZFC)) = 1.
+```
+
+This is the canonical separation pattern:
+
+```text
+semantic Coh-closure  ≠  syntactic decision.
+```
 
 ### Claim (semantic closure in the transitive-model regime)
 
