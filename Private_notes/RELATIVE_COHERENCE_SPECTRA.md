@@ -515,7 +515,13 @@ Fix `Φ`. Then:
 T ↦ Spec^Coh_T(Φ)
 ```
 
-is contravariant:
+Assuming **downward heredity** for `Coh`:
+
+```text
+If U ⊆ V and Coh(V), then Coh(U),
+```
+
+the assignment is contravariant:
 
 ```text
 T ⊆ S  ⇒  Spec^Coh_S(Φ) ⊆ Spec^Coh_T(Φ).
@@ -547,6 +553,14 @@ and let Coh be either:
 (ii) Coh_C for a fixed semantic class C of structures, or
 (iii) an abstract coherence predicate with downward heredity and local spectrum inhabitation.
 
+Assume local inhabitation:
+
+    Spec^Coh_T(Φ) ≠ ∅.
+
+For monotonicity, assume downward heredity of Coh:
+
+    U ⊆ V and Coh(V) ⇒ Coh(U).
+
 Define:
     Spec^Coh_T(Φ) = { v ∈ {0,1}^n : Coh(T + Φ^v) }.
 
@@ -556,7 +570,7 @@ Then:
 2) (Closure) |Spec^Coh_T(Φ)| = 1 characterizes Coh-closure on Φ.
 3) (Openness) |Spec^Coh_T(Φ)| > 1 characterizes Coh-openness on Φ.
 4) (Collapse) For Coh = Con_syn and finite Φ, closure on Φ coincides with syntactic decision
-   of every coordinate φᵢ by T.
+   of every coordinate φᵢ by T. (Assume Con_syn(T) in this regime.)
 5) (Separation) There exist natural stronger semantic coherence predicates Coh (e.g. transitive-model
    coherence) for which Coh-closure strictly refines syntactic decidability.
 ```
