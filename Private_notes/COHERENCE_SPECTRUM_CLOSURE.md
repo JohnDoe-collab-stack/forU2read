@@ -99,6 +99,38 @@ Reason: if `U` had a syntactic contradiction proof, soundness would imply no mod
 In short: in the semantic regime, you can keep the note fully precise by (i) fixing `C`, (ii) setting
 `Coh := Coh_C`, and (iii) treating these properties as derived facts rather than extra axioms.
 
+## 0quater. Scope convention (to avoid hidden global assumptions)
+
+**Scope convention.** From this point on, `Coh` is assumed to be one of:
+
+```text
+(A) Coh := Con_syn
+
+or
+
+(B) Coh := Coh_C for a fixed semantic class C
+
+or
+
+(C) Coh := an abstract coherence predicate, together with the specific stability properties
+    explicitly invoked in each statement below.
+```
+
+In the abstract regime (C), we will **not** assume global completeness-style properties of `Coh`.
+Instead, whenever needed we assume *local inhabitation* of the spectrum for the specific target:
+
+```text
+Spectrum inhabitation (local assumption for (T, φ)):
+    Spec^Coh_T(φ) ≠ ∅.
+```
+
+And, in the protocol/dynamics section, if we want the drop `Δ` to remain binary, we assume the same
+local inhabitation along the protocol:
+
+```text
+For every t, assume Spec^Coh_{T_t}(φ) ≠ ∅.
+```
+
 ## 1. Binary coherence spectrum
 
 Define:
@@ -137,13 +169,13 @@ Interpretation:
   ```text
   D^Coh_T(φ)=0  ⇔  |Spec^Coh_T(φ)|=1
   ```
-  i.e. **exactly one** of `T+φ` and `T+¬φ` is consistent.
+  i.e. **exactly one** of `T+φ` and `T+¬φ` is `Coh`-admissible.
 
 - **Openness**:
   ```text
   D^Coh_T(φ)=1  ⇔  Spec^Coh_T(φ) = {0,1}
   ```
-  i.e. **both** `T+φ` and `T+¬φ` are consistent.
+  i.e. **both** `T+φ` and `T+¬φ` are `Coh`-admissible.
 
 ## 3. One-way link to provability (safe direction only)
 
