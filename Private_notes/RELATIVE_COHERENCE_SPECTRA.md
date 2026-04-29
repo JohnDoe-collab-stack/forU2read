@@ -176,29 +176,29 @@ binary spectral closure = syntactic decidability.
 
 ### Finite-family refinement (what collapses, exactly)
 
-One direction is immediate and fully general:
+For finite `Φ`, the collapse is in fact **complete** (in the usual metatheory of classical first-order
+logic):
 
 ```text
-If T syntactically decides every coordinate φᵢ in Φ,
-then Spec^Con_syn_T(Φ) is a singleton (hence Con_syn-closed on Φ).
+Assume Φ = {φ₁,…,φₙ} is finite and Con_syn(T).
+
+Then Spec^Con_syn_T(Φ) = {v*}
+iff
+T syntactically decides every coordinate φᵢ, with truth-values given by v*:
+
+  v*_i = 1 ⇒ T ⊢ φᵢ
+  v*_i = 0 ⇒ T ⊢ ¬φᵢ.
 ```
 
-Reason: if `T ⊢ φᵢ`, then any branch which contains `¬φᵢ` is inconsistent; similarly if `T ⊢ ¬φᵢ`.
-So only the valuation matching the decided truth-values can remain.
+**Proof sketch (⇒):** fix `i`. Suppose `v*_i = 1` but `T ⊬ φᵢ`. Then `T + ¬φᵢ` is syntactically
+consistent (otherwise `T ⊢ ¬¬φᵢ` and classically `T ⊢ φᵢ`). By Lindenbaum’s lemma (existence of a
+complete consistent extension), extend `T + ¬φᵢ` to a complete consistent theory `T'`. In particular,
+for each `j ≠ i`, `T'` contains either `φⱼ` or `¬φⱼ`, yielding a valuation `w` with `w_i = 0` and
+`T + Φ^w ⊆ T'`. Hence `Con_syn(T + Φ^w)`, so `w ∈ Spec^Con_syn_T(Φ)`, contradicting uniqueness.
+The case `v*_i = 0` is symmetric.
 
-The converse (“singleton spectrum ⇒ T decides each φᵢ”) is not automatic **without further
-assumptions**, because a unique *global* admissible valuation can occur due to cross-constraints
-between coordinates. What does hold unconditionally is a *relative* decision statement:
-
-```text
-If Spec^Con_syn_T(Φ) = {v*}, then for each i,
-the partial theory
-  T + { φⱼ^{v*_ⱼ} : j ≠ i }
-syntactically decides φᵢ.
-```
-
-This is the precise sense in which “closure over Φ” collapses to a decision notion in the
-syntactic regime.
+**Proof sketch (⇐):** if `T` decides each `φᵢ`, then exactly one valuation matches those decisions and
+every other valuation contradicts at least one decided coordinate, hence is inconsistent.
 
 This is the precise sense in which the invariant becomes “trivial” in regime (A).
 
