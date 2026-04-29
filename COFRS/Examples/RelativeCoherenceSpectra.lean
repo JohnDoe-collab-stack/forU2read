@@ -388,6 +388,48 @@ theorem open_of_openPt {T : Theory Sentence} {Φ : Family Sentence n} :
   exact hdiff this
 
 /-!
+### Incompatibility lemmas (closure vs openness)
+
+These are useful to keep the internal geometry sharp:
+
+```text
+ClosedPt excludes OpenPt
+CoordClosed excludes CoordOpen
+```
+-/
+
+theorem closedPt_openPt_absurd
+    {T : Theory Sentence} {Φ : Family Sentence n} :
+    ClosedPt (n := n) neg Coh T Φ →
+    OpenPt (n := n) neg Coh T Φ →
+    False := by
+  intro hClosed hOpen
+  rcases hClosed with ⟨u, hu, huniq⟩
+  rcases hOpen with ⟨v, w, hv, hw, i, hdiff⟩
+  have huv : u i = v i := huniq v hv i
+  have huw : u i = w i := huniq w hw i
+  have hvw : v i = w i := huv.symm.trans huw
+  exact hdiff hvw
+
+theorem coordClosed_coordOpen_absurd
+    {T : Theory Sentence} {Φ : Family Sentence n} {i : Fin n} :
+    CoordClosed (n := n) neg Coh T Φ i →
+    CoordOpen (n := n) neg Coh T Φ i →
+    False := by
+  intro hClosed hOpen
+  rcases hClosed with ⟨b, hb⟩
+  rcases hOpen with ⟨h0, h1⟩
+  rcases h0 with ⟨v, hv, hvfalse⟩
+  rcases h1 with ⟨w, hw, hwtrue⟩
+  have hfalse_true : (false : Bool) = true := by
+    calc
+      (false : Bool) = v i := hvfalse.symm
+      _ = b := hb v hv
+      _ = w i := (hb w hw).symm
+      _ = true := hwtrue
+  cases hfalse_true
+
+/-!
 ## 2bis. Optional numeric defect `D := |Spec| - 1` (requires decidability)
 
 The paper also uses the numeric summary:
@@ -518,8 +560,7 @@ theorem allValuations_length : (n : Nat) → (allValuations n).length = Nat.pow 
       -- Step 1: rewrite the `let`-form length to the actual `allValuations (n+1)` length.
       -- (This is definitional after `dsimp` above.)
       -- Step 2: use IH and `Nat.mul_two`.
-      -- The `simp` below only uses rewriting, not `propext`-based list lemmas.
-      -- (All list lemmas used here are the local ones.)
+      -- The proof below uses explicit rewriting and local list-length lemmas.
       -- After rewriting, close by `Nat.mul_two`.
       have ih := allValuations_length n
       -- Reduce to arithmetic.
@@ -790,6 +831,8 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.closedPt_iff_specInhabited_and_forall_coordClosed
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.openPt_iff_exists_coordOpen
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.open_of_openPt
+#print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.closedPt_openPt_absurd
+#print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.coordClosed_coordOpen_absurd
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.length_map_noaxioms
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.length_append_noaxioms
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.allValuations_length
