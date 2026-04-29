@@ -171,11 +171,12 @@ T_n := { ¬φ → σ_k : 1 ≤ k ≤ n }
 T_ω := ⋃_{n<ω} T_n.
 ```
 
-Then for each `n<ω`, both branches are `Coh_C`-admissible:
+Then for each `n<ω`, both branches are `Coh_C`-admissible (treating `n=0` separately if one wishes):
 
 ```text
 T_n + φ   has a finite model (take any finite model with R nonempty),
-T_n + ¬φ  has a finite model (take a finite model of size n with R empty).
+T_n + ¬φ  has a finite model (for n≥1: take a finite model of size n with R empty;
+                              for n=0: take any one-element model with R empty).
 ```
 
 So:

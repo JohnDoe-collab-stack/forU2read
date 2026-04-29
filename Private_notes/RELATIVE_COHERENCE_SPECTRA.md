@@ -158,6 +158,32 @@ Coh = Con_syn
 binary spectral closure = syntactic decidability.
 ```
 
+### Finite-family refinement (what collapses, exactly)
+
+One direction is immediate and fully general:
+
+```text
+If T syntactically decides every coordinate φᵢ in Φ,
+then Spec^Con_syn_T(Φ) is a singleton (hence Con_syn-closed on Φ).
+```
+
+Reason: if `T ⊢ φᵢ`, then any branch which contains `¬φᵢ` is inconsistent; similarly if `T ⊢ ¬φᵢ`.
+So only the valuation matching the decided truth-values can remain.
+
+The converse (“singleton spectrum ⇒ T decides each φᵢ”) is not automatic **without further
+assumptions**, because a unique *global* admissible valuation can occur due to cross-constraints
+between coordinates. What does hold unconditionally is a *relative* decision statement:
+
+```text
+If Spec^Con_syn_T(Φ) = {v*}, then for each i,
+the partial theory
+  T + { φⱼ^{v*_ⱼ} : j ≠ i }
+syntactically decides φᵢ.
+```
+
+This is the precise sense in which “closure over Φ” collapses to a decision notion in the
+syntactic regime.
+
 This is the precise sense in which the invariant becomes “trivial” in regime (A).
 
 ---
@@ -186,15 +212,15 @@ is exactly the set of Boolean truth-profiles of Φ
 realized by C-admissible models of T.
 ```
 
-For `n=1`, closure becomes “truth forced relative to `C`”:
+For `n=1`, on the inhabited domain `Coh_C(T)`, closure becomes “truth forced relative to `C`”:
 
 ```text
 Spec^Coh_C_T(φ) = {1}
 ⇔
-every C-admissible model of T satisfies φ,
+every M ∈ C with M ⊨ T also satisfies φ,
 ```
 
-and similarly for `{0}`.
+and similarly for `{0}` (with `¬φ`).
 
 ---
 
@@ -293,6 +319,33 @@ So:
 semantic closure relative to C
 ≠
 syntactic decision by T.
+```
+
+To make the separation fully explicit as a spectrum comparison, one can also record the
+syntactic-consistency spectrum under the usual meta-hypotheses on ZFC (e.g. `Con_syn(ZFC)` and
+sufficient arithmetic strength for Gödel II):
+
+```text
+Spec^Con_syn_ZFC(Con_syn(ZFC)) = {0,1},
+```
+
+i.e. both `ZFC + Con_syn(ZFC)` and `ZFC + ¬Con_syn(ZFC)` are syntactically consistent at the meta
+level (the latter follows since if `ZFC + ¬Con_syn(ZFC)` were inconsistent then `ZFC ⊢ Con_syn(ZFC)`).
+
+Thus the canonical separation takes the crisp form:
+
+```text
+Spec^Con_syn_ZFC(Con_syn(ZFC)) = {0,1}
+but
+Spec^Coh_C_ZFC(Con_syn(ZFC))   = {1},
+```
+
+so:
+
+```text
+D^Con_syn_ZFC(Con_syn(ZFC)) = 1
+but
+D^Coh_C_ZFC(Con_syn(ZFC))   = 0.
 ```
 
 This is the canonical separation pattern the spectrum is built to capture.
@@ -455,4 +508,3 @@ extension = monotone contraction of the spectrum.
 closure   = uniqueness of the admissible branch.
 openness  = multiplicity of admissible branches.
 ```
-
