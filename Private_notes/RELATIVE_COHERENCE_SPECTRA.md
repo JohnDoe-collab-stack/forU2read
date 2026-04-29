@@ -56,9 +56,14 @@ C := the class of transitive models of ZFC
 Coh_C(U) := “U has a transitive model”.
 ```
 
-This choice is canonical in set theory because it is the smallest standard semantic strengthening of
-syntactic consistency that (i) supports absolute arithmetic facts, and (ii) separates semantic
-branch admissibility from syntactic provability in a clean way (see §7.1).
+**Scope note.** This transitive-model reference case applies to set-theoretic theories in the
+language of membership (or to theories interpreted in that language). For an arbitrary first-order
+theory in an unrelated signature, one should choose a semantic class `C` of models for that
+signature instead.
+
+This choice is a standard reference semantic strengthening of syntactic consistency in set theory,
+since it supports arithmetic absoluteness and yields a clean separation between semantic branch
+admissibility and syntactic provability (see §7.1).
 
 ---
 
@@ -73,8 +78,10 @@ v ∈ {0,1}^n
 be a Boolean valuation. Define the **branch theory fragment**:
 
 ```text
-Φ^v := {  φᵢ   if vᵢ = 1
-        { ¬φᵢ  if vᵢ = 0
+φᵢ^1 := φᵢ
+φᵢ^0 := ¬φᵢ
+
+Φ^v := { φᵢ^{vᵢ} : i = 1,...,n }.
 ```
 
 and the extended theory:
@@ -303,7 +310,6 @@ Let:
 
 ```text
 T := ZFC
-φ := Con_syn(ZFC)
 C := the class of transitive models of ZFC
 Coh_C(U) := “U has a transitive model”
 ```
@@ -316,30 +322,36 @@ Let:
 
 ```text
 T := ZFC
-φ := Con_syn(ZFC)
+φ := Con_ZFC
+```
+
+Here `Con_ZFC` denotes a **closed sentence in the language of set theory** expressing the
+arithmetized consistency of ZFC, e.g.:
+
+```text
+Con_ZFC := ¬Prov_ZFC(⌜⊥⌝).
 ```
 
 Assume the following meta-level hypotheses:
 
 ```text
 (H1) Coh_C(ZFC) holds, i.e. there exists a transitive model of ZFC.
-(H2) Con_syn(ZFC) holds (ordinary syntactic consistency).
 ```
 
 Then:
 
 ```text
-Spec^Coh_C_ZFC(Con_syn(ZFC)) = {1}
+Spec^Coh_C_ZFC(Con_ZFC) = {1}
 and
-Spec^Con_syn_ZFC(Con_syn(ZFC)) = {0,1}.
+Spec^Con_syn_ZFC(Con_ZFC) = {0,1}.
 ```
 
 Equivalently:
 
 ```text
-D^Coh_C_ZFC(Con_syn(ZFC)) = 0
+D^Coh_C_ZFC(Con_ZFC) = 0
 but
-D^Con_syn_ZFC(Con_syn(ZFC)) = 1.
+D^Con_syn_ZFC(Con_ZFC) = 1.
 ```
 
 This is the canonical separation pattern:
@@ -351,12 +363,12 @@ semantic Coh-closure  ≠  syntactic decision.
 ### Claim (semantic closure in the transitive-model regime)
 
 ```text
-Spec^Coh_C_ZFC(Con_syn(ZFC)) = {1}.
+Spec^Coh_C_ZFC(Con_ZFC) = {1}.
 ```
 
 Reason (meta-level): if `M` is a transitive model of ZFC, then `ω^M = ω` is standard, so arithmetical
-truth about “finite proof codes” is absolute to `M`. In particular, `M ⊨ Con_syn(ZFC)`. Hence
-`ZFC + ¬Con_syn(ZFC)` has **no** transitive model, while `ZFC + Con_syn(ZFC)` does (namely `M`).
+truth about “finite proof codes” is absolute to `M`. In particular, `M ⊨ Con_ZFC`. Hence
+`ZFC + ¬Con_ZFC` has **no** transitive model, while `ZFC + Con_ZFC` does (namely `M`).
 
 ### Contrast (syntactic openness under Gödel II)
 
@@ -364,7 +376,7 @@ Under the usual hypotheses (e.g. `Con_syn(ZFC)` and sufficient arithmetic streng
 incompleteness theorem yields:
 
 ```text
-ZFC ⊬ Con_syn(ZFC).
+ZFC ⊬ Con_ZFC.
 ```
 
 So:
@@ -380,26 +392,29 @@ syntactic-consistency spectrum under the usual meta-hypotheses on ZFC (e.g. `Con
 sufficient arithmetic strength for Gödel II):
 
 ```text
-Spec^Con_syn_ZFC(Con_syn(ZFC)) = {0,1},
+Spec^Con_syn_ZFC(Con_ZFC) = {0,1},
 ```
 
-i.e. both `ZFC + Con_syn(ZFC)` and `ZFC + ¬Con_syn(ZFC)` are syntactically consistent at the meta
-level (the latter follows since if `ZFC + ¬Con_syn(ZFC)` were inconsistent then `ZFC ⊢ Con_syn(ZFC)`).
+i.e. both `ZFC + Con_ZFC` and `ZFC + ¬Con_ZFC` are syntactically consistent at the meta level.
+
+Sketch: (i) `Coh_C(ZFC)` implies `Con_syn(ZFC + Con_ZFC)` since a transitive model of `ZFC` satisfies
+`Con_ZFC`. (ii) `Con_syn(ZFC + ¬Con_ZFC)` holds since otherwise `ZFC ⊢ Con_ZFC`, contradicting Gödel II
+under the usual hypotheses.
 
 Thus the canonical separation takes the crisp form:
 
 ```text
-Spec^Con_syn_ZFC(Con_syn(ZFC)) = {0,1}
+Spec^Con_syn_ZFC(Con_ZFC) = {0,1}
 but
-Spec^Coh_C_ZFC(Con_syn(ZFC))   = {1},
+Spec^Coh_C_ZFC(Con_ZFC)   = {1},
 ```
 
 so:
 
 ```text
-D^Con_syn_ZFC(Con_syn(ZFC)) = 1
+D^Con_syn_ZFC(Con_ZFC) = 1
 but
-D^Coh_C_ZFC(Con_syn(ZFC))   = 0.
+D^Coh_C_ZFC(Con_ZFC)   = 0.
 ```
 
 This is the canonical separation pattern the spectrum is built to capture.
@@ -528,7 +543,8 @@ Then:
 1) (Monotonicity) If T ⊆ S, then Spec^Coh_S(Φ) ⊆ Spec^Coh_T(Φ).
 2) (Closure) |Spec^Coh_T(Φ)| = 1 characterizes Coh-closure on Φ.
 3) (Openness) |Spec^Coh_T(Φ)| > 1 characterizes Coh-openness on Φ.
-4) (Collapse) For Coh = Con_syn, binary closure coincides with syntactic decidability.
+4) (Collapse) For Coh = Con_syn and finite Φ, closure on Φ coincides with syntactic decision
+   of every coordinate φᵢ by T.
 5) (Separation) For stronger semantic Coh, Coh-closure can strictly refine syntactic decidability.
 ```
 
