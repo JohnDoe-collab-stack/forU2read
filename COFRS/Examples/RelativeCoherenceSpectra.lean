@@ -178,6 +178,40 @@ def Open (T : Theory Sentence) (Φ : Family Sentence n) : Prop :=
   ∃ v w : Valuation n,
     Spec (n := n) neg Coh T Φ v ∧ Spec (n := n) neg Coh T Φ w ∧ v ≠ w
 
+/-!
+### Lean-native pointwise variants (avoid `funext`)
+
+In the paper, valuations are vertices of the cube `{0,1}^n`, and “uniqueness of a valuation” is
+usually read extensionally. In Lean, our valuations are functions:
+
+```lean
+Valuation n := Fin n → Bool
+```
+
+Equality of such functions is extensional. Proving it from coordinate-wise equality typically uses
+function extensionality (`funext`), which depends on `Quot.sound` and is forbidden by this repo.
+
+Therefore we introduce pointwise equality as a primitive relation, and formulate closure/openness
+using it.
+-/
+
+/-- Pointwise equality of valuations (coordinate-wise equality). -/
+def ValEq (v w : Valuation n) : Prop :=
+  ∀ i : Fin n, v i = w i
+
+/-- Pointwise closure: uniqueness of the admissible valuation up to `ValEq`. -/
+def ClosedPt (T : Theory Sentence) (Φ : Family Sentence n) : Prop :=
+  ∃ v : Valuation n,
+    Spec (n := n) neg Coh T Φ v ∧
+    ∀ w : Valuation n, Spec (n := n) neg Coh T Φ w → ValEq (n := n) v w
+
+/-- Pointwise openness: existence of two admissible valuations differing at some coordinate. -/
+def OpenPt (T : Theory Sentence) (Φ : Family Sentence n) : Prop :=
+  ∃ v w : Valuation n,
+    Spec (n := n) neg Coh T Φ v ∧
+    Spec (n := n) neg Coh T Φ w ∧
+    ∃ i : Fin n, v i ≠ w i
+
 theorem specInhabited_of_closed {T : Theory Sentence} {Φ : Family Sentence n} :
     Closed (n := n) neg Coh T Φ → SpecInhabited (n := n) neg Coh T Φ := by
   intro h
@@ -192,6 +226,166 @@ def CoordClosed (T : Theory Sentence) (Φ : Family Sentence n) (i : Fin n) : Pro
 def CoordOpen (T : Theory Sentence) (Φ : Family Sentence n) (i : Fin n) : Prop :=
   (∃ v : Valuation n, Spec (n := n) neg Coh T Φ v ∧ v i = false) ∧
   (∃ v : Valuation n, Spec (n := n) neg Coh T Φ v ∧ v i = true)
+
+/-!
+Coordinate openness implies pointwise openness: if both values occur at some coordinate among
+admissible valuations, then there exist two admissible valuations that differ at that coordinate.
+
+This lemma is geometrically natural and stays constructive without `funext`.
+-/
+
+theorem openPt_of_coordOpen
+    {T : Theory Sentence} {Φ : Family Sentence n} {i : Fin n} :
+    CoordOpen (n := n) neg Coh T Φ i →
+    OpenPt (n := n) neg Coh T Φ := by
+  intro h
+  rcases h with ⟨h0, h1⟩
+  rcases h0 with ⟨v, hv, hvi⟩
+  rcases h1 with ⟨w, hw, hwi⟩
+  refine ⟨v, w, hv, hw, i, ?_⟩
+  intro heq
+  have hfalse : (false : Bool) = true := by
+    calc
+      (false : Bool) = v i := hvi.symm
+      _ = w i := heq
+      _ = true := hwi
+  cases hfalse
+
+/-!
+### Small API bridges for the pointwise layer
+
+These lemmas make the `ValEq` / `ClosedPt` / `OpenPt` layer convenient to use while staying
+axiom-free.
+-/
+
+theorem valEq_refl (v : Valuation n) : ValEq (n := n) v v := by
+  intro i
+  rfl
+
+theorem valEq_symm {v w : Valuation n} :
+    ValEq (n := n) v w → ValEq (n := n) w v := by
+  intro h i
+  exact (h i).symm
+
+theorem valEq_trans {u v w : Valuation n} :
+    ValEq (n := n) u v → ValEq (n := n) v w → ValEq (n := n) u w := by
+  intro huv hvw i
+  exact (huv i).trans (hvw i)
+
+theorem specInhabited_of_closedPt {T : Theory Sentence} {Φ : Family Sentence n} :
+    ClosedPt (n := n) neg Coh T Φ → SpecInhabited (n := n) neg Coh T Φ := by
+  intro h
+  rcases h with ⟨v, hv, _⟩
+  exact ⟨v, hv⟩
+
+theorem closedPt_of_closed {T : Theory Sentence} {Φ : Family Sentence n} :
+    Closed (n := n) neg Coh T Φ → ClosedPt (n := n) neg Coh T Φ := by
+  intro h
+  rcases h with ⟨v, hv, huniq⟩
+  refine ⟨v, hv, ?_⟩
+  intro w hw i
+  have hEq : w = v := huniq w hw
+  -- After rewriting `w` to `v`, the goal is reflexive.
+  cases hEq
+  rfl
+
+theorem coordClosed_of_closedPt
+    {T : Theory Sentence} {Φ : Family Sentence n}
+    (h : ClosedPt (n := n) neg Coh T Φ) :
+    ∀ i : Fin n, CoordClosed (n := n) neg Coh T Φ i := by
+  intro i
+  rcases h with ⟨v, hv, huniq⟩
+  refine ⟨v i, ?_⟩
+  intro w hw
+  exact (huniq w hw i).symm
+
+theorem closedPt_of_specInhabited_of_forall_coordClosed
+    {T : Theory Sentence} {Φ : Family Sentence n}
+    (hInh : SpecInhabited (n := n) neg Coh T Φ)
+    (hCoord : ∀ i : Fin n, CoordClosed (n := n) neg Coh T Φ i) :
+    ClosedPt (n := n) neg Coh T Φ := by
+  rcases hInh with ⟨v, hv⟩
+  refine ⟨v, hv, ?_⟩
+  intro w hw i
+  rcases hCoord i with ⟨b, hb⟩
+  have hvb : v i = b := hb v hv
+  have hwb : w i = b := hb w hw
+  exact hvb.trans hwb.symm
+
+theorem closedPt_iff_specInhabited_and_forall_coordClosed
+    {T : Theory Sentence} {Φ : Family Sentence n} :
+    ClosedPt (n := n) neg Coh T Φ ↔
+      SpecInhabited (n := n) neg Coh T Φ ∧
+        ∀ i : Fin n, CoordClosed (n := n) neg Coh T Φ i := by
+  constructor
+  · intro h
+    refine ⟨specInhabited_of_closedPt (n := n) (neg := neg) (Coh := Coh) h,
+      coordClosed_of_closedPt (n := n) (neg := neg) (Coh := Coh) h⟩
+  · intro h
+    exact closedPt_of_specInhabited_of_forall_coordClosed
+      (n := n) (neg := neg) (Coh := Coh) h.1 h.2
+
+/-!
+### Openness equivalences
+
+`OpenPt` is “witnessed” openness: two admissible valuations differ at an explicit coordinate. This
+is equivalent to the existence of an open coordinate.
+-/
+
+theorem exists_coordOpen_of_openPt
+    {T : Theory Sentence} {Φ : Family Sentence n} :
+    OpenPt (n := n) neg Coh T Φ →
+    ∃ i : Fin n, CoordOpen (n := n) neg Coh T Φ i := by
+  intro h
+  rcases h with ⟨v, w, hv, hw, i, hdiff⟩
+  refine ⟨i, ?_⟩
+  cases hvi : v i with
+  | false =>
+      cases hwi : w i with
+      | false =>
+          have : v i = w i := by
+            -- both sides reduce to `false`
+            rw [hvi, hwi]
+          exact False.elim (hdiff this)
+      | true =>
+          exact ⟨⟨v, hv, hvi⟩, ⟨w, hw, hwi⟩⟩
+  | true =>
+      cases hwi : w i with
+      | true =>
+          have : v i = w i := by
+            -- both sides reduce to `true`
+            rw [hvi, hwi]
+          exact False.elim (hdiff this)
+      | false =>
+          -- swap the witnesses to match the `false`/`true` ordering of `CoordOpen`
+          exact ⟨⟨w, hw, hwi⟩, ⟨v, hv, hvi⟩⟩
+
+theorem openPt_iff_exists_coordOpen
+    {T : Theory Sentence} {Φ : Family Sentence n} :
+    OpenPt (n := n) neg Coh T Φ ↔
+      ∃ i : Fin n, CoordOpen (n := n) neg Coh T Φ i := by
+  constructor
+  · exact exists_coordOpen_of_openPt (n := n) (neg := neg) (Coh := Coh)
+  · intro h
+    rcases h with ⟨i, hi⟩
+    exact openPt_of_coordOpen (n := n) (neg := neg) (Coh := Coh) hi
+
+/-!
+### Safe bridge to paper-level `Open`
+
+From a pointwise witness of difference we can derive extensional inequality (by contradiction).
+The converse direction would require an extensionality principle and is therefore not part of this
+axiom-free core.
+-/
+
+theorem open_of_openPt {T : Theory Sentence} {Φ : Family Sentence n} :
+    OpenPt (n := n) neg Coh T Φ → Open (n := n) neg Coh T Φ := by
+  intro h
+  rcases h with ⟨v, w, hv, hw, i, hdiff⟩
+  refine ⟨v, w, hv, hw, ?_⟩
+  intro hEq
+  have : v i = w i := congrArg (fun f : Valuation n => f i) hEq
+  exact hdiff this
 
 /-!
 ## 2bis. Optional numeric defect `D := |Spec| - 1` (requires decidability)
@@ -398,6 +592,18 @@ def DefectB (T : Theory Sentence) (Φ : Family Sentence n) (specB : SpecB (n := 
   (specCountB (n := n) T Φ specB) - 1
 
 /-!
+**Precision note (paper vs Lean).** In this file, `specCountB` / `DefectB` are *enumeration-based*
+counts of admissible **listed** valuations (using `allValuations n`). To interpret them as the
+true finite cardinality `|Spec^Coh_T(Φ)|`, one additionally needs an adequacy theorem stating that
+`allValuations n` enumerates every valuation without duplicates (in an equality notion compatible
+with the chosen representation of valuations).
+
+We intentionally do **not** prove that full adequacy result here, because valuations are functions
+`Fin n → Bool` and proving equality of functions from pointwise equality typically uses `funext`,
+which depends on `Quot.sound` and is forbidden by this repo.
+-/
+
+/-!
 ## 2ter. Spectral dependencies (relative “correlation” predicates)
 
 The paper uses the subset `Spec^Coh_T(Φ) ⊆ {0,1}^n` as the *true* invariant, with cardinal
@@ -580,6 +786,10 @@ end PrimitiveHolonomy
 /- AXIOM_AUDIT_BEGIN -/
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.spec_antitone_of_subset
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.specΦ_antitone_of_subset
+#print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.openPt_of_coordOpen
+#print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.closedPt_iff_specInhabited_and_forall_coordClosed
+#print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.openPt_iff_exists_coordOpen
+#print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.open_of_openPt
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.length_map_noaxioms
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.length_append_noaxioms
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.allValuations_length
