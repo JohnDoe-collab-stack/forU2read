@@ -221,7 +221,7 @@ def SpecB_Correct (T : Theory Sentence) (Φ : Family Sentence n) (specB : SpecB 
   ∀ v : Valuation n, specB v = true ↔ Spec (n := n) neg Coh T Φ v
 
 /-- Count admissible branches using a Boolean spectrum predicate. -/
-def specCountB (T : Theory Sentence) (Φ : Family Sentence n) (specB : SpecB (n := n)) : Nat :=
+def specCountB (_T : Theory Sentence) (_Φ : Family Sentence n) (specB : SpecB (n := n)) : Nat :=
   (allValuations n).foldl
     (fun acc v => if specB v then acc.succ else acc)
     0
