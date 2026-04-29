@@ -530,7 +530,7 @@ T ⊆ S  ⇒  Spec^Coh_S(Φ) ⊆ Spec^Coh_T(Φ).
 So we get an order functor:
 
 ```text
-Spec^Coh_Φ : Th^op → P({0,1}^n).
+Spec^Coh_Φ : Th^op → (P({0,1}^n), ⊆).
 ```
 
 Conceptually:
