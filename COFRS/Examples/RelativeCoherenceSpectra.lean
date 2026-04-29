@@ -69,6 +69,27 @@ def Subset {α : Type} (A B : Pow α) : Prop :=
 
 end Pow
 
+/-!
+## 0ter. Scope convention for `Coh` (paper alignment, comment-only)
+
+The markdown note `Private_notes/RELATIVE_COHERENCE_SPECTRA.md` uses a *scope convention* for the
+meta-level coherence predicate `Coh`, allowing three regimes:
+
+```text
+(A) Coh := Con_syn                       (ordinary syntactic consistency)
+
+(B) Coh := Coh_C for a fixed class C,    Coh_C(U) := “∃ M ∈ C, M ⊨ U”
+
+(C) Coh := an abstract predicate, together with the specific stability properties
+    (e.g. downward heredity) explicitly assumed in each statement.
+```
+
+This Lean file intentionally stays at the abstract level (C): `Coh` is an arbitrary predicate on
+theory predicates. This keeps the development constructive and axiom-free.
+
+The semantic material (models, satisfaction, ZFC, Gödel II) lives in the markdown note, not here.
+-/
+
 namespace Theory
 
 /-- Theory inclusion: `T ⊆ S` means every axiom of `T` is an axiom of `S`. -/
@@ -202,6 +223,152 @@ def allValuations : (n : Nat) → List (Valuation n)
       (vs.map (extendValuation (n := n) true)) ++ (vs.map (extendValuation (n := n) false))
 
 /-!
+### Enumeration brick (optional)
+
+To relate `specCountB` to a true finite cardinality `|Spec|`, one typically needs to show that
+`allValuations n` enumerates every valuation **without duplicates**.
+
+In this repository, we deliberately avoid `funext` (it depends on `Quot.sound`) and avoid `propext`.
+As a result, proving a full `NoDup` statement for *function-valued* valuations
+`Valuation n := Fin n → Bool` is nontrivial.
+
+We nevertheless record a basic structural fact that is still useful and completely constructive:
+the enumeration has the expected length `2^n`.
+-/
+
+/-!
+#### Axiom-free list length lemmas
+
+The standard library lemmas `List.length_map` and `List.length_append` currently depend on `propext`
+in core. Since this repository forbids `propext`, we re-prove the two length facts we need by
+structural recursion.
+-/
+
+theorem length_map_noaxioms {α β : Type} (f : α → β) :
+    ∀ xs : List α, (xs.map f).length = xs.length
+  | [] => rfl
+  | x :: xs => by
+      change List.length (List.map f (x :: xs)) = List.length (x :: xs)
+      dsimp [List.map, List.length]
+      exact congrArg Nat.succ (length_map_noaxioms f xs)
+
+theorem length_append_noaxioms {α : Type} :
+    ∀ as bs : List α, (as ++ bs).length = as.length + bs.length
+  | [], bs => by
+      exact (Nat.zero_add bs.length).symm
+  | a :: as, bs => by
+      change List.length (List.append (a :: as) bs) = List.length (a :: as) + List.length bs
+      dsimp [List.append, List.length]
+      -- Goal after unfolding is:
+      --   (as ++ bs).length + 1 = as.length + 1 + bs.length
+      -- Use the induction hypothesis and reassociate.
+      have ih := length_append_noaxioms as bs
+      -- rewrite the LHS using `ih`
+      rw [ih]
+      -- Now solve the arithmetic reshuffling.
+      -- (as.length + bs.length) + 1 = as.length + 1 + bs.length
+      calc
+        as.length + bs.length + 1
+            = as.length + (bs.length + 1) := by
+                exact Nat.add_assoc _ _ _
+        _ = as.length + (1 + bs.length) := by
+                -- commute `bs.length` and `1`
+                rw [Nat.add_comm bs.length 1]
+        _ = as.length + 1 + bs.length := by
+                exact (Nat.add_assoc _ _ _).symm
+
+theorem allValuations_length : (n : Nat) → (allValuations n).length = Nat.pow 2 n
+  | 0 => by
+      rfl
+  | Nat.succ n => by
+      -- Now compute the length of the unfolded definition using the local lemmas above.
+      dsimp [allValuations]
+      -- `vs := allValuations n`
+      have hvs : (let vs := allValuations n
+                  (vs.map (extendValuation (n := n) true) ++
+                    vs.map (extendValuation (n := n) false))).length
+                =
+                (allValuations n).length + (allValuations n).length := by
+        -- unfold `let` and use the local length lemmas (not the stdlib ones)
+        dsimp
+        -- length of append
+        have h0 :
+            ((allValuations n).map (extendValuation (n := n) true) ++
+              (allValuations n).map (extendValuation (n := n) false)).length
+            =
+            ((allValuations n).map (extendValuation (n := n) true)).length +
+              ((allValuations n).map (extendValuation (n := n) false)).length := by
+          exact length_append_noaxioms _ _
+        -- length of maps
+        have h1 :
+            ((allValuations n).map (extendValuation (n := n) true)).length = (allValuations n).length := by
+          exact length_map_noaxioms _ _
+        have h2 :
+            ((allValuations n).map (extendValuation (n := n) false)).length = (allValuations n).length := by
+          exact length_map_noaxioms _ _
+        -- combine
+        calc
+          ((allValuations n).map (extendValuation (n := n) true) ++
+              (allValuations n).map (extendValuation (n := n) false)).length
+              =
+              ((allValuations n).map (extendValuation (n := n) true)).length +
+                ((allValuations n).map (extendValuation (n := n) false)).length := h0
+          _ = (allValuations n).length + (allValuations n).length := by
+                -- rewrite both summands
+                rw [h1, h2]
+
+      -- Finish with the induction hypothesis and the arithmetic identity `a + a = a * 2`.
+      -- Note: `Nat.pow_succ` gives `2^(n+1) = 2^n * 2`.
+      -- Our `hvs` gives `length = 2^n + 2^n`.
+      -- We rewrite both sides to match.
+      -- Step 1: rewrite the `let`-form length to the actual `allValuations (n+1)` length.
+      -- (This is definitional after `dsimp` above.)
+      -- Step 2: use IH and `Nat.mul_two`.
+      -- The `simp` below only uses rewriting, not `propext`-based list lemmas.
+      -- (All list lemmas used here are the local ones.)
+      -- After rewriting, close by `Nat.mul_two`.
+      have ih := allValuations_length n
+      -- Reduce to arithmetic.
+      -- We keep it explicit to avoid `simp` pulling in global lemmas.
+      -- `hvs` already contains the unfolded expression, so we can rewrite directly.
+      -- First, rewrite the LHS to `allValuations (Nat.succ n)`.
+      -- Then substitute IH and `Nat.pow_succ`.
+      -- Finally use `Nat.mul_two`.
+      -- Start:
+      --   (allValuations (n+1)).length = 2^(n+1)
+      -- becomes:
+      --   (2^n + 2^n) = 2^n * 2
+      -- which is `Nat.mul_two (2^n)` symm.
+      -- Implementation:
+      calc
+        (allValuations (Nat.succ n)).length
+            =
+            (allValuations n).length + (allValuations n).length := by
+              -- convert from the let-form `hvs` to the definitional unfolding (no `simp`)
+              change
+                (let vs := allValuations n;
+                  (vs.map (extendValuation (n := n) true) ++
+                    vs.map (extendValuation (n := n) false))).length
+                  =
+                  (allValuations n).length + (allValuations n).length
+              exact hvs
+        _ = Nat.pow 2 n + Nat.pow 2 n := by
+              -- rewrite both copies using IH
+              calc
+                (allValuations n).length + (allValuations n).length
+                    = Nat.pow 2 n + (allValuations n).length := by
+                        rw [ih]
+                _ = Nat.pow 2 n + Nat.pow 2 n := by
+                        rw [ih]
+        _ = Nat.pow 2 n * 2 := by
+              exact (Nat.mul_two (Nat.pow 2 n)).symm
+        _ = Nat.pow 2 (Nat.succ n) := by
+              -- rewrite `2^(n+1)` using `pow_succ`
+              -- `Nat.pow_succ` gives `2^(n+1) = 2^n * 2`
+              -- We rewrite the RHS using it (symmetry).
+              exact (Nat.pow_succ 2 n).symm
+
+/-!
 ### Booleanization (to stay axiom-free)
 
 To **compute** `|Spec|` we need decidability. In Lean, a naïve use of `DecidablePred (Spec ...)`
@@ -278,6 +445,34 @@ theorem specSet_subset_of_subset
     {T S : Theory Sentence} {Φ : Family Sentence n} (hTS : Theory.Subset T S)
     (hDown : DownwardHeredity (Sentence := Sentence) (Coh := Coh)) :
     Pow.Subset (SpecSet (n := n) neg Coh S Φ) (SpecSet (n := n) neg Coh T Φ) := by
+  intro v hv
+  exact spec_antitone_of_subset (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
+    (T := T) (S := S) (Φ := Φ) hTS hDown v hv
+
+/-!
+## 3ter. Functorial / order-theoretic packaging (paper `Spec^Coh_Φ`)
+
+The paper fixes `Φ` and views
+
+```text
+T ↦ Spec^Coh_T(Φ)
+```
+
+as a contravariant assignment from theories ordered by extension into the inclusion-ordered
+power-set `P({0,1}^n)`.
+
+We keep this packaging fully explicit (no typeclass `Preorder` instances needed).
+-/
+
+/-- Fixing `Φ`, the spectrum map `Spec^Coh_Φ : Theory → P({0,1}^n)`. -/
+def SpecΦ (Φ : Family Sentence n) (T : Theory Sentence) : Pow (Valuation n) :=
+  SpecSet (n := n) neg Coh T Φ
+
+/-- Contravariance (antitonicity) of `SpecΦ` under extension, assuming downward heredity. -/
+theorem specΦ_antitone_of_subset
+    {T S : Theory Sentence} {Φ : Family Sentence n} (hTS : Theory.Subset T S)
+    (hDown : DownwardHeredity (Sentence := Sentence) (Coh := Coh)) :
+    Pow.Subset (SpecΦ (n := n) neg Coh Φ S) (SpecΦ (n := n) neg Coh Φ T) := by
   intro v hv
   exact spec_antitone_of_subset (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
     (T := T) (S := S) (Φ := Φ) hTS hDown v hv
@@ -384,6 +579,10 @@ end PrimitiveHolonomy
 
 /- AXIOM_AUDIT_BEGIN -/
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.spec_antitone_of_subset
+#print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.specΦ_antitone_of_subset
+#print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.length_map_noaxioms
+#print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.length_append_noaxioms
+#print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.allValuations_length
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.countBool_le_of_imp
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.specCount_le_of_imp
 #print axioms PrimitiveHolonomy.Examples.RelativeCoherenceSpectra.defect_le_of_subset
