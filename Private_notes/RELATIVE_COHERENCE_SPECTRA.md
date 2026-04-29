@@ -161,6 +161,39 @@ binary: D ∈ {0,1}
 multi-sentence: D ∈ {0,…,2^n−1}.
 ```
 
+### 3bis. Precision (primary invariant vs numeric shadow)
+
+The **primary invariant** of the framework is always the *subset*:
+
+```text
+Spec^Coh_T(Φ) ⊆ {0,1}^n.
+```
+
+The defect `D^Coh_T(Φ)` is only a **coarse numeric shadow** (a first summary statistic). Distinct
+spectra can have the same `D` but very different geometry (see §8 for explicit examples).
+
+### 3ter. Equality convention for valuations (paper vs Lean)
+
+In the paper, a valuation is a point `v ∈ {0,1}^n`, and equality is simply equality of points.
+
+In Lean, the constructive core represents valuations as functions:
+
+```text
+Valuation n := Fin n → Bool.
+```
+
+This is extensionally the same object, but proving equality of functions from coordinate-wise
+equality typically uses function extensionality (`funext`). In the COFRS repo we keep the Lean core
+axiom-free and avoid `funext`/`Quot.sound`, so the Lean file additionally introduces a pointwise
+equality predicate:
+
+```text
+ValEq(v,w) := ∀ i, v i = w i,
+```
+
+and defines “closure/openness” in a pointwise form (`ClosedPt`, `OpenPt`) alongside the
+paper-isomorphic extensional form.
+
 ---
 
 ## 4. Collapse theorem (syntactic consistency regime)
@@ -252,6 +285,15 @@ every M ∈ C with M ⊨ T also satisfies φ,
 ```
 
 and similarly for `{0}` (with `¬φ`).
+
+**Explicit inhabited-domain phrasing.** Writing the assumption out:
+
+```text
+Assume Coh_C(T), i.e. ∃ M ∈ C such that M ⊨ T. Then
+Spec^Coh_C_T(φ) = {1}
+iff
+for every M ∈ C, if M ⊨ T then M ⊨ φ.
+```
 
 ---
 
