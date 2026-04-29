@@ -65,6 +65,14 @@ This choice is a standard reference semantic strengthening of syntactic consiste
 since it supports arithmetic absoluteness and yields a clean separation between semantic branch
 admissibility and syntactic provability (see §7.1).
 
+More explicitly, in this reference case we mean:
+
+```text
+Coh_C(U) := ∃ M (M is transitive, M ⊨ ZFC, and M ⊨ U).
+```
+
+So `Coh_C(U)` reads: “U is realized by a transitive ZFC-model.”
+
 ---
 
 ## 1. Branches for a family of sentences
@@ -336,8 +344,8 @@ Assume the following meta-level hypotheses:
 
 ```text
 (H1) Coh_C(ZFC) holds, i.e. there exists a transitive model of ZFC.
-(H2) Con_ZFC is a standard arithmetized consistency sentence for ZFC, and Gödel II applies to it
-     (so in particular: assuming ordinary consistency/sufficient arithmetic strength, ZFC ⊬ Con_ZFC).
+(H2) Con_ZFC is a standard Hilbert–Bernays–Löb arithmetized consistency sentence for ZFC,
+     so, since (H1) implies Con_syn(ZFC), Gödel II yields: ZFC ⊬ Con_ZFC.
 ```
 
 Then:
@@ -549,7 +557,8 @@ Then:
 3) (Openness) |Spec^Coh_T(Φ)| > 1 characterizes Coh-openness on Φ.
 4) (Collapse) For Coh = Con_syn and finite Φ, closure on Φ coincides with syntactic decision
    of every coordinate φᵢ by T.
-5) (Separation) For stronger semantic Coh, Coh-closure can strictly refine syntactic decidability.
+5) (Separation) There exist natural stronger semantic coherence predicates Coh (e.g. transitive-model
+   coherence) for which Coh-closure strictly refines syntactic decidability.
 ```
 
 ---
