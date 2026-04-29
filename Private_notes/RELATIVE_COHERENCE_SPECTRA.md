@@ -336,6 +336,8 @@ Assume the following meta-level hypotheses:
 
 ```text
 (H1) Coh_C(ZFC) holds, i.e. there exists a transitive model of ZFC.
+(H2) Con_ZFC is a standard arithmetized consistency sentence for ZFC, and Gödel II applies to it
+     (so in particular: assuming ordinary consistency/sufficient arithmetic strength, ZFC ⊬ Con_ZFC).
 ```
 
 Then:
@@ -367,8 +369,9 @@ Spec^Coh_C_ZFC(Con_ZFC) = {1}.
 ```
 
 Reason (meta-level): if `M` is a transitive model of ZFC, then `ω^M = ω` is standard, so arithmetical
-truth about “finite proof codes” is absolute to `M`. In particular, `M ⊨ Con_ZFC`. Hence
-`ZFC + ¬Con_ZFC` has **no** transitive model, while `ZFC + Con_ZFC` does (namely `M`).
+truth about “finite proof codes” is absolute to `M`. In particular, `M ⊨ Con_ZFC`. Therefore every
+transitive model `M ⊨ ZFC` satisfies `Con_ZFC`, hence no transitive model `M ⊨ ZFC + ¬Con_ZFC` exists.
+On the other hand, `M` witnesses that `ZFC + Con_ZFC` is `Coh_C`-admissible.
 
 ### Contrast (syntactic openness under Gödel II)
 
@@ -483,7 +486,8 @@ For two sentences `(φ, ψ)`:
   ```text
   Spec^Coh_T(φ, ψ) = {00, 01, 10, 11}
   ```
-  then they are independent relative to `Coh`.
+  then `φ` and `ψ` vary freely relative to `Coh` over `T` (i.e. all joint truth-profiles are
+  `Coh`-admissible).
 
 So `Spec^Coh_T(Φ)` induces a notion of “relative correlation” between statements.
 
