@@ -1,11 +1,14 @@
 # Ordinal Closure Ranks for Coherence Spectra
 
 This note explains when (and how) **ordinals** arise from the monotone contraction of coherence
-spectra. The key point is a sharp limitation:
+spectra. The key point is a sharp limitation, but it must be stated with the right quantifier:
 
 ```text
 If Φ is finite, then Spec^Coh_T(Φ) is finite,
-so any monotone contraction stabilizes in < ω steps.
+so there are only finitely many *distinct* spectra (finite spectral height).
+
+However, the ordinal stage at which a strict drop occurs can still be transfinite
+in an ordinal-indexed protocol (finite Φ does not force finite protocol time).
 ```
 
 Nontrivial ordinal ranks require going beyond finite `Φ` (or beyond raw valuation spectra).
@@ -76,31 +79,125 @@ S_0 ⊇ S_1 ⊇ S_2 ⊇ … ⊇ S_α ⊇ …
 
 ---
 
-## 2. Triviality for finite Φ (no genuine transfinite depth)
+## 2. Finite Φ: finite spectral height, not necessarily finite protocol time
 
-### Lemma (finite-spectrum stabilization)
+This section distinguishes two notions:
 
-Assume `Φ` is finite. Then `S_0 = Spec^Coh_{T_0}(Φ)` is finite, hence every descending chain
+```text
+1) spectral height: the number of strict drops between *distinct* spectra
+2) protocol time:   the ordinal index at which those drops occur
+```
+
+Finite `Φ` bounds (1), but not necessarily (2).
+
+### Lemma (finite spectral height / compressed stabilization)
+
+Assume `Φ` is finite. Then `S_0 = Spec^Coh_{T_0}(Φ)` is finite, hence every spectrum `S_α` is a subset
+of the finite set `S_0`. Therefore, there are only finitely many possible distinct spectrum values
+along the protocol:
+
+```text
+{ S_α : α < Λ } ⊆ P(S_0),
+```
+
+and `P(S_0)` is finite.
+
+In particular, any descending chain
 
 ```text
 S_0 ⊇ S_1 ⊇ S_2 ⊇ …
 ```
 
-stabilizes after finitely many strict inclusions.
+has only finitely many **strict drops** after compression (i.e. after deleting repeated spectra).
 
-Equivalently:
+Equivalently, the chain of distinct spectra has finite length:
 
 ```text
-There exists N < ω such that for all n ≥ N, S_n = S_N.
+S_{α₀} ⊋ S_{α₁} ⊋ … ⊋ S_{α_k}
 ```
 
-**Reason:** a strictly descending chain of finite sets can have only finitely many strict drops.
+for some finite `k`, where each inclusion is strict and each `S_{α_i}` is a new spectrum value.
+
+**Reason:** a strictly descending chain of subsets of a finite set has finite length.
 
 ### Consequence
 
-If `Φ` is finite, any “closure time” or “stability time” derived solely from the chain of spectra is
-always a **finite ordinal**. You cannot obtain a genuinely transfinite rank (like `ω`, `ω+1`, …) from
-finite `Φ` alone.
+If `Φ` is finite, the number of strict branch-elimination events is finite (finite spectral height).
+
+But the **ordinal protocol time** at which those finitely many eliminations happen can still be
+transfinite. For example, it is consistent with monotonicity that:
+
+```text
+S_α = {0,1} for all α < ω,
+S_ω = {1}.
+```
+
+So:
+
+```text
+finite Φ ⇒ finite spectral height
+finite Φ ⇏ finite ordinal protocol time.
+```
+
+### Example (finite Φ with a limit-stage drop under a non-compact Coh)
+
+This illustrates how a strict drop can occur first at a limit stage even when `Φ={φ}` is binary.
+
+Language:
+
+```text
+L = {R}  where R is a unary predicate.
+```
+
+Target sentence:
+
+```text
+φ := ∃x R(x).
+```
+
+Semantic coherence:
+
+```text
+C := finite L-structures
+Coh_C(U) := “∃ finite M ∈ C such that M ⊨ U”.
+```
+
+For each `k≥1`, let `σ_k` assert “there exist at least k distinct elements”.
+
+Define a protocol:
+
+```text
+T_n := { ¬φ → σ_k : 1 ≤ k ≤ n }
+T_ω := ⋃_{n<ω} T_n.
+```
+
+Then for each `n<ω`, both branches are `Coh_C`-admissible:
+
+```text
+T_n + φ   has a finite model (take any finite model with R nonempty),
+T_n + ¬φ  has a finite model (take a finite model of size n with R empty).
+```
+
+So:
+
+```text
+Spec^Coh_C_{T_n}(φ) = {0,1}   for all n<ω.
+```
+
+At the limit:
+
+```text
+T_ω + φ    still has a finite model,
+T_ω + ¬φ   has no finite model (it would have to satisfy σ_k for all k).
+```
+
+Hence:
+
+```text
+Spec^Coh_C_{T_ω}(φ) = {1},
+```
+
+so the closure time (protocol index) is `ω`, even though there is only one strict drop.
 
 ---
 
@@ -176,7 +273,8 @@ cl = 1  : one extension step closes Φ
 cl = ω  : closure after countably many extensions
 ```
 
-(The `ω` case is impossible when `Φ` is finite by §2.)
+(The `ω` case is possible even when `Φ` is finite; what is impossible for finite `Φ` is *transfinite
+spectral height*, i.e. infinitely many strict drops between distinct spectra.)
 
 ### 4.3 Stability ordinal (eventual constancy)
 
@@ -239,7 +337,8 @@ of the invariant (ordinal rank induced by a monotone transfinite process) is the
 Spec^Coh_T(Φ) ⊆ {0,1}^n
 ```
 
-so closure/stability ranks are always **finite**.
+Therefore the number of **distinct** spectra (spectral height) along any monotone protocol is finite.
+However, the ordinal indices where those finitely many strict drops occur can be transfinite.
 
 2. Nontrivial ordinals require enlarging the object:
 
@@ -257,4 +356,3 @@ cl^Coh_π     : when uniqueness/closure is reached
 stab^Coh_π   : when stabilization occurs
 SOrd^Coh_π   : global elimination rank
 ```
-
