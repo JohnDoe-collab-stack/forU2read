@@ -237,6 +237,55 @@ Fichier :
 
 - `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/v19_algebra_universal_v2/README_aslmt_v19_algebra_universal_v2.md`
 
+### 6.3.1 v19 universal v2 (run solid terminé, n=64, seeds 0..4)
+
+Run directory :
+
+- `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v19_algebra_universal_actionz_v2_solid_20260429_103226_a7792f68e826`
+
+Master JSONL :
+
+- `/mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs/aslmt_v19_algebra_universal_actionz_v2_solid_20260429_103226_a7792f68e826/v19_algebra_universal_actionz_v2_solid_master_20260429_103226_a7792f68e826.jsonl`
+
+Agrégats (5 seeds) :
+
+```text
+IID:
+  A_acc  : min=1.0000 max=1.0000 mean=1.0000
+  B_vis  : min=0.4775 max=0.5273 mean=0.4982
+  B_cue  : min=0.5049 max=0.5518 mean=0.5256
+  A_abl  : min=0.6631 max=0.6875 mean=0.6727
+  A_swap : min=0.6660 max=0.6865 mean=0.6752
+  follow : min=1.0000 max=1.0000 mean=1.0000
+
+OOD:
+  A_acc  : min=1.0000 max=1.0000 mean=1.0000
+  B_vis  : min=0.4805 max=0.5400 mean=0.5068
+  B_cue  : min=0.4961 max=0.5439 mean=0.5098
+  A_abl  : min=0.6504 max=0.6748 mean=0.6617
+  A_swap : min=0.6426 max=0.6631 mean=0.6539
+  follow : min=1.0000 max=1.0000 mean=1.0000
+```
+
+### 6.3.2 Interprétation correcte (ce que v19 v2 valide / ne valide pas)
+
+Ce run valide **fortement** :
+
+- la construction “stop-on-closure” (candidat `F_τ` + `Amb_σ(F_τ)`),
+- l’oracle horizon-aware (DP) comme supervision,
+- la reproductibilité (multi-seeds + IID/OOD + vérifieur).
+
+Mais v19 v2 ne ferme pas encore le “contrat causal z” au standard de v18 strong :
+
+- `A_abl_acc` et `A_swap_acc` restent élevés (~0.65–0.69), donc l’intervention sur `z` ne casse pas jusqu’à la chance.
+
+Raison structurelle (non polémique) :
+
+- dans v19 v2, `modelA.logits_query` appelle directement l’oracle (features exactes),
+- et `modelA.predict_y` est une référence constructive (calcul exact via masque candidat).
+
+Donc v19 v2 est une **démonstration constructive oracle-wrapper** : elle prouve que le protocole et l’oracle pilotent correctement la fermeture, mais elle ne prouve pas encore que la politique “apprend la structure” ni que `z` est strictement nécessaire.
+
 ---
 
 ## 7) La loi universelle : ce que le projet vise exactement
@@ -305,4 +354,3 @@ Le projet ne possède pas “la loi universelle” au sens **clôture totale et 
 Le projet possède déjà une **loi candidate** formelle (clôture relative + algèbre d’incidence des pertes + dynamique de réduction du résidu) et des fermetures locales fortes (Lean + v18 strong v3 solid).
 
 Le travail restant est une clôture de portée : statement final + preuves au bon niveau + batterie empirique consolidée.
-
