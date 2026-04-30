@@ -94,7 +94,22 @@ def main() -> None:
     p.add_argument("--max-steps", type=int, default=3)
     p.add_argument("--tf-decay-frac", type=float, default=0.8)
     args = p.parse_args()
-    py = Path(str(args.python)).expanduser().resolve()
+    # IMPORTANT: do NOT `.resolve()` the interpreter path.
+    #
+    # In a venv, `.../bin/python3` is typically a symlink to `/usr/bin/python3`.
+    # Resolving it would drop the venv context and can silently switch to a
+    # CPU-only torch install. We want to execute the user-chosen interpreter
+    # path as-is (after `~` expansion), preserving the venv.
+    py_arg = str(args.python)
+    if not ("/" in py_arg or "\\" in py_arg):
+        found = shutil.which(py_arg)
+        if found is None:
+            raise SystemExit(f"--python not found on PATH: {py_arg!r}")
+        py = Path(found)
+    else:
+        py = Path(py_arg).expanduser()
+    if not py.exists():
+        raise SystemExit(f"--python does not exist: {str(py)!r}")
 
     profile = str(args.profile)
     steps = int(args.steps)
