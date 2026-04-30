@@ -18,6 +18,29 @@ New in v4.3:
 
 This folder is a new protocol variant (v4.3). It does **not** modify v1/v2/v3/v4.1 scripts or historical run snapshots.
 
+## Solid (end-to-end)
+
+```bash
+cd /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt
+/home/frederick/.venvs/cofrs-gpu/bin/python3 -u \
+v19_algebra_universal_v4_3/aslmt_campaign_v19_algebra_universal_v4_3_matrix_diagstop_actionz.py \
+  --profile solid --device cuda \
+  --seed-from 0 --seed-to 4 \
+  --n-states-list 64 \
+  --steps 4000 --batch-size 64 --lr 3e-4 \
+  --n-views 8 --y-classes 2 --obs-vocab 16 --max-steps 3 --tf-decay-frac 0.8
+```
+
+Universal `tail -f` for the latest run log:
+
+```bash
+cd /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/runs
+run_dir="$(ls -1dt aslmt_v19_algebra_universal_actionz_v4_3_solid_* | head -n 1)"
+log_file="$(ls -1t "$run_dir"/train_*.txt | head -n 1)"
+echo "$log_file"
+tail -f "$log_file"
+```
+
 ## Protocol (unchanged at high level)
 
 Episode provides:
@@ -108,3 +131,13 @@ Independent algebra audit:
   /mnt/c/Users/frederick/Documents/forU2read/Empirical/aslmt/v19_algebra_universal_v4_3/audit_v19_algebra_universal_v4_3_algebra.py \
   --n-states 64 --n-views 8 --episodes 50 --obs-vocab 16 --max-steps 3
   ```
+
+## Current status (2026-04-30)
+
+As of 2026-04-30, the v4.3 `solid` runs below were **valid** (protocol/audit/verifier ran) but **fail** the `solid` threshold because `A_acc < 0.85` on `n_states=64` (seed 0). The campaign stops after seed 0 when partial verification fails.
+
+| run tag suffix | seed | iid `A_acc` | ood `A_acc` | verifier |
+| --- | ---: | ---: | ---: | --- |
+| `20260430_120843_830b99d7790f` | 0 | 0.5342 | 0.5283 | FAIL (`A_acc`) |
+| `20260430_121302_830b99d7790f` | 0 | 0.5342 | 0.5283 | FAIL (`A_acc`) |
+| `20260430_121540_830b99d7790f` | 0 | 0.6602 | 0.6611 | FAIL (`A_acc`) |
