@@ -213,6 +213,31 @@ def main() -> None:
                 py=py,
             )
 
+    # Final verification (aggregated across the full seed range).
+    # For "solid" provenance, we require that all seeds in the campaign are present.
+    verify = snap_root / "verify_aslmt_v19_algebra_universal_v4_3_matrix.py"
+    final_verify_cmd = [
+        str(py),
+        "-u",
+        str(verify),
+        "--master-jsonl",
+        str(master_jsonl),
+        "--profile",
+        str(profile),
+        "--min-seeds",
+        str(len(seeds)),
+        "--n-states-list",
+        str(args.n_states_list),
+        "--max-steps",
+        str(int(args.max_steps)),
+    ]
+    final_out = run_dir / f"final_verify_{ts}_{bundle_hash[:12]}.txt"
+    final_out.write_text(" ".join(final_verify_cmd) + "\n\n", encoding="utf-8")
+    with open(final_out, "a", encoding="utf-8") as f:
+        r = run(final_verify_cmd, check=False, stdout=f, stderr=f)
+    if int(r.returncode) != 0:
+        raise SystemExit(2)
+
 
 if __name__ == "__main__":
     main()
