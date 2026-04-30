@@ -9,13 +9,13 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from aslmt_env_v19_algebra_universal_v4_2 import V19AlgebraUniversalDataset
-from aslmt_model_v19_algebra_universal_v4_2_actionz import (
+from aslmt_env_v19_algebra_universal_v4_3 import V19AlgebraUniversalDataset
+from aslmt_model_v19_algebra_universal_v4_3_actionz import (
     V19AlgebraCueOnlyBaseline,
     V19AlgebraUniversalModelA_ActionZ,
     V19AlgebraVisibleOnlyBaseline,
 )
-from aslmt_oracle_v19_algebra_universal_v4_2_common import HorizonOracleCfg, oracle_allowed_actions
+from aslmt_oracle_v19_algebra_universal_v4_3_common import HorizonOracleCfg, oracle_allowed_actions
 
 
 def _seed_everything(seed: int) -> None:
@@ -58,11 +58,6 @@ def _eval_split(
     seed: int,
     cfg: EvalCfg,
 ) -> dict:
-    # Ensure deterministic evaluation: disable dropout, etc.
-    modelA.eval()
-    modelB_vis.eval()
-    modelB_cue.eval()
-
     ds = V19AlgebraUniversalDataset(
         size=int(cfg.n_eval),
         n_states=int(n_states),
@@ -129,7 +124,7 @@ def _eval_split(
 
 def main() -> None:
     p = argparse.ArgumentParser(
-        description="ASLMT v19 algebra universal v4.2 trainer (learned encoder policy, horizon oracle supervision, action-as-z; deterministic eval)."
+        description="ASLMT v19 algebra universal v4.3 trainer (learned encoder policy, horizon oracle supervision, action-as-z)."
     )
     p.add_argument("--profile", type=str, default="solid", choices=["smoke", "solid"])
     p.add_argument("--device", type=str, default="cpu")
@@ -216,7 +211,10 @@ def main() -> None:
         responses_prefix = torch.zeros((B, max_steps), device=device, dtype=torch.long)
         stopped = torch.zeros((B,), device=device, dtype=torch.bool)
 
-        p_tf = max(0.0, 1.0 - float(step) / max(1.0, float(steps) * float(tf_decay_frac)))
+        # Teacher forcing schedule (trajectory-level):
+        # with `max_steps=3`, per-step TF would make fully teacher-forced trajectories occur with prob p^3.
+        p_traj = max(0.0, 1.0 - float(step) / max(1.0, float(steps) * float(tf_decay_frac)))
+        use_teacher_traj = (torch.rand((B,), device=device) < float(p_traj)).to(torch.bool)
 
         q_losses = []
         q_acc_terms = []
@@ -275,8 +273,7 @@ def main() -> None:
                     j = int(torch.randint(0, int(idxs.numel()), (1,), device=device).item())
                     teacher[b] = int(idxs[j].item())
 
-            use_teacher = (torch.rand((B,), device=device) < float(p_tf)).to(torch.bool)
-            a_next = torch.where(use_teacher, teacher, pred).to(torch.long)
+            a_next = torch.where(use_teacher_traj, teacher, pred).to(torch.long)
             a_next = torch.where(stopped, torch.tensor(int(V), device=device, dtype=torch.long), a_next)
             actions_prefix[:, t] = a_next
 
@@ -320,7 +317,7 @@ def main() -> None:
                 f"step={step}/{steps} loss={float(loss.item()):.6f} "
                 f"(y={float(y_loss.item()):.6f}, q={float(q_loss.item()):.6f}, "
                 f"Bvis={float(bvis_loss.item()):.6f}, Bcue={float(bcue_loss.item()):.6f}) "
-                f"y_acc={y_acc:.4f} q_acc={q_acc:.4f} A_acc_batch={A_acc_batch:.4f} p_tf={float(p_tf):.3f}"
+                f"y_acc={y_acc:.4f} q_acc={q_acc:.4f} A_acc_batch={A_acc_batch:.4f} p_traj={float(p_traj):.3f}"
             )
 
     eval_cfg = EvalCfg(n_eval=256 if profile == "smoke" else 1024, batch_size=64)
@@ -354,7 +351,7 @@ def main() -> None:
     )
 
     rec = {
-        "kind": "aslmt_v19_algebra_universal_actionz_v4_2",
+        "kind": "aslmt_v19_algebra_universal_actionz_v4_3",
         "seed": int(args.seed),
         "n_states": int(n_states),
         "n_views": int(n_views),

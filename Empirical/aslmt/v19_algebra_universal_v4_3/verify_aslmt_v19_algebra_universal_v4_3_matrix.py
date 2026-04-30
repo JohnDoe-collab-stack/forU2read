@@ -17,7 +17,7 @@ def _parse_int_list(s: str) -> list[int]:
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="Strict verifier for ASLMT v19 algebra universal v4.2 matrix runs.")
+    p = argparse.ArgumentParser(description="Strict verifier for ASLMT v19 algebra universal v4.3 matrix runs.")
     p.add_argument("--master-jsonl", type=str, required=True)
     p.add_argument("--profile", type=str, default="solid", choices=["smoke", "solid"])
     p.add_argument("--min-seeds", type=int, default=5)
@@ -28,7 +28,7 @@ def main() -> None:
 
     master = Path(args.master_jsonl).expanduser().resolve()
     n_list = _parse_int_list(args.n_states_list)
-    expected_kind = "aslmt_v19_algebra_universal_actionz_v4_2"
+    expected_kind = "aslmt_v19_algebra_universal_actionz_v4_3"
 
     recs: dict[tuple[int, int], dict] = {}
     dup: list[tuple[int, int]] = []
@@ -161,12 +161,12 @@ def main() -> None:
                         failures.append(f"n={n} {sp}: missing metric {name}")
 
     if failures:
-        print("\n[FAIL] v19 algebra universal v4.2 checks did not pass:")
+        print("\n[FAIL] v19 algebra universal v4.3 checks did not pass:")
         for s in failures:
             print("-", s)
         raise SystemExit(1)
 
-    print("\n[OK] v19 algebra universal v4.2 checks passed.")
+    print("\n[OK] v19 algebra universal v4.3 checks passed.")
 
 
 if __name__ == "__main__":

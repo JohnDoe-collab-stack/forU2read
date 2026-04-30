@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 import torch
 
-from aslmt_env_v19_algebra_universal_v4_2 import AlgebraUniversalEpisodeCfg, sample_episode
-from aslmt_oracle_v19_algebra_universal_v4_2_common import candidate_mask, sigma_ambiguity
+from aslmt_env_v19_algebra_universal_v4_3 import AlgebraUniversalEpisodeCfg, sample_episode
+from aslmt_oracle_v19_algebra_universal_v4_3_common import candidate_mask, sigma_ambiguity
 
 
 @dataclass(frozen=True)
@@ -19,7 +19,7 @@ class AuditCfg:
 
 def _assert_base_barrier(*, tables: torch.Tensor, sigma: torch.Tensor) -> None:
     """
-    Strict barrier check (v4.2):
+    Strict barrier check (v4.3):
     for every observable base label value, base-only candidate set must have ambiguity==2.
     """
     base_row = tables[0].detach().cpu().to(torch.long)
@@ -131,7 +131,7 @@ def run_audit(*, n_states: int, n_views: int, y_classes: int, cfg: AuditCfg) -> 
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="Independent algebra audit for v19 universal v4.2 episodes.")
+    p = argparse.ArgumentParser(description="Independent algebra audit for v19 universal v4.3 episodes.")
     p.add_argument("--n-states", type=int, required=True)
     p.add_argument("--n-views", type=int, default=8)
     p.add_argument("--y-classes", type=int, default=2)

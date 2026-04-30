@@ -40,7 +40,7 @@ class V19AlgebraCueOnlyBaseline(nn.Module):
 
 class V19AlgebraUniversalModelA_ActionZ(nn.Module):
     """
-    v19 universal solver (v4.2):
+    v19 universal solver (v4.3):
 
     Goal: remove algorithmic/oracle-derived policy features.
 

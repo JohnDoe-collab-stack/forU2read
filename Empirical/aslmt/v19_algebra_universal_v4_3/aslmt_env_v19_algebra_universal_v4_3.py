@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import torch
 from torch.utils.data import Dataset
 
-from aslmt_oracle_v19_algebra_universal_v4_2_common import (
+from aslmt_oracle_v19_algebra_universal_v4_3_common import (
     HorizonOracleCfg,
     candidate_mask,
     oracle_allowed_actions,
@@ -120,7 +120,7 @@ def sample_episode(
     seed_base: int,
 ) -> dict[str, torch.Tensor]:
     """
-    Universal v4.2 episode:
+    Universal v4.3 episode:
 
     - Finite latent space X={0..N-1}.
     - Provide (tables, sigma) as cue (full information to compute closure).
@@ -138,9 +138,9 @@ def sample_episode(
     max_steps = int(cfg.max_steps)
     base_view = int(cfg.base_view)
     if y != 2:
-        raise ValueError("v19 universal v4.2 currently requires y_classes=2")
+        raise ValueError("v19 universal v4.3 currently requires y_classes=2")
     if base_view != 0:
-        raise ValueError("v19 universal v4.2 expects base_view=0")
+        raise ValueError("v19 universal v4.3 expects base_view=0")
     if v < 3:
         raise ValueError("need n_views>=3")
     if max_steps < 1:

@@ -53,7 +53,7 @@ def _partial_verify_or_die(
     max_steps: int,
     py: Path,
 ) -> None:
-    verify = snap_root / "verify_aslmt_v19_algebra_universal_v4_2_matrix.py"
+    verify = snap_root / "verify_aslmt_v19_algebra_universal_v4_3_matrix.py"
     verify_cmd = [
         str(py),
         "-u",
@@ -122,20 +122,20 @@ def main() -> None:
 
     sources = [
         # Core runnable bundle (trainer imports these by module name).
-        (HERE / "aslmt_oracle_v19_algebra_universal_v4_2_common.py"),
-        (HERE / "aslmt_env_v19_algebra_universal_v4_2.py"),
-        (HERE / "aslmt_model_v19_algebra_universal_v4_2_actionz.py"),
-        (HERE / "aslmt_train_v19_algebra_universal_v4_2_matrix_diagstop_actionz.py"),
-        (HERE / "verify_aslmt_v19_algebra_universal_v4_2_matrix.py"),
+        (HERE / "aslmt_oracle_v19_algebra_universal_v4_3_common.py"),
+        (HERE / "aslmt_env_v19_algebra_universal_v4_3.py"),
+        (HERE / "aslmt_model_v19_algebra_universal_v4_3_actionz.py"),
+        (HERE / "aslmt_train_v19_algebra_universal_v4_3_matrix_diagstop_actionz.py"),
+        (HERE / "verify_aslmt_v19_algebra_universal_v4_3_matrix.py"),
         # Protocol provenance (document + orchestrator + independent audit).
-        (HERE / "aslmt_campaign_v19_algebra_universal_v4_2_matrix_diagstop_actionz.py"),
-        (HERE / "audit_v19_algebra_universal_v4_2_algebra.py"),
-        (HERE / "README_aslmt_v19_algebra_universal_v4_2.md"),
+        (HERE / "aslmt_campaign_v19_algebra_universal_v4_3_matrix_diagstop_actionz.py"),
+        (HERE / "audit_v19_algebra_universal_v4_3_algebra.py"),
+        (HERE / "README_aslmt_v19_algebra_universal_v4_3.md"),
     ]
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     bundle_hash = _bundle_hash(sources)
-    tag = f"aslmt_v19_algebra_universal_actionz_v4_2_{profile}_{ts}_{bundle_hash[:12]}"
+    tag = f"aslmt_v19_algebra_universal_actionz_v4_3_{profile}_{ts}_{bundle_hash[:12]}"
 
     snap_root = SNAP_DIR / f"{tag}"
     snap_root.mkdir(parents=True, exist_ok=False)
@@ -143,7 +143,7 @@ def main() -> None:
         shutil.copy2(pth, snap_root / pth.name)
 
     manifest = {
-        "kind": "aslmt_v19_algebra_universal_actionz_v4_2_snapshot",
+        "kind": "aslmt_v19_algebra_universal_actionz_v4_3_snapshot",
         "timestamp": ts,
         "profile": str(profile),
         "bundle_hash_sha256": bundle_hash,
@@ -154,14 +154,14 @@ def main() -> None:
 
     run_dir = RUNS_DIR / f"{tag}"
     run_dir.mkdir(parents=True, exist_ok=False)
-    master_jsonl = run_dir / f"v19_algebra_universal_actionz_v4_2_{profile}_master_{ts}_{bundle_hash[:12]}.jsonl"
+    master_jsonl = run_dir / f"v19_algebra_universal_actionz_v4_3_{profile}_master_{ts}_{bundle_hash[:12]}.jsonl"
 
     n_list = _parse_int_list(args.n_states_list)
     seeds = list(range(int(args.seed_from), int(args.seed_to) + 1))
 
     for n_states in n_list:
         for seed in seeds:
-            train = snap_root / "aslmt_train_v19_algebra_universal_v4_2_matrix_diagstop_actionz.py"
+            train = snap_root / "aslmt_train_v19_algebra_universal_v4_3_matrix_diagstop_actionz.py"
             log = run_dir / f"train_{ts}_{bundle_hash[:12]}_n{int(n_states)}_seed{int(seed)}.txt"
             cmd = [
                 str(py),
