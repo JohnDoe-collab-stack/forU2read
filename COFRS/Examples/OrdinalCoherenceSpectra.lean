@@ -215,6 +215,111 @@ theorem valEq_of_closedPtAt_of_le
       (π := π) (Φ := Φ) h hDown v hvβ
   refine ⟨u, huα, huniqα v hvα⟩
 
+
+/-!
+## 4. Protocol-time “ordinal” ranks as least indices (definitions)
+
+The markdown note defines ordinal-valued ranks like `death_π`, `cl`, `stab` using “least ordinal”.
+
+In this file we remain constructive and avoid `Ordinal`. We therefore phrase these ranks as
+**least indices** in an abstract preorder `(ι, ≤)`.
+
+We do *not* prove existence of least indices (that would require additional assumptions, e.g.
+well-foundedness or choice-like principles). But once a least index is given as a hypothesis,
+we can prove the standard persistence consequences constructively.
+-/-
+
+/-- `IsLeast P a` means `a` is a least index satisfying `P` (in the preorder sense). -/
+def IsLeast (P : ι → Prop) (a : ι) : Prop :=
+  P a ∧ ∀ b : ι, P b → a ≤ b
+
+/-- A branch `v` is dead at stage `α` if it is not admissible in the spectrum at `α`. -/
+def DiesAt (Φ : Family Sentence n) (v : Valuation n) (α : ι) : Prop :=
+  ¬ Spec (n := n) neg Coh (π.T α) Φ v
+
+/-- A `DeathTime` witness: `α` is a least stage at which `v` is dead (if such a stage exists). -/
+def DeathTime (Φ : Family Sentence n) (v : Valuation n) (α : ι) : Prop :=
+  IsLeast (ι := ι) (P := fun a => DiesAt (n := n) (neg := neg) (Coh := Coh) (π := π) Φ v a) α
+
+/-- A `ClosedTime` witness: `α` is a least stage at which the spectrum is pointwise closed. -/
+def ClosedTime (Φ : Family Sentence n) (α : ι) : Prop :=
+  IsLeast (ι := ι) (P := fun a => ClosedPtAt (n := n) (neg := neg) (Coh := Coh) π Φ a) α
+
+/-- Stability from `α`: from `α` onward, no currently admissible branch is eliminated. -/
+def StableFrom (Φ : Family Sentence n) (α : ι) : Prop :=
+  ∀ {β : ι}, α ≤ β → Pow.Subset
+    (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ α)
+    (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ β)
+
+/-- A `StabTime` witness: `α` is a least stage from which stability holds (if it exists). -/
+def StabTime (Φ : Family Sentence n) (α : ι) : Prop :=
+  IsLeast (ι := ι) (P := StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ) α
+
+/-!
+### 4.1 Death persists forward
+
+This is the constructive content of “once a branch is eliminated, it stays eliminated”.
+-/-
+
+theorem diesAt_of_le_of_diesAt
+    {Φ : Family Sentence n} {v : Valuation n} {α β : ι} (h : α ≤ β)
+    (hDown : DownwardHeredity (Sentence := Sentence) (Coh := Coh)) :
+    DiesAt (n := n) (neg := neg) (Coh := Coh) (π := π) Φ v α →
+      DiesAt (n := n) (neg := neg) (Coh := Coh) (π := π) Φ v β := by
+  intro hDeadα
+  -- If `v ∈ S_β` then `v ∈ S_α` by antitonicity; hence `¬S_α(v)` implies `¬S_β(v)`.
+  intro hSpecβ
+  have hSpecα : Spec (n := n) neg Coh (π.T α) Φ v :=
+    spec_antitone_at_of_le (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
+      (π := π) (Φ := Φ) h hDown v hSpecβ
+  exact hDeadα hSpecα
+
+/-!
+### 4.2 Stability gives equality of spectra on the tail
+
+Under stability from `α`, the spectrum process is constant (as a set) on every later stage.
+-/-
+
+theorem specAt_subset_of_stableFrom
+    {Φ : Family Sentence n} {α β : ι} (h : α ≤ β)
+    (hStable : StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α) :
+    Pow.Subset
+      (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ α)
+      (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ β) :=
+  hStable h
+
+theorem specAt_eq_of_stableFrom_of_le
+    {Φ : Family Sentence n} {α β : ι} (h : α ≤ β)
+    (hDown : DownwardHeredity (Sentence := Sentence) (Coh := Coh))
+    (hStable : StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α) :
+    Pow.Subset
+      (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ α)
+      (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ β)
+    ∧
+    Pow.Subset
+      (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ β)
+      (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ α) := by
+  refine ⟨hStable h, ?_⟩
+  -- antitonicity provides the reverse inclusion
+  exact specAt_antitone_of_le (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
+    (π := π) (Φ := Φ) h hDown
+
+theorem stableFrom_of_le
+    {Φ : Family Sentence n} {α β : ι} (h : α ≤ β)
+    (hDown : DownwardHeredity (Sentence := Sentence) (Coh := Coh))
+    (hStable : StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α) :
+    StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ β := by
+  intro γ hβγ
+  -- take `v ∈ S_β`; show `v ∈ S_γ`
+  intro v hvβ
+  -- `S_β ⊆ S_α` by antitonicity
+  have hvα : SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ α v :=
+    (specAt_antitone_of_le (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
+      (π := π) (Φ := Φ) h hDown) v hvβ
+  -- `S_α ⊆ S_γ` by stability (since `α ≤ γ`)
+  have hαγ : α ≤ γ := le_trans h hβγ
+  exact hStable hαγ v hvα
+
 end Protocol
 
 end OrdinalCoherenceSpectra
@@ -226,5 +331,8 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.openPtAt_of_le
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.closedPtAt_of_le_of_inhabited
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.valEq_of_closedPtAt_of_le
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.diesAt_of_le_of_diesAt
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.specAt_eq_of_stableFrom_of_le
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.stableFrom_of_le
 /- AXIOM_AUDIT_END -/
 
