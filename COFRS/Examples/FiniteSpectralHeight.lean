@@ -1,3 +1,5 @@
+import COFRS.Examples.RelativeCoherenceSpectra
+
 /-!
 # Finite compressed spectral height for Boolean spectra (constructive combinatorics)
 
@@ -16,13 +18,8 @@ In a constructive setting, we phrase this for **Boolean** spectra over a fixed f
   `p` holds but `q` fails.
 
 Then every strict drop decreases the Boolean count on `xs`, hence there can be only finitely many
-strict drops.
-
-This is exactly the “finite spectral height after compression” claim, in the decidable/Boolean
-regime (which is the part that can be proved without classical axioms).
+strict drops. This is the constructive core of “finite compressed spectral height”.
 -/
-
-import COFRS.Examples.RelativeCoherenceSpectra
 
 namespace PrimitiveHolonomy
 namespace Examples
@@ -32,7 +29,12 @@ open PrimitiveHolonomy.Examples.RelativeCoherenceSpectra
 
 /-- Count how many elements of `xs` satisfy `p`. -/
 def countTrue {α : Type} (xs : List α) (p : α → Bool) : Nat :=
-  xs.foldl (fun acc x => if p x then acc.succ else acc) 0
+  match xs with
+  | [] => 0
+  | x :: xs =>
+      match p x with
+      | true => Nat.succ (countTrue xs p)
+      | false => countTrue xs p
 
 /-- `q` implies `p` pointwise: whenever `q` is true, `p` is true. -/
 def BoolImp {α : Type} (p q : α → Bool) : Prop :=
@@ -42,7 +44,55 @@ def BoolImp {α : Type} (p q : α → Bool) : Prop :=
 def StrictDropOn {α : Type} (xs : List α) (p q : α → Bool) : Prop :=
   ∃ x : α, x ∈ xs ∧ p x = true ∧ q x = false
 
-/-- If `q ⇒ p` and there is a strict drop witness in `xs`, then `countTrue xs q < countTrue xs p`. -/
+namespace countTrue
+
+theorem cons_false {α : Type} (xs : List α) (p : α → Bool) (x : α) (hx : p x = false) :
+    countTrue (x :: xs) p = countTrue xs p := by
+  -- `p x = false` ⇒ head does not increment the accumulator
+  dsimp [countTrue]
+  rw [hx]
+
+theorem cons_true {α : Type} (xs : List α) (p : α → Bool) (x : α) (hx : p x = true) :
+    countTrue (x :: xs) p = (countTrue xs p).succ := by
+  -- `p x = true` ⇒ head increments once.
+  dsimp [countTrue]
+  rw [hx]
+
+theorem le_of_imp
+    {α : Type} (xs : List α) (p q : α → Bool)
+    (hImp : BoolImp p q) :
+    countTrue xs q ≤ countTrue xs p := by
+  induction xs with
+  | nil =>
+      exact Nat.le_refl 0
+  | cons x xs ih =>
+      dsimp [countTrue]
+      cases hqx : q x with
+      | false =>
+          -- left does not increment
+          cases hpx : p x with
+          | false =>
+              -- both sides do not increment
+              exact ih
+          | true =>
+              -- right increments
+              exact Nat.le_trans ih (Nat.le_succ _)
+      | true =>
+          -- q x = true ⇒ p x = true by implication
+          have hpx : p x = true := hImp x hqx
+          -- both sides increment
+          rw [hpx]
+          exact Nat.succ_le_succ ih
+
+end countTrue
+
+/-!
+## Strict drop ⇒ strict decrease of the finite count
+
+If `q ⇒ p` and there exists an `x ∈ xs` with `p x = true` and `q x = false`, then `q` counts
+strictly fewer witnesses than `p` on `xs`.
+-/
+
 theorem countTrue_lt_of_imp_and_drop
     {α : Type} (xs : List α) (p q : α → Bool)
     (hImp : BoolImp p q)
@@ -56,144 +106,97 @@ theorem countTrue_lt_of_imp_and_drop
       rcases hDrop with ⟨x, hxmem, hpx, hqx⟩
       cases hxmem with
       | head =>
-          -- x = y
-          -- q y = false, p y = true.
-          have hqy : q y = false := by
-            -- rewrite via x=y
-            simpa using hqx
-          have hpy : p y = true := by
-            simpa using hpx
-          -- counts: q does not increment, p increments.
-          dsimp [countTrue]
-          -- Expand foldl step for head.
-          -- countTrue (y::ys) q = countTrue ys q
-          -- countTrue (y::ys) p = countTrue ys p + 1
-          -- use `countBool_le_of_imp` (from RelativeCoherenceSpectra) to get `countTrue ys q ≤ countTrue ys p`.
+          -- witness is the head
+          have hqy : q y = false := hqx
+          have hpy : p y = true := hpx
+          -- tail monotonicity: countTrue ys q ≤ countTrue ys p
           have hle :
-              ys.foldl (fun acc z => if q z then acc.succ else acc) 0
-                ≤ ys.foldl (fun acc z => if p z then acc.succ else acc) 0 := by
-            -- specialize the library lemma with `p := q`, `q := p`.
-            exact countBool_le_of_imp (xs := ys) (p := q) (q := p) (a := 0)
-              (by intro z hz; exact hImp z hz)
-          -- now finish by rewriting head contributions.
-          -- left:
-          have hL :
-              (List.foldl (fun acc z => if q z then acc.succ else acc)
-                (if q y then 1 else 0) ys)
-                = ys.foldl (fun acc z => if q z then acc.succ else acc) 0 := by
-            -- since q y = false
-            simp [hqy]
-          have hR :
-              (List.foldl (fun acc z => if p z then acc.succ else acc)
-                (if p y then 1 else 0) ys)
-                = ys.foldl (fun acc z => if p z then acc.succ else acc) 0 + 1 := by
-            -- since p y = true
-            simp [hpy, Nat.add_comm, Nat.add_left_comm, Nat.add_assoc]
-          -- rewrite and compare
-          -- left = countTrue ys q
-          -- right = countTrue ys p + 1
-          have : ys.foldl (fun acc z => if q z then acc.succ else acc) 0
-              < ys.foldl (fun acc z => if p z then acc.succ else acc) 0 + 1 := by
-            exact Nat.lt_succ_of_le hle
-          -- re-express countTrue
-          simpa [countTrue, hqy, hpy] using this
-      | tail hxmemYs =>
-          -- x in ys
-          have hDrop' : StrictDropOn ys p q := ⟨x, hxmemYs, hpx, hqx⟩
+              countTrue ys q ≤ countTrue ys p := by
+            exact countTrue.le_of_imp (xs := ys) (p := p) (q := q) hImp
+          -- Now: countTrue (y::ys) q = countTrue ys q
+          -- and countTrue (y::ys) p = succ (countTrue ys p).
+          have hL : countTrue (y :: ys) q = countTrue ys q :=
+            countTrue.cons_false (xs := ys) (p := q) (x := y) hqy
+          have hR : countTrue (y :: ys) p = (countTrue ys p).succ :=
+            countTrue.cons_true (xs := ys) (p := p) (x := y) hpy
+          -- conclude: countTrue ys q < succ (countTrue ys p)
+          have : countTrue ys q < (countTrue ys p).succ := Nat.lt_succ_of_le hle
+          -- rewrite the goal into the tail inequality, without using `simp` on propositions.
+          rw [hL, hR]
+          exact this
+      | tail =>
+          rename_i hxmem_in_ys
+          -- witness in the tail
+          have hDrop' : StrictDropOn ys p q := ⟨x, hxmem_in_ys, hpx, hqx⟩
           have ih_lt : countTrue ys q < countTrue ys p := ih hDrop'
-          -- now handle head y
-          dsimp [countTrue]
           -- split on q y
           cases hqy : q y with
           | false =>
-              -- left count is unchanged
+              -- left does not increment
+              have hL : countTrue (y :: ys) q = countTrue ys q :=
+                countTrue.cons_false (xs := ys) (p := q) (x := y) hqy
+              -- right may increment or not; either way it is ≥ countTrue ys p
               cases hpy : p y with
               | false =>
-                  -- both unchanged, use IH
-                  simpa [hqy, hpy, countTrue] using ih_lt
+                  have hR : countTrue (y :: ys) p = countTrue ys p :=
+                    countTrue.cons_false (xs := ys) (p := p) (x := y) hpy
+                  rw [hL, hR]
+                  exact ih_lt
               | true =>
-                  -- right increments, so still strict
-                  have : countTrue ys q < countTrue ys p + 1 :=
+                  have hR : countTrue (y :: ys) p = (countTrue ys p).succ :=
+                    countTrue.cons_true (xs := ys) (p := p) (x := y) hpy
+                  have : countTrue ys q < (countTrue ys p).succ :=
                     Nat.lt_trans ih_lt (Nat.lt_succ_self _)
-                  simpa [hqy, hpy, countTrue] using this
+                  rw [hL, hR]
+                  exact this
           | true =>
-              -- q y true implies p y true, so both increment; preserve strictness by succ.
-              have hpyTrue : p y = true := hImp y (by simpa using hqy)
+              -- q y = true ⇒ p y = true by implication; both sides increment, preserve strictness by succ.
+              have hpyTrue : p y = true := hImp y hqy
+              have hL : countTrue (y :: ys) q = (countTrue ys q).succ :=
+                countTrue.cons_true (xs := ys) (p := q) (x := y) hqy
+              have hR : countTrue (y :: ys) p = (countTrue ys p).succ :=
+                countTrue.cons_true (xs := ys) (p := p) (x := y) hpyTrue
               have : (countTrue ys q).succ < (countTrue ys p).succ := Nat.succ_lt_succ ih_lt
-              simpa [hqy, hpyTrue, countTrue] using this
+              rw [hL, hR]
+              exact this
 
-/-- A strict-drop chain of Boolean predicates over a fixed finite list. -/
-inductive DropChain {α : Type} (xs : List α) : List (α → Bool) → Prop
-  | nil : DropChain xs []
-  | single (p : α → Bool) : DropChain xs [p]
-  | cons {p q : α → Bool} {rest : List (α → Bool)}
+/-!
+## Drop chains and finite height
+
+A strict-drop chain is a finite sequence of spectra where each transition is a strict drop.
+
+The number of strict drops is bounded by the initial count, hence finite.
+-/
+
+inductive DropChain {α : Type} (xs : List α) : (α → Bool) → List (α → Bool) → Prop
+  | nil (p : α → Bool) : DropChain xs p []
+  | step {p q : α → Bool} {rest : List (α → Bool)}
       (hImp : BoolImp p q)
       (hDrop : StrictDropOn xs p q)
-      (hRest : DropChain xs (q :: rest)) :
-      DropChain xs (p :: q :: rest)
+      (hRest : DropChain xs q rest) :
+      DropChain xs p (q :: rest)
 
-/-- In a strict-drop chain, the length is bounded by the initial count + 1. -/
-theorem dropChain_length_le
+theorem dropChain_len_le
     {α : Type} (xs : List α) :
-    ∀ ps : List (α → Bool),
-      DropChain xs ps →
-      ∃ p0 : α → Bool,
-        ps = [] ∨ (ps.head? = some p0 ∧ ps.length ≤ countTrue xs p0 + 1) := by
-  intro ps h
-  cases h with
+    ∀ (p : α → Bool) (rest : List (α → Bool)),
+      DropChain xs p rest →
+        rest.length ≤ countTrue xs p := by
+  intro p rest h
+  induction h with
   | nil =>
-      refine ⟨(fun _ => false), ?_⟩
-      exact Or.inl rfl
-  | single p =>
-      refine ⟨p, ?_⟩
-      right
-      refine ⟨?_, ?_⟩
-      · rfl
-      · -- length [p] = 1 ≤ countTrue xs p + 1
-        simp [countTrue]
-  | cons hImp hDrop hRest =>
-      -- ps = p :: q :: rest
-      rcases dropChain_length_le (ps := (q :: rest)) hRest with ⟨p0, hcase⟩
-      -- here `p0` will be `q`
-      -- We'll produce the bound using the strict count decrease.
-      refine ⟨p, ?_⟩
-      right
-      refine ⟨?_, ?_⟩
-      · rfl
-      · -- show: length (p::q::rest) ≤ countTrue xs p + 1
-        -- First get IH bound for tail.
-        have htail : (q :: rest).length ≤ countTrue xs q + 1 := by
-          cases hcase with
-          | inl hnil =>
-              cases hnil
-          | inr hcons =>
-              exact hcons.2
-        -- Strict drop decreases count: countTrue xs q < countTrue xs p
-        have hlt : countTrue xs q < countTrue xs p :=
-          countTrue_lt_of_imp_and_drop (xs := xs) (p := p) (q := q) hImp hDrop
-        have hle : countTrue xs q + 1 ≤ countTrue xs p := Nat.succ_le_of_lt hlt
-        -- Now length:
-        -- (p::q::rest).length = (q::rest).length + 1
-        -- ≤ (countTrue xs q + 1) + 1
-        -- ≤ countTrue xs p + 1
-        have : (p :: q :: rest).length ≤ countTrue xs p + 1 := by
-          -- rewrite lengths
-          simp [List.length] at *
-          -- from htail: 1 + rest.length ≤ countTrue xs q + 1
-          -- so 2 + rest.length ≤ countTrue xs q + 2
-          -- then use hle.
-          have h1 : 1 + rest.length ≤ countTrue xs q + 1 := by
-            simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using htail
-          have h2 : 2 + rest.length ≤ countTrue xs q + 2 := by
-            -- add 1 to both sides
-            exact Nat.succ_le_succ h1
-          -- countTrue xs q + 2 ≤ countTrue xs p + 1 ?
-          -- since countTrue xs q + 1 ≤ countTrue xs p, add 1.
-          have h3 : countTrue xs q + 2 ≤ countTrue xs p + 1 := by
-            -- rewrite as (countTrue xs q + 1) + 1 ≤ countTrue xs p + 1
-            simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using Nat.add_le_add_right hle 1
-          exact Nat.le_trans h2 h3
-        exact this
+      -- `rest = []` by construction, so `rest.length = 0`.
+      exact Nat.zero_le _
+  | step hImp hDrop hRest ih =>
+      rename_i p0 q0 rest0
+      have hlt : countTrue xs q0 < countTrue xs p0 :=
+        countTrue_lt_of_imp_and_drop (xs := xs) (p := p0) (q := q0) hImp hDrop
+      have hle : Nat.succ (countTrue xs q0) ≤ countTrue xs p0 := Nat.succ_le_of_lt hlt
+      have hstep : Nat.succ rest0.length ≤ Nat.succ (countTrue xs q0) := Nat.succ_le_succ ih
+      have : Nat.succ rest0.length ≤ countTrue xs p0 := Nat.le_trans hstep hle
+      -- goal is `(q0 :: rest0).length ≤ countTrue xs p0`
+      -- and `(q0 :: rest0).length = Nat.succ rest0.length` by definition.
+      change Nat.succ rest0.length ≤ countTrue xs p0
+      exact this
 
 end FiniteSpectralHeight
 end Examples
@@ -201,5 +204,5 @@ end PrimitiveHolonomy
 
 /- AXIOM_AUDIT_BEGIN -/
 #print axioms PrimitiveHolonomy.Examples.FiniteSpectralHeight.countTrue_lt_of_imp_and_drop
-#print axioms PrimitiveHolonomy.Examples.FiniteSpectralHeight.dropChain_length_le
+#print axioms PrimitiveHolonomy.Examples.FiniteSpectralHeight.dropChain_len_le
 /- AXIOM_AUDIT_END -/

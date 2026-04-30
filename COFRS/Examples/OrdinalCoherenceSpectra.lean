@@ -1,3 +1,6 @@
+import COFRS.Foundations
+import COFRS.Examples.RelativeCoherenceSpectra
+
 /-!
 # Ordinal (protocol-time) closure ranks for coherence spectra (constructive core)
 
@@ -32,8 +35,6 @@ but proving existence of least stages requires additional assumptions. Here we k
 constructive facts that are usable without classical choice.
 -/
 
-import COFRS.Examples.RelativeCoherenceSpectra
-
 namespace PrimitiveHolonomy
 namespace Examples
 namespace OrdinalCoherenceSpectra
@@ -54,7 +55,7 @@ variable (Coh : Theory Sentence → Prop)
 
 `Pow α` is represented as a predicate `α → Prop`. We avoid importing `Set` and we avoid
 extensional equality of predicates. Instead we package *set equality* as mutual inclusion.
--/-
+-/
 
 /-- Equality of `Pow`-sets, defined as mutual inclusion. -/
 def PowEq {α : Type} (A B : Pow α) : Prop :=
@@ -258,39 +259,43 @@ In this file we remain constructive and avoid `Ordinal`. We therefore phrase the
 We do *not* prove existence of least indices (that would require additional assumptions, e.g.
 well-foundedness or choice-like principles). But once a least index is given as a hypothesis,
 we can prove the standard persistence consequences constructively.
--/-
+-/
 
 /-- `IsLeast P a` means `a` is a least index satisfying `P` (in the preorder sense). -/
 def IsLeast (P : ι → Prop) (a : ι) : Prop :=
   P a ∧ ∀ b : ι, P b → a ≤ b
 
 /-- A branch `v` is dead at stage `α` if it is not admissible in the spectrum at `α`. -/
-def DiesAt (Φ : Family Sentence n) (v : Valuation n) (α : ι) : Prop :=
+def DiesAt (π : Protocol (Sentence := Sentence) (ι := ι))
+    (Φ : Family Sentence n) (v : Valuation n) (α : ι) : Prop :=
   ¬ Spec (n := n) neg Coh (π.T α) Φ v
 
 /-- A `DeathTime` witness: `α` is a least stage at which `v` is dead (if such a stage exists). -/
 def DeathTime (Φ : Family Sentence n) (v : Valuation n) (α : ι) : Prop :=
-  IsLeast (P := fun a => DiesAt (n := n) (neg := neg) (Coh := Coh) (π := π) Φ v a) α
+  IsLeast (P := fun a => DiesAt (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
+    (π := π) Φ v a) α
 
 /-- A `ClosedTime` witness: `α` is a least stage at which the spectrum is pointwise closed. -/
 def ClosedTime (Φ : Family Sentence n) (α : ι) : Prop :=
   IsLeast (P := fun a => ClosedPtAt (n := n) (neg := neg) (Coh := Coh) π Φ a) α
 
 /-- Stability from `α`: from `α` onward, no currently admissible branch is eliminated. -/
-def StableFrom (Φ : Family Sentence n) (α : ι) : Prop :=
+def StableFrom (π : Protocol (Sentence := Sentence) (ι := ι))
+    (Φ : Family Sentence n) (α : ι) : Prop :=
   ∀ {β : ι}, α ≤ β → Pow.Subset
     (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ α)
     (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ β)
 
 /-- A `StabTime` witness: `α` is a least stage from which stability holds (if it exists). -/
 def StabTime (Φ : Family Sentence n) (α : ι) : Prop :=
-  IsLeast (P := StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ) α
+  IsLeast (P := fun a => StableFrom (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
+    (π := π) Φ a) α
 
 /-!
 ### 4.1 Death persists forward
 
 This is the constructive content of “once a branch is eliminated, it stays eliminated”.
--/-
+-/
 
 theorem diesAt_of_le_of_diesAt
     {Φ : Family Sentence n} {v : Valuation n} {α β : ι} (h : α ≤ β)
@@ -309,11 +314,11 @@ theorem diesAt_of_le_of_diesAt
 ### 4.2 Stability gives equality of spectra on the tail
 
 Under stability from `α`, the spectrum process is constant (as a set) on every later stage.
--/-
+-/
 
 theorem specAt_subset_of_stableFrom
     {Φ : Family Sentence n} {α β : ι} (h : α ≤ β)
-    (hStable : StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α) :
+    (hStable : StableFrom (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α) :
     Pow.Subset
       (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ α)
       (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ β) :=
@@ -322,7 +327,7 @@ theorem specAt_subset_of_stableFrom
 theorem specAt_eq_of_stableFrom_of_le
     {Φ : Family Sentence n} {α β : ι} (h : α ≤ β)
     (hDown : DownwardHeredity (Sentence := Sentence) (Coh := Coh))
-    (hStable : StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α) :
+    (hStable : StableFrom (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α) :
     Pow.Subset
       (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ α)
       (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ β)
@@ -340,12 +345,12 @@ theorem specAt_eq_of_stableFrom_of_le
 ### 4.2bis Stable tail equality (packaged)
 
 We package the tail equality `S_α = S_β` as mutual inclusion (`PowEq`).
--/-
+-/
 
 theorem specAt_powEq_of_stableFrom_of_le
     {Φ : Family Sentence n} {α β : ι} (h : α ≤ β)
     (hDown : DownwardHeredity (Sentence := Sentence) (Coh := Coh))
-    (hStable : StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α) :
+    (hStable : StableFrom (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α) :
     PowEq
       (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ α)
       (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ β) := by
@@ -355,8 +360,8 @@ theorem specAt_powEq_of_stableFrom_of_le
 theorem stableFrom_of_le
     {Φ : Family Sentence n} {α β : ι} (h : α ≤ β)
     (hDown : DownwardHeredity (Sentence := Sentence) (Coh := Coh))
-    (hStable : StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α) :
-    StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ β := by
+    (hStable : StableFrom (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α) :
+    StableFrom (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh) (π := π) Φ β := by
   intro γ hβγ
   -- take `v ∈ S_β`; show `v ∈ S_γ`
   intro v hvβ
@@ -365,7 +370,8 @@ theorem stableFrom_of_le
     (specAt_antitone_of_le (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
       (π := π) (Φ := Φ) h hDown) v hvβ
   -- `S_α ⊆ S_γ` by stability (since `α ≤ γ`)
-  have hαγ : α ≤ γ := le_trans h hβγ
+  have hαγ : α ≤ γ :=
+    Preorder.le_trans (a := α) (b := β) (c := γ) h hβγ
   exact hStable hαγ v hvα
 
 end Protocol
@@ -384,4 +390,3 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.specAt_powEq_of_stableFrom_of_le
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.stableFrom_of_le
 /- AXIOM_AUDIT_END -/
-
