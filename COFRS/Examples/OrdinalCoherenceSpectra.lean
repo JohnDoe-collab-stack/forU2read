@@ -239,11 +239,11 @@ def DiesAt (Φ : Family Sentence n) (v : Valuation n) (α : ι) : Prop :=
 
 /-- A `DeathTime` witness: `α` is a least stage at which `v` is dead (if such a stage exists). -/
 def DeathTime (Φ : Family Sentence n) (v : Valuation n) (α : ι) : Prop :=
-  IsLeast (ι := ι) (P := fun a => DiesAt (n := n) (neg := neg) (Coh := Coh) (π := π) Φ v a) α
+  IsLeast (P := fun a => DiesAt (n := n) (neg := neg) (Coh := Coh) (π := π) Φ v a) α
 
 /-- A `ClosedTime` witness: `α` is a least stage at which the spectrum is pointwise closed. -/
 def ClosedTime (Φ : Family Sentence n) (α : ι) : Prop :=
-  IsLeast (ι := ι) (P := fun a => ClosedPtAt (n := n) (neg := neg) (Coh := Coh) π Φ a) α
+  IsLeast (P := fun a => ClosedPtAt (n := n) (neg := neg) (Coh := Coh) π Φ a) α
 
 /-- Stability from `α`: from `α` onward, no currently admissible branch is eliminated. -/
 def StableFrom (Φ : Family Sentence n) (α : ι) : Prop :=
@@ -253,7 +253,7 @@ def StableFrom (Φ : Family Sentence n) (α : ι) : Prop :=
 
 /-- A `StabTime` witness: `α` is a least stage from which stability holds (if it exists). -/
 def StabTime (Φ : Family Sentence n) (α : ι) : Prop :=
-  IsLeast (ι := ι) (P := StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ) α
+  IsLeast (P := StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ) α
 
 /-!
 ### 4.1 Death persists forward
