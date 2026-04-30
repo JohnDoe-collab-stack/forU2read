@@ -48,6 +48,37 @@ variable {n : Nat}
 variable (neg : Sentence → Sentence)
 variable (Coh : Theory Sentence → Prop)
 
+
+/-!
+## 0bis. Set-level equality for `Pow`
+
+`Pow α` is represented as a predicate `α → Prop`. We avoid importing `Set` and we avoid
+extensional equality of predicates. Instead we package *set equality* as mutual inclusion.
+-/-
+
+/-- Equality of `Pow`-sets, defined as mutual inclusion. -/
+def PowEq {α : Type} (A B : Pow α) : Prop :=
+  Pow.Subset A B ∧ Pow.Subset B A
+
+namespace PowEq
+
+theorem refl {α : Type} (A : Pow α) : PowEq A A := by
+  refine ⟨?_, ?_⟩ <;> intro x hx <;> exact hx
+
+theorem symm {α : Type} {A B : Pow α} : PowEq A B → PowEq B A := by
+  intro h
+  exact ⟨h.2, h.1⟩
+
+theorem trans {α : Type} {A B C : Pow α} : PowEq A B → PowEq B C → PowEq A C := by
+  intro hAB hBC
+  refine ⟨?_, ?_⟩
+  · intro x hx
+    exact hBC.1 x (hAB.1 x hx)
+  · intro x hx
+    exact hAB.2 x (hBC.2 x hx)
+
+end PowEq
+
 /-!
 ## 1. Protocols indexed by a preorder (protocol-time indices)
 
@@ -304,6 +335,23 @@ theorem specAt_eq_of_stableFrom_of_le
   exact specAt_antitone_of_le (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
     (π := π) (Φ := Φ) h hDown
 
+
+/-!
+### 4.2bis Stable tail equality (packaged)
+
+We package the tail equality `S_α = S_β` as mutual inclusion (`PowEq`).
+-/-
+
+theorem specAt_powEq_of_stableFrom_of_le
+    {Φ : Family Sentence n} {α β : ι} (h : α ≤ β)
+    (hDown : DownwardHeredity (Sentence := Sentence) (Coh := Coh))
+    (hStable : StableFrom (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α) :
+    PowEq
+      (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ α)
+      (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ β) := by
+  have hEq := specAt_eq_of_stableFrom_of_le (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
+    (π := π) (Φ := Φ) h hDown hStable
+  exact ⟨hEq.1, hEq.2⟩
 theorem stableFrom_of_le
     {Φ : Family Sentence n} {α β : ι} (h : α ≤ β)
     (hDown : DownwardHeredity (Sentence := Sentence) (Coh := Coh))
@@ -333,6 +381,7 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.valEq_of_closedPtAt_of_le
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.diesAt_of_le_of_diesAt
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.specAt_eq_of_stableFrom_of_le
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.specAt_powEq_of_stableFrom_of_le
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.stableFrom_of_le
 /- AXIOM_AUDIT_END -/
 
