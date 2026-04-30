@@ -219,7 +219,7 @@ def main() -> None:
     p.add_argument("--y-classes", type=int, default=2)
     p.add_argument("--obs-vocab", type=int, default=16)
     p.add_argument("--max-steps", type=int, default=3)
-    p.add_argument("--tf-decay-frac", type=float, default=0.8)
+    p.add_argument("--tf-decay-frac", type=float, default=0.65)
     p.add_argument("--master-jsonl", type=str, required=True)
     args = p.parse_args()
 
@@ -227,7 +227,7 @@ def main() -> None:
     steps = int(args.steps)
     batch_size = int(args.batch_size)
     if profile == "smoke":
-        if steps == 4000:
+        if steps == 6000:
             steps = 300
         if batch_size == 64:
             batch_size = 32
