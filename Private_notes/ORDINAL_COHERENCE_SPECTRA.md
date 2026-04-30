@@ -11,7 +11,14 @@ However, the ordinal stage at which a strict drop occurs can still be transfinit
 in an ordinal-indexed protocol (finite Φ does not force finite protocol time).
 ```
 
-Nontrivial ordinal ranks require going beyond finite `Φ` (or beyond raw valuation spectra).
+Two different “ordinal phenomena” must be separated:
+
+- **Protocol-time ordinals** (e.g. `cl`, `stab`, `death_π`) can already be transfinite even for
+  finite `Φ`, because a strict drop may occur first at a limit stage when the chosen `Coh` lacks
+  limit-continuity.
+- **Transfinite spectral height** (infinitely many strict drops between distinct spectra) requires
+  an **infinite** spectrum space (e.g. `Φ` infinite, or a topological/type spectrum with a
+  derivative process).
 
 This note is meant to complement:
 
@@ -124,6 +131,14 @@ for some finite `k`, where each inclusion is strict and each `S_{α_i}` is a new
 
 If `Φ` is finite, the number of strict branch-elimination events is finite (finite spectral height).
 
+In particular, in a **spectrally compressed protocol** (one with no repeated spectra before it
+stabilizes/terminates), closure and stabilization must occur after finitely many successor steps:
+
+```text
+if S_{α+1} ⊊ S_α whenever S_{α+1} ≠ S_α,
+then the number of such strict drops is ≤ |S_0|.
+```
+
 But the **ordinal protocol time** at which those finitely many eliminations happen can still be
 transfinite. For example, it is consistent with monotonicity that:
 
@@ -200,12 +215,29 @@ Spec^Coh_C_{T_ω}(φ) = {1},
 
 so the closure time (protocol index) is `ω`, even though there is only one strict drop.
 
+### Remark (syntactic consistency is limit-continuous)
+
+For `Coh = Con_syn` (ordinary first-order syntactic consistency), the above “first drop at a limit
+stage” phenomenon does **not** occur for increasing chains, by compactness / finitary proofs.
+Equivalently, for `Coh = Con_syn` one has **limit-continuity**:
+
+```text
+S_λ = ⋂_{α<λ} S_α.
+```
+
+So transfinite protocol-time ordinals for finite `Φ` are a feature of **non-compact** (or otherwise
+non-limit-continuous) semantic coherence predicates, not of bare syntactic consistency.
+
 ---
 
-## 3. Where ordinals become nontrivial
+## 3. Where transfinite spectral height becomes nontrivial
 
-To get nontrivial ordinal ranks, you must enlarge the object so that the spectrum space is infinite
-and admits a genuinely transfinite elimination process.
+For finite `Φ`, ordinals can already appear as **protocol-time indices** (when drops happen), but
+the *compressed* elimination structure has finite height (only finitely many strict drops).
+
+To obtain **genuinely transfinite spectral height** (infinitely many strict drops between distinct
+spectra), one must enlarge the object so that the spectrum space is infinite and admits a genuinely
+transfinite elimination process.
 
 Two clean routes:
 
@@ -341,7 +373,9 @@ Spec^Coh_T(Φ) ⊆ {0,1}^n
 Therefore the number of **distinct** spectra (spectral height) along any monotone protocol is finite.
 However, the ordinal indices where those finitely many strict drops occur can be transfinite.
 
-2. Nontrivial ordinals require enlarging the object:
+2. Transfinite protocol-time ordinals can already occur for finite `Φ` under suitable non-compact
+   `Coh` (drops at limit stages). To obtain **transfinite spectral height**, one must enlarge the
+   object:
 
 ```text
 Φ infinite
