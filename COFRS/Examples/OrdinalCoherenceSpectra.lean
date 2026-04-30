@@ -98,6 +98,16 @@ variable {ι : Type v} [Preorder ι]
 variable (π : Protocol (Sentence := Sentence) (ι := ι))
 
 /-!
+### Local `le_trans`
+
+Some environments expose transitivity only as `Preorder.le_trans`. We provide a local lemma named
+`le_trans` so later proofs can use the shorter spelling constructively.
+-/
+
+theorem le_trans {a b c : ι} (hab : a ≤ b) (hbc : b ≤ c) : a ≤ c :=
+  Preorder.le_trans (a := a) (b := b) (c := c) hab hbc
+
+/-!
 ## 2. Spectrum process induced by a protocol
 
 Fix a finite family `Φ`. For each stage `α`, the spectrum is the predicate:
@@ -314,6 +324,14 @@ we can prove the standard persistence consequences constructively.
 def IsLeast (P : ι → Prop) (a : ι) : Prop :=
   P a ∧ ∀ b : ι, P b → a ≤ b
 
+theorem isLeast_prop {P : ι → Prop} {a : ι} : IsLeast (ι := ι) P a → P a := by
+  intro h
+  exact h.1
+
+theorem isLeast_le {P : ι → Prop} {a b : ι} : IsLeast (ι := ι) P a → P b → a ≤ b := by
+  intro h hb
+  exact h.2 b hb
+
 /-- A branch `v` is dead at stage `α` if it is not admissible in the spectrum at `α`. -/
 def DiesAt (π : Protocol (Sentence := Sentence) (ι := ι))
     (Φ : Family Sentence n) (v : Valuation n) (α : ι) : Prop :=
@@ -420,7 +438,7 @@ theorem stableFrom_of_le
       (π := π) (Φ := Φ) h hDown) v hvβ
   -- `S_α ⊆ S_γ` by stability (since `α ≤ γ`)
   have hαγ : α ≤ γ :=
-    Preorder.le_trans (a := α) (b := β) (c := γ) h hβγ
+    le_trans (ι := ι) h hβγ
   exact hStable hαγ v hvα
 
 /-!
@@ -473,6 +491,88 @@ theorem specAt_powEq_of_stabTime_of_le
   exact specAt_powEq_of_stableFrom_of_le (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
     (π := π) (Φ := Φ) hαβ hDown hStab.1
 
+theorem le_of_deathTime_of_diesAt
+    {Φ : Family Sentence n} {v : Valuation n} {α β : ι}
+    (hDeath :
+      DeathTime (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh) (π := π) Φ v α)
+    (hDiesβ : DiesAt (n := n) (neg := neg) (Coh := Coh) (π := π) Φ v β) :
+    α ≤ β :=
+  isLeast_le (ι := ι) (P := fun a => DiesAt (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
+    (π := π) Φ v a) hDeath hDiesβ
+
+theorem le_of_closedTime_of_closedPtAt
+    {Φ : Family Sentence n} {α β : ι}
+    (hClosedTime :
+      ClosedTime (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α)
+    (hClosedβ : ClosedPtAt (n := n) (neg := neg) (Coh := Coh) π Φ β) :
+    α ≤ β :=
+  isLeast_le (ι := ι) (P := fun a => ClosedPtAt (n := n) (neg := neg) (Coh := Coh) π Φ a) hClosedTime hClosedβ
+
+theorem le_of_stabTime_of_stableFrom
+    {Φ : Family Sentence n} {α β : ι}
+    (hStab :
+      StabTime (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α)
+    (hStableβ :
+      StableFrom (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh) (π := π) Φ β) :
+    α ≤ β :=
+  isLeast_le (ι := ι) (P := fun a =>
+    StableFrom (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh) (π := π) Φ a) hStab hStableβ
+
+theorem specAt_powEq_tail_of_stabTime
+    {Φ : Family Sentence n} {α β γ : ι}
+    (hStab :
+      StabTime (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh) (π := π) Φ α)
+    (hαβ : α ≤ β)
+    (hαγ : α ≤ γ)
+    (hDown : DownwardHeredity (Sentence := Sentence) (Coh := Coh)) :
+    PowEq
+      (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ β)
+      (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ γ) := by
+  have hβ :
+      PowEq
+        (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ α)
+        (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ β) :=
+    specAt_powEq_of_stabTime_of_le (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
+      (π := π) (Φ := Φ) hStab hαβ hDown
+  have hγ :
+      PowEq
+        (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ α)
+        (SpecAt (n := n) (neg := neg) (Coh := Coh) π Φ γ) :=
+    specAt_powEq_of_stabTime_of_le (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
+      (π := π) (Φ := Φ) hStab hαγ hDown
+  exact PowEq.trans (PowEq.symm hβ) hγ
+
+/-!
+## 5. Stage-level bridges from the static spectrum geometry
+
+These are paper-facing equivalences stated at a fixed stage `α`.
+-/
+
+theorem coordClosedAt_of_closedPtAt
+    {Φ : Family Sentence n} {α : ι}
+    (hClosed : ClosedPtAt (n := n) (neg := neg) (Coh := Coh) π Φ α) :
+    ∀ i : Fin n, CoordClosedAt (n := n) (neg := neg) (Coh := Coh) π Φ α i := by
+  simpa [CoordClosedAt] using
+    (coordClosed_of_closedPt (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
+      (T := π.T α) (Φ := Φ) hClosed)
+
+theorem closedPtAt_iff_inhabitedAt_and_forall_coordClosedAt
+    {Φ : Family Sentence n} {α : ι} :
+    ClosedPtAt (n := n) (neg := neg) (Coh := Coh) π Φ α ↔
+      SpecInhabitedAt (n := n) (neg := neg) (Coh := Coh) π Φ α ∧
+        ∀ i : Fin n, CoordClosedAt (n := n) (neg := neg) (Coh := Coh) π Φ α i := by
+  simpa [ClosedPtAt, SpecInhabitedAt, CoordClosedAt] using
+    (closedPt_iff_specInhabited_and_forall_coordClosed (Sentence := Sentence) (n := n)
+      (neg := neg) (Coh := Coh) (T := π.T α) (Φ := Φ))
+
+theorem openPtAt_iff_exists_coordOpenAt
+    {Φ : Family Sentence n} {α : ι} :
+    OpenPtAt (n := n) (neg := neg) (Coh := Coh) π Φ α ↔
+      ∃ i : Fin n, CoordOpenAt (n := n) (neg := neg) (Coh := Coh) π Φ α i := by
+  simpa [OpenPtAt, CoordOpenAt] using
+    (openPt_iff_exists_coordOpen (Sentence := Sentence) (n := n) (neg := neg) (Coh := Coh)
+      (T := π.T α) (Φ := Φ))
+
 end Protocol
 
 end OrdinalCoherenceSpectra
@@ -486,12 +586,21 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.coordClosedAt_of_le
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.closedPtAt_of_le_of_inhabited
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.closedPtAt_of_closedTime_of_le_of_inhabited
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.isLeast_prop
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.isLeast_le
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.valEq_of_closedPtAt_of_le
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.diesAt_of_le_of_diesAt
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.diesAt_of_deathTime_of_le
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.specAt_eq_of_stableFrom_of_le
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.specAt_powEq_of_stableFrom_of_le
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.specAt_powEq_of_stabTime_of_le
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.le_of_deathTime_of_diesAt
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.le_of_closedTime_of_closedPtAt
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.le_of_stabTime_of_stableFrom
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.specAt_powEq_tail_of_stabTime
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.stableFrom_of_le
 #print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.stableFrom_of_stabTime_of_le
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.coordClosedAt_of_closedPtAt
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.closedPtAt_iff_inhabitedAt_and_forall_coordClosedAt
+#print axioms PrimitiveHolonomy.Examples.OrdinalCoherenceSpectra.Protocol.openPtAt_iff_exists_coordOpenAt
 /- AXIOM_AUDIT_END -/
