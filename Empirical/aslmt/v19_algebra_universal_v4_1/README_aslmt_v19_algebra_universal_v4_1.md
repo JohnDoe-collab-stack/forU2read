@@ -13,7 +13,7 @@ New in v4.1:
 - fixes a verifier robustness bug (invalid JSON lines are handled without crashing);
 - aligns the README oracle description with the actual lexicographic oracle objective.
 
-This folder is a new protocol variant (v4). It does **not** modify v1/v2/v3 scripts or historical run snapshots.
+This folder is a new protocol variant (v4.1). It does **not** modify v1/v2/v3 scripts or historical run snapshots.
 
 ## Protocol (unchanged at high level)
 

@@ -128,7 +128,7 @@ def main() -> None:
         shutil.copy2(pth, snap_root / pth.name)
 
     manifest = {
-        "kind": "aslmt_v19_algebra_universal_actionz_v4_snapshot",
+        "kind": "aslmt_v19_algebra_universal_actionz_v4_1_snapshot",
         "timestamp": ts,
         "profile": str(profile),
         "bundle_hash_sha256": bundle_hash,
