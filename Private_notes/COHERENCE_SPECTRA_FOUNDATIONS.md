@@ -158,6 +158,152 @@ is a model of `T`), and in regime (C) exactly when downward heredity is assumed.
 
 ---
 
+## 4bis. Comparison of coherence predicates
+
+Let `Coh₁, Coh₂ : Theory_L → Prop` be two coherence predicates.
+
+Define the **strength preorder** on coherence predicates by:
+
+```text
+Coh₂ ⪯ Coh₁  :⇔  ∀U, Coh₂(U) ⇒ Coh₁(U).
+```
+
+Thus `Coh₂ ⪯ Coh₁` means that `Coh₂` is the stronger, more restrictive coherence predicate.
+
+This relation is a preorder:
+
+```text
+Coh ⪯ Coh
+```
+
+and
+
+```text
+(Coh₃ ⪯ Coh₂ and Coh₂ ⪯ Coh₁) ⇒ Coh₃ ⪯ Coh₁.
+```
+
+For fixed `T` and finite `Φ`, the spectrum construction is monotone with respect to this preorder:
+
+```text
+Coh₂ ⪯ Coh₁
+⇒
+Spec^{Coh₂}_T(Φ) ⊆ Spec^{Coh₁}_T(Φ).
+```
+
+Proof:
+
+```text
+v ∈ Spec^{Coh₂}_T(Φ)
+⇒ Coh₂(T + Φ^v)
+⇒ Coh₁(T + Φ^v)
+⇒ v ∈ Spec^{Coh₁}_T(Φ).
+```
+
+Hence, whenever both spectra are finite:
+
+```text
+|Spec^{Coh₂}_T(Φ)| ≤ |Spec^{Coh₁}_T(Φ)|.
+```
+
+Equivalently, the assignment
+
+```text
+Coh ↦ Spec^Coh_T(Φ)
+```
+
+is order-preserving from the strength preorder into subset inclusion.
+
+Or, using the opposite convention where weaker predicates are larger, it is contravariant.
+
+## Relative comparison above a base theory
+
+For a fixed base theory `T`, define:
+
+```text
+Coh₂ ⪯_T Coh₁
+:⇔
+∀U, (T ⊆ U and Coh₂(U)) ⇒ Coh₁(U).
+```
+
+Then the same comparison theorem holds:
+
+```text
+Coh₂ ⪯_T Coh₁
+⇒
+Spec^{Coh₂}_T(Φ) ⊆ Spec^{Coh₁}_T(Φ).
+```
+
+This relative form is useful when two coherence predicates are comparable only over extensions of the base theory under study.
+
+## Semantic class specialization
+
+For semantic predicates of the form
+
+```text
+Coh_C(U) := ∃M ∈ C such that M ⊨ U,
+```
+
+class inclusion induces coherence strength:
+
+```text
+C₂ ⊆ C₁
+⇒
+Coh_{C₂} ⪯ Coh_{C₁}.
+```
+
+Therefore:
+
+```text
+C₂ ⊆ C₁
+⇒
+Spec^{Coh_{C₂}}_T(Φ) ⊆ Spec^{Coh_{C₁}}_T(Φ).
+```
+
+So the slogan becomes:
+
+```text
+smaller semantic landscape
+⇒ stronger coherence predicate
+⇒ smaller admissible branch spectrum.
+```
+
+## Final clean positioning
+
+The mature theorem package is:
+
+```text
+Theory extension:
+T ⊆ S
+⇒
+Spec^Coh_S(Φ) ⊆ Spec^Coh_T(Φ).
+
+Coherence strengthening:
+Coh₂ ⪯ Coh₁
+⇒
+Spec^{Coh₂}_T(Φ) ⊆ Spec^{Coh₁}_T(Φ).
+
+Semantic restriction:
+C₂ ⊆ C₁
+⇒
+Spec^{Coh_{C₂}}_T(Φ) ⊆ Spec^{Coh_{C₁}}_T(Φ).
+```
+
+That gives the framework two independent contraction axes:
+
+```text
+add axioms to T
+```
+
+and
+
+```text
+strengthen Coh.
+```
+
+This is exactly the comparative engine the paper needs.
+
+---
+
 ## 5. Regime (A): syntactic consistency and complete collapse on finite Φ
 
 Let `Con_syn(U)` mean ordinary first-order syntactic consistency (“no finite proof of ⊥ from `U`”).
