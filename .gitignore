@@ -19,3 +19,6 @@ Thumbs.db
 # Python artifacts
 __pycache__/
 *.pyc
+
+# Empirical run outputs (large, reproducible via scripts)
+Empirical/aslmt/runs/
