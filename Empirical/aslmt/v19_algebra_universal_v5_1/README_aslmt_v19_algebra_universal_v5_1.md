@@ -6,6 +6,24 @@ logging actually stable by forcing `model.eval()` (disables dropout), and logs m
 v4.9 made the belief update more transcript-faithful by adding a learned
 **transcript–state compatibility** term inside the belief scores.
 
+## What this test is really measuring
+
+This protocol is not “just an accuracy benchmark”. The central object is **closure** as an information-sufficiency
+criterion over a finite latent space.
+
+Empirically (from the run diagnostics), the key phenomenon to look for is:
+
+> the model internalizes a latent closure criterion, autonomously, with OOD generalization, rather than merely improving an accuracy score.
+
+Concretely, this shows up as the joint emergence (IID and OOD) of:
+
+- `closed_roll` rising (final transcripts are objectively closed: `Amb_σ(F_τ)=1`),
+- `stop_closed` rising (STOP aligns with closure),
+- `A_closed` rising (once closed, reading the unique remaining branch works).
+
+This is directly linked with the finite “closure geometry”: a transcript induces a candidate cell `F_τ ⊆ X`,
+and closure corresponds to collapsing the `σ`-spectrum on that cell to a singleton.
+
 - v3 fixed closure fragility when `n_base > obs_vocab` because `σ` depended on `base_raw` while the
   observable base label was `base_obs = base_lbl = base_raw mod obs_vocab`.
 - v3 replaced tautological audit with strict protocol invariants and hardened the verifier.
