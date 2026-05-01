@@ -140,6 +140,19 @@ For each coordinate `i ∈ {1,…,n}` define:
 
 This coordinate structure is strictly richer than the coarse number `D`.
 
+### 3.2 Coordinate dichotomy (inhabited spectra)
+
+Assume `Spec^Coh_T(Φ) ≠ ∅`. Then each coordinate `i` is exactly one of:
+
+- Coh-closed, or
+- Coh-open.
+
+Proof sketch:
+
+Project `Spec^Coh_T(Φ)` to the `i`-th coordinate. Since the target is `{0,1}` and the spectrum is
+inhabited, the projection is either a singleton `{b}` (so `i` is closed with value `b`) or all of
+`{0,1}` (so `i` is open).
+
 ---
 
 ## 4. Monotonicity under theory extension (branch elimination)
@@ -208,7 +221,7 @@ v ∈ Spec^{Coh₂}_T(Φ)
 ⇒ v ∈ Spec^{Coh₁}_T(Φ).
 ```
 
-Hence, whenever both spectra are finite:
+Since `Φ` is finite here, both spectra are finite, hence:
 
 ```text
 |Spec^{Coh₂}_T(Φ)| ≤ |Spec^{Coh₁}_T(Φ)|.
@@ -373,7 +386,13 @@ so is inconsistent. Hence `Spec^{Con_syn}_T(Φ) = {v*}`.
 
 ### 5.2 Limit-continuity (compactness of finitary proofs)
 
-For an increasing chain of theories `(T_α)_{α<λ}` and a fixed finite family `Φ`, define:
+For an increasing chain of theories `(T_α)_{α≤λ}` with `λ` limit and:
+
+```text
+T_λ := ⋃_{α<λ} T_α,
+```
+
+and a fixed finite family `Φ`, define:
 
 ```text
 S_α := Spec^Con_syn_{T_α}(Φ).
@@ -444,6 +463,15 @@ i is Coh_C-closed with value b
 T ⊨_C φᵢ^b.
 ```
 
+Proof sketch:
+
+(⇒) Suppose coordinate `i` is Coh_C-closed with value `b`. Let `M ∈ C` with `M ⊨ T`. By finite
+branch totality, `M` determines a valuation `v ∈ Spec^{Coh_C}_T(Φ)`. Since coordinate `i` is closed
+with value `b`, we have `v_i = b`, hence `M ⊨ φᵢ^b`. So `T ⊨_C φᵢ^b`.
+
+(⇐) Suppose `T ⊨_C φᵢ^b`. If `v ∈ Spec^{Coh_C}_T(Φ)`, then some `M ∈ C` witnesses `M ⊨ T + Φ^v`.
+Since `M ⊨ T`, we have `M ⊨ φᵢ^b`, hence `v_i = b`. So every admissible `v` has `v_i = b`.
+
 So, in regime (B) for finite `Φ`:
 
 ```text
@@ -451,6 +479,20 @@ Coh_C-closure on Φ
 ⇔
 T semantically decides every coordinate of Φ inside C.
 ```
+
+Say that `T` semantically decides `φᵢ` inside `C` if either:
+
+```text
+T ⊨_C φᵢ
+```
+
+or:
+
+```text
+T ⊨_C ¬φᵢ.
+```
+
+For inhabited `C`-semantics (`Coh_C(T)`), these alternatives are exclusive by classical satisfaction.
 
 ### 6.1 Canonical set-theoretic reference instance: transitive ZFC-model coherence
 
@@ -488,7 +530,7 @@ Con_ZFC := ¬Prov_ZFC(⌜⊥⌝)
 Assume:
 
 ```text
-(H1) there exists a transitive model of ZFC.
+(H1) there exists a transitive set model of ZFC.
 (H2) Con_ZFC is chosen so Gödel II applies, and hence (given H1 ⇒ Con_syn(ZFC)):
      ZFC ⊬ Con_ZFC.
 ```
@@ -668,7 +710,7 @@ finite Φ ⇏ finite ordinal protocol time.
 For `v ∈ S_0`, define its death time (if it ever dies):
 
 ```text
-death_π(v) := least α such that v ∉ S_α.
+death_π(v) := least α<Λ such that v ∉ S_α.
 ```
 
 ### 9.3 Closure ordinal
@@ -684,7 +726,8 @@ cl^Coh_π(T, Φ) := least α such that |S_α| = 1.
 If eventual constancy occurs, define:
 
 ```text
-stab^Coh_π(T, Φ) := least α such that for all β ≥ α, S_β = S_α.
+stab^Coh_π(T, Φ) :=
+least α<Λ such that for all β with α≤β<Λ, S_β = S_α.
 ```
 
 For finite `Φ` and downward-hereditary `Coh`, stabilization is automatic once the protocol is
@@ -748,35 +791,35 @@ spectral height” phenomena.
 
 The framework supports (at least) the following clean theorem schema:
 
-1) **Monotonicity (downward heredity):**
+1) **Monotonicity under theory extension** (downward heredity):
    ```text
    T ⊆ S ⇒ Spec^Coh_S(Φ) ⊆ Spec^Coh_T(Φ).
    ```
 
-2) **Coherence-strength comparison (strength preorder):**
+2) **Coherence-strength comparison** (strength preorder):
    ```text
    Coh₂ ⪯ Coh₁ ⇒ Spec^{Coh₂}_T(Φ) ⊆ Spec^{Coh₁}_T(Φ).
    ```
 
-2) **Closure/openness by spectrum cardinality** (assuming inhabitation):
+3) **Closure/openness by spectrum cardinality** (assuming inhabitation):
    ```text
    closure ⇔ |Spec| = 1
    openness ⇔ |Spec| > 1.
    ```
 
-3) **Collapse in regime (A) for finite Φ:**
+4) **Syntactic collapse** in regime (A) for finite `Φ`:
    ```text
    (Coh=Con_syn, Con_syn(T)) and |Spec|=1
    ⇔ T decides every coordinate in Φ.
    ```
 
-4) **Semantic decision in regime (B) (finite Φ):**
+5) **Semantic decision** in regime (B) (finite `Φ`):
    ```text
    (Coh=Coh_C, Coh_C(T)) and |Spec|=1
    ⇔ T semantically decides every coordinate in Φ inside C.
    ```
 
-5) **Canonical separation (set theory):**
+6) **Canonical separation** (set theory):
    ```text
    Spec^Con_syn_ZFC(Con_ZFC) = {0,1}
    but
@@ -784,11 +827,22 @@ The framework supports (at least) the following clean theorem schema:
    ```
    under (H1–H2).
 
-6) **Ordinal protocol-time ranks**: death/closure/stability ordinals are well-defined whenever the
+7) **Limit-continuity for syntactic consistency**: in regime (A), at limit stages `λ`:
+   ```text
+   S_λ = ⋂_{α<λ} S_α.
+   ```
+
+8) **Limit-stage drop for finite-model coherence**: in regime (B) with `Coh_fin`, there exists a
+   binary example where the first strict drop occurs at `ω`.
+
+9) **Finite spectral height vs ordinal protocol time**: for finite `Φ`, compressed spectral height
+   is finite, but ordinal protocol time can be transfinite when `Coh` lacks limit-continuity.
+
+10) **Ordinal protocol-time ranks**: death/closure/stability ordinals are well-defined whenever the
    corresponding minima exist along the protocol chain.
 
-7) **Finite Φ bound**: finite spectral height after compression, but no bound on ordinal protocol
-   time without extra assumptions (e.g. limit-continuity).
+11) **Finite Φ bound**: finite spectral height after compression, but no bound on ordinal protocol
+    time without extra assumptions (e.g. limit-continuity).
 
 ---
 
