@@ -95,6 +95,15 @@ subset-valued object.
 
 ## 3. Closure and openness (set-theoretic level)
 
+All closure, openness, coordinate-closure, and defect notions below are evaluated on **inhabited**
+spectra.
+
+Treat the empty-spectrum case as a separate bottom state:
+
+```text
+Bot^Coh_T(Φ) :⇔ Spec^Coh_T(Φ) = ∅.
+```
+
 Assume `Spec^Coh_T(Φ) ≠ ∅`. Define the coarse numeric summary:
 
 ```text
@@ -349,6 +358,19 @@ Con_syn-closure on Φ  =  syntactic decision of all coordinates in Φ.
 This is the precise sense in which “coherence spectra collapse to decidability” in the ordinary
 syntactic-consistency regime.
 
+Proof sketch (completion argument):
+
+Assume `Con_syn(T)` and `Spec^{Con_syn}_T(Φ) = {v*}`. Fix a coordinate `i` and let `ε := 1 − v*_i`.
+
+If `T + φᵢ^ε` were consistent, extend it to a complete consistent theory `Γ ⊇ T + φᵢ^ε` (Lindenbaum
+completion). For each `j`, let `w_j` be the truth value assigned by `Γ` to `φⱼ`. Then `T + Φ^w` is
+consistent, so `w ∈ Spec^{Con_syn}_T(Φ)`. But `w_i = ε ≠ v*_i`, contradicting uniqueness of `v*`.
+Therefore `T + φᵢ^ε` is inconsistent, hence `T ⊢ φᵢ^{v*_i}`.
+
+Conversely, if `T ⊢ φᵢ^{v*_i}` for every coordinate `i`, then the selected branch `T + Φ^{v*}` is
+consistent (by `Con_syn(T)`), and any other branch contains a literal opposite to a theorem of `T`,
+so is inconsistent. Hence `Spec^{Con_syn}_T(Φ) = {v*}`.
+
 ### 5.2 Limit-continuity (compactness of finitary proofs)
 
 For an increasing chain of theories `(T_α)_{α<λ}` and a fixed finite family `Φ`, define:
@@ -385,6 +407,50 @@ Then several “stability assumptions” become lemmas:
 - Downward heredity: any model of `V` is a model of all subsets `U ⊆ V`.
 - Theorem stability: if `U ⊢ χ`, then any model of `U` satisfies `χ`.
 - Soundness against contradiction: if `U` has a model, then `U` is syntactically consistent.
+
+### 6.0 Semantic inhabitation (finite-family)
+
+Let `Coh_C(U) := “∃M ∈ C such that M ⊨ U”`. For finite `Φ = {φ₁,…,φₙ}`:
+
+```text
+Spec^{Coh_C}_T(Φ) ≠ ∅
+⇔
+Coh_C(T).
+```
+
+Proof sketch:
+
+- If `M ∈ C` and `M ⊨ T`, then `M` assigns each `φᵢ` a truth value. Let `v ∈ {0,1}^n` record those
+  truth values. Then `M ⊨ T + Φ^v`, so `v ∈ Spec^{Coh_C}_T(Φ)`.
+- Conversely, any `v ∈ Spec^{Coh_C}_T(Φ)` is witnessed by some `M ∈ C` with `M ⊨ T + Φ^v`, hence
+  by a `C`-model of `T`.
+
+### 6.0bis Semantic coordinate decision inside a class
+
+Define relative semantic consequence:
+
+```text
+T ⊨_C χ
+:⇔
+every M ∈ C with M ⊨ T also satisfies χ.
+```
+
+Assume `Coh_C(T)` (equivalently `Spec^{Coh_C}_T(Φ) ≠ ∅` by Lemma 6.0). Then for each coordinate `i`
+and bit `b ∈ {0,1}`:
+
+```text
+i is Coh_C-closed with value b
+⇔
+T ⊨_C φᵢ^b.
+```
+
+So, in regime (B) for finite `Φ`:
+
+```text
+Coh_C-closure on Φ
+⇔
+T semantically decides every coordinate of Φ inside C.
+```
 
 ### 6.1 Canonical set-theoretic reference instance: transitive ZFC-model coherence
 
@@ -502,7 +568,7 @@ Target sentence:
 
 For each `k≥1`, let `σ_k` be the sentence “there exist at least k distinct elements”.
 
-Define a protocol:
+Index the protocol by `ω+1`:
 
 ```text
 T_n := { ¬φ → σ_k : 1 ≤ k ≤ n }
@@ -621,12 +687,41 @@ If eventual constancy occurs, define:
 stab^Coh_π(T, Φ) := least α such that for all β ≥ α, S_β = S_α.
 ```
 
+For finite `Φ` and downward-hereditary `Coh`, stabilization is automatic once the protocol is
+defined past all branch deaths. Since `S_0` is finite, each branch can die at most once, so the set
+of defined death times is finite and has a maximum. Concretely:
+
+```text
+stab^Coh_π(T,Φ)
+=
+max( {0} ∪ { death_π(v) : v ∈ S₀ and death_π(v) exists } ).
+```
+
 ### 9.5 Global elimination rank
 
 Define:
 
 ```text
 SOrd^Coh_π(T, Φ) := sup { death_π(v)+1 : v ∈ S_0 and death_π(v) exists }.
+```
+
+Here `death_π(v)` is the first stage where `v` has vanished; the term `death_π(v)+1` records the
+successor rank of that elimination event (post-elimination rank). In particular, in the finite case
+it is common that:
+
+```text
+stab^Coh_π(T,Φ) = max death times
+but
+SOrd^Coh_π(T,Φ) = sup of successor death ranks.
+```
+
+For the finite-model example in §8:
+
+```text
+death_π(0) = ω,
+cl^Coh_fin_π(T,φ) = ω,
+stab^Coh_fin_π(T,φ) = ω,
+SOrd^Coh_fin_π(T,φ) = ω+1.
 ```
 
 These are bona fide ordinal invariants of a monotone spectral contraction process.
@@ -658,6 +753,11 @@ The framework supports (at least) the following clean theorem schema:
    T ⊆ S ⇒ Spec^Coh_S(Φ) ⊆ Spec^Coh_T(Φ).
    ```
 
+2) **Coherence-strength comparison (strength preorder):**
+   ```text
+   Coh₂ ⪯ Coh₁ ⇒ Spec^{Coh₂}_T(Φ) ⊆ Spec^{Coh₁}_T(Φ).
+   ```
+
 2) **Closure/openness by spectrum cardinality** (assuming inhabitation):
    ```text
    closure ⇔ |Spec| = 1
@@ -670,7 +770,13 @@ The framework supports (at least) the following clean theorem schema:
    ⇔ T decides every coordinate in Φ.
    ```
 
-4) **Canonical separation (set theory):**
+4) **Semantic decision in regime (B) (finite Φ):**
+   ```text
+   (Coh=Coh_C, Coh_C(T)) and |Spec|=1
+   ⇔ T semantically decides every coordinate in Φ inside C.
+   ```
+
+5) **Canonical separation (set theory):**
    ```text
    Spec^Con_syn_ZFC(Con_ZFC) = {0,1}
    but
@@ -678,10 +784,10 @@ The framework supports (at least) the following clean theorem schema:
    ```
    under (H1–H2).
 
-5) **Ordinal protocol-time ranks**: death/closure/stability ordinals are well-defined whenever the
+6) **Ordinal protocol-time ranks**: death/closure/stability ordinals are well-defined whenever the
    corresponding minima exist along the protocol chain.
 
-6) **Finite Φ bound**: finite spectral height after compression, but no bound on ordinal protocol
+7) **Finite Φ bound**: finite spectral height after compression, but no bound on ordinal protocol
    time without extra assumptions (e.g. limit-continuity).
 
 ---
