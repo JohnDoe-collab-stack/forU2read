@@ -476,10 +476,32 @@ Nommer l’invariant critique :
 ρ_σ(A,B) := #(L_A ∩ L_B)
 ```
 
+Statut. Les briques employées ici sont classiques (partitions, *meet*, confusions, intersections, cardinalisation),
+mais l’invariant `ρ_σ` est spécifique : il encode une information d’incidence (recouvrement effectif des pertes)
+que les seules grandeurs marginales `r_σ, #L_A, #L_B` écrasent.
+
+Deux configurations peuvent donc partager les mêmes cardinalités marginales et produire des diagnostics de clôture
+opposés ; la différence effective est précisément `ρ_σ(A,B)`.
+
 Lecture :
 
 ```text
 ρ_σ(A,B) = perte résiduelle de la vue conjointe A∧B.
+```
+
+En particulier, on peut le lire comme **invariant de défaut de clôture conjointe** :
+
+```text
+ρ_σ(A,B) = 0  ⇔  A∧B clôt σ
+ρ_σ(A,B) > 0  ⇔  résidu strict de pertes
+```
+
+Il joue alors trois rôles complémentaires :
+
+```text
+diagnostic   : clôture ou résidu (seuil 0)
+quantitatif  : taille du défaut (valeur de ρ)
+structurel   : géométrie d’incidence des pertes (disjoint / partiel / aligné)
 ```
 
 Alors :
