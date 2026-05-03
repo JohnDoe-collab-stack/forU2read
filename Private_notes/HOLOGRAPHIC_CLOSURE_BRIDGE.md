@@ -7,7 +7,7 @@ afin de pouvoir **démontrer** (et pas seulement suggérer) :
 2) clôture conjointe (une composition de régions décide `σ`) ;
 3) minimalité (capacité minimale d’un médiateur fini nécessaire/suffisante).
 
-Le but n’est **pas** de postuler “RT/QES = médiateur”, mais de fournir un **théorème de traduction** dans un modèle discret
+Le but n’est **pas** de postuler “RT/QES = médiateur”, mais de fournir un **théorème-témoin** dans un modèle discret
 où tout est calculable.
 
 Référence conceptuelle interne (cadre général) :
@@ -70,7 +70,8 @@ Deux choix possibles (on en fixe un seul dans l’exemple) :
 - **(Obs)** un opérateur logique `O_L` (Hermitien, ou projecteur) ; ou
 - **(Bit)** un bit logique `σ(ψ) ∈ {0,1}` défini par mesure d’un projecteur logique.
 
-On prendra **(Bit)** dans l’exemple : `σ` est la valeur d’un projecteur logique `Π_L` sur `H_L`.
+Dans l’exemple GHZ, `σ` est le bit obtenu par mesure de l’observable logique `X_L` sur le domaine `D_σ` :
+`σ(|+_L⟩)=0` et `σ(|-_L⟩)=1`.
 
 ---
 
@@ -265,7 +266,7 @@ O_{123} = X_1 X_2 X_3
 Pour tout sous‑système strict `S ⊊ {1,2,3}` :
 
 ```text
-ρ_S(|+_C⟩⟨+_C|) = ρ_S(|-_C⟩⟨-_C|)
+red_S(|+_C⟩⟨+_C|) = red_S(|-_C⟩⟨-_C|)
 ```
 
 donc toute interface stricte échoue à décider la phase logique :
@@ -290,7 +291,7 @@ Dès qu’on trace au moins un qubit (i.e. `S` strict), les termes croisés `|00
 disparaissent, car ils portent une cohérence sur le qubit tracé. On obtient donc :
 
 ```text
-ρ_S(|+_C⟩⟨+_C|) = ρ_S(|-_C⟩⟨-_C|)
+red_S(|+_C⟩⟨+_C|) = red_S(|-_C⟩⟨-_C|)
 = 1/2(
   |0…0⟩⟨0…0|
   + |1…1⟩⟨1…1|
