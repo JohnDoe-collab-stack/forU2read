@@ -16,8 +16,13 @@ On fixe :
 Alors le schéma visé n’est pas “faire des scores”, mais certifier trois faits :
 
 1) **No‑go marginal** : `A` seul ne ferme pas (la vérité varie à visible fixé), et `B` seul ne ferme pas.
-2) **Réparation jointe** : `A∧B` ferme (la vérité devient fonction de l’interface jointe).
-3) **Médiation finie minimale** : il existe une médiation finie qui répare, et aucune médiation strictement plus petite ne peut préserver la décision.
+2) **Composition** : la combinaison `A∧B` est le premier niveau où l’information pertinente devient accessible.
+   Il y a alors deux régimes à distinguer :
+   - **clôture directe** : `A∧B` ferme déjà (la vérité devient fonction de l’interface jointe) ;
+   - **clôture médiée** : `A∧B` ne ferme pas encore (il reste un résidu), mais il existe un **médiateur fini** qui,
+     ajouté à l’interface jointe, rétablit la décision correcte.
+3) **Médiateur fini minimal** : dans le régime médié, il existe une capacité finie `n` suffisante, et **aucune**
+   capacité strictement plus petite `m<n` ne peut préserver la décision.
 
 Le point essentiel : une “orthogonalité” n’est pas une corrélation. C’est un **défaut de clôture marginal**
 qui disparaît sous composition, avec une **dimension minimale** (taille du plus petit médiateur nécessaire).
@@ -32,15 +37,27 @@ Le calcul “par distinctions” est une **instance finie explicite** qui :
 Mais : les quantités comme `ρ_σ(A,B)=#(L_A∩L_B)` sont des **coordonnées** d’un phénomène plus général
 (clôture/non‑clôture + minimalité de médiation). Elles ne remplacent pas l’énoncé universel.
 
+Repère utile :
+- dans le **régime de clôture directe**, `ρ_σ(A,B)=0` est exactement le critère “`A∧B` ferme déjà” (dans le modèle fini) ;
+- dans le **régime médié**, `ρ_σ(A,B)>0` indique un résidu de la vue jointe (toujours au niveau finitaire),
+  et la donnée structurelle pertinente devient la **dimension minimale** `n` du médiateur (spine COFRS : `CompatDimEq`).
+
 ## Alignement (spine Lean / COFRS)
 
-Dans le vocabulaire COFRS (Lean), la colonne “structurelle” correspond aux briques suivantes :
+Dans le vocabulaire COFRS (Lean), la colonne “structurelle” se décompose en briques séparées :
 - **no‑go marginal** : `LagEvent → ¬ ObsPredictsStep`,
-- **séparation jointe** : `StepSeparatesFiber` sur l’interface jointe,
-- **minimalité** : `CompatDimEq … n` et son emballage `RefiningLift … n` + `∀ m<n, ¬ RefiningLift … m`.
+- **séparation marginale (constructive)** : si on a un échec de clôture et une énumération finie de la fibre,
+  alors `stepSeparatesFiber_of_not_obsPredictsStep_of_equivFin` exhibe une séparation dans la fibre,
+- **minimalité du médiateur conjoint** : `CompatDimEq … n` entraîne `RefiningLift … n` et `∀ m<n, ¬ RefiningLift … m`.
 
-Le théorème qui package exactement ce triptyque (pour deux interfaces) est :
-`PrimitiveHolonomy.Examples.DynamicsOnly.double_noGo_to_separation_and_minimalJointLift`.
+Le théorème
+`PrimitiveHolonomy.Examples.DynamicsOnly.double_noGo_to_separation_and_minimalJointLift`
+package précisément la chaîne :
+`no‑go marginal (A,B)` → `séparations marginales (A,B)` → `relèvement conjoint minimal (taille n)`.
+
+À part : la **séparation de la fibre jointe** (`StepSeparatesFiber` sur `obsAB`) est une hypothèse/étape distincte
+(elle correspond au régime “clôture médiée” : la vérité varie encore dans la fibre jointe), et se package via d’autres
+énoncés (ex. profils “joint irreducible”, versions end‑to‑end).
 
 Ce fichier, lui, garde une réalisation finie (distinctions) comme “modèle mental” et comme outil de calcul.
 
