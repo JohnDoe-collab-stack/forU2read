@@ -64,7 +64,7 @@ Point clé :
 > Une correspondance peut exister tout en restant inopérante depuis une interface donnée,
 > jusqu’à composition et/ou médiation.
 
-## 3) Deux invariants complémentaires : `ρ` (résidu finitaire) et `n` (minimalité structurelle)
+## 4) Deux invariants complémentaires : `ρ` (résidu finitaire) et `n` (minimalité structurelle)
 
 Dans un modèle fini explicite (calcul par distinctions), on dispose d’un invariant de résidu d’incidence :
 
@@ -79,7 +79,7 @@ Repère (résumé) :
 - **clôture médiée** : le finitaire peut signaler un résidu, mais le fait structurel est :
   *“il faut un médiateur fini minimal de dimension `n` pour rendre la décision stable”*.
 
-## 4) Lecture “dictionnaire” (sans sur‑promettre une identification physique)
+## 5) Lecture “dictionnaire” (sans sur‑promettre une identification physique)
 
 On peut utiliser ce cadre comme **couche d’analyse** au‑dessus d’un dictionnaire existant :
 
@@ -90,7 +90,7 @@ On peut utiliser ce cadre comme **couche d’analyse** au‑dessus d’un dictio
 Important : ce document ne postule **aucune identification** (par exemple “tel objet géométrique = médiateur minimal”).
 Toute identification de ce type est une hypothèse supplémentaire qui doit être justifiée dans le contexte physique.
 
-## 5) Application (exemple) : dictionnaire holographique comme problème d’accès
+## 6) Application (exemple) : dictionnaire holographique comme problème d’accès
 
 Lecture correcte (sans identification automatique) :
 
@@ -110,20 +110,21 @@ Ce que la théorie permet de demander proprement :
 > Si non, une composition de régions ferme‑t‑elle `σ` ?  
 > Si un résidu subsiste, quel médiateur minimal (au sens structurel) est requis pour stabiliser la décision ?”
 
-## 6) Ce qui est certifiable (preuve instanciée) vs prouvable (preuve universelle)
+## 7) Ce qui est certifiable (preuve instanciée) vs prouvable (preuve universelle)
 
 La théorie a deux couches complémentaires :
 
 - **Couche universelle (Lean / COFRS)** : prouve des implications structurelles du type
-  *no‑go marginal → nécessité d’une composition → existence et minimalité d’un médiateur fini*,
-  avec des hypothèses explicitement formulées.
+  *échec marginal + séparation pertinente (résidu) + hypothèses de compatibilité*
+  → *existence d’un relèvement conjoint de dimension `n`*
+  → *minimalité : toute capacité `m<n` échoue à préserver la décision*.
 
 - **Couche expérimentale (proofpack)** : certifie sur des épisodes instanciés :
   - des témoins de no‑go marginal (même observation, vérité différente),
   - que la composition + médiateur marche,
   - et que si on réduit la capacité, on produit des contre‑exemples systématiques.
 
-## 7) Pitch (version resserrée)
+## 8) Pitch (version resserrée)
 
 English:
 
@@ -145,7 +146,7 @@ Elle sépare échec marginal, clôture directe, clôture médiée et dimension m
 Dans le cas de la Page curve, Page time se lit comme une transition de régime d’accès : la radiation devient capable de décider l’information visée via la reconstruction médiée appropriée.
 ```
 
-## 8) Pointeurs
+## 9) Pointeurs
 
 - Version raffinée (direct vs médié, `ρ` vs `n`) :
   `Private_notes/distinction_arithmetic_refined.md`.
