@@ -23,8 +23,12 @@ On travaille dans un modèle QECC discret suffisamment simple pour :
 - exhiber explicitement une procédure de décision/reconstruction ;
 - prouver une borne inférieure de capacité (minimalité).
 
-Choix recommandé : **stabilizer toy‑model** (code jouet) au lieu d’un réseau de tenseurs géométriquement lourd.
+Choix recommandé : **stabilizer access toy‑model / GHZ encoding** (modèle d’accès) au lieu d’un réseau de tenseurs géométriquement lourd.
 Raison : la minimalité se prouve proprement par arguments de dimension/indistinguabilité, et les témoins sont explicites.
+
+Réserve terminologique :
+le code GHZ/répétition est utilisé ici comme **toy model d’accès/reconstruction** (clôture par interface) ;
+ce n’est pas, dans ce document, une prétention à “corriger des erreurs arbitraires” au sens général QECC.
 
 ---
 
@@ -58,7 +62,8 @@ On prendra **(Bit)** dans l’exemple : `σ` est la valeur d’un projecteur log
 On fixe une définition **opérationnelle** :
 
 > `σ` est décidable depuis `A` sur le code `C` s’il existe une mesure (POVM) `M_A` sur `A` telle que,
-> pour tout état logique `|ψ⟩`, le résultat de `M_A` détermine `σ(|ψ⟩)` (sans erreur) sur l’état encodé `V|ψ⟩`.
+> pour tout état logique `|ψ⟩` dans un **domaine de décision** `D_σ ⊂ H_L`, le résultat de `M_A` détermine `σ(|ψ⟩)`
+> (sans erreur) sur l’état encodé `V|ψ⟩`.
 
 Équivalent pratique (dans les exemples) :
 
@@ -89,6 +94,10 @@ Residue(A∪B, σ) :⇔ Fail(A∪B, σ).
 ```
 
 L’intérêt de `Residue` est uniquement sémantique : “la composition existe, mais ne ferme pas encore”.
+
+Traduction de notation (composition) :
+dans la théorie abstraite, la composition d’interfaces est notée `A ∧ B` ;
+dans ce bridge par sous‑systèmes, elle est instanciée par l’accès conjoint `A ∪ B`.
 
 ### Théorème 1 — No‑go marginal (témoins)
 
@@ -191,6 +200,12 @@ La vérité visée `σ` est le bit “signe de phase” :
 σ(|+_L⟩)=0,   σ(|-_L⟩)=1
 ```
 
+et elle est définie sur le **domaine de décision** :
+
+```text
+D_σ = {|+_L⟩, |-_L⟩}.
+```
+
 et elle est décidable sur l’interface complète `{1,2,3}` via la mesure de :
 
 ```text
@@ -217,6 +232,31 @@ donc toute interface stricte échoue à décider la phase logique :
 ```text
 Fail(S, σ)   pour tout S strict.
 ```
+
+Preuve courte (traces partielles) :
+
+```text
+|±_C⟩⟨±_C|
+= 1/2(
+  |000⟩⟨000|
+  + |111⟩⟨111|
+  ± |000⟩⟨111|
+  ± |111⟩⟨000|
+).
+```
+
+Dès qu’on trace au moins un qubit (i.e. `S` strict), les termes croisés `|000⟩⟨111|` et `|111⟩⟨000|`
+disparaissent, car ils portent une cohérence sur le qubit tracé. On obtient donc :
+
+```text
+ρ_S(|+_C⟩⟨+_C|) = ρ_S(|-_C⟩⟨-_C|)
+= 1/2(
+  |0…0⟩⟨0…0|
+  + |1…1⟩⟨1…1|
+).
+```
+
+La phase logique est donc invisible sur toute marginale stricte.
 
 ### E4. Lecture “package direct” sur le même exemple
 
@@ -255,8 +295,15 @@ Close(A∪B∪M, σ)     (car {1,2,3} décide σ)
 ```
 
 Minimalité : `M` doit porter au moins un qubit de capacité.
-Avec un registre trivial (capacité 0), l’interface reste `{1,2}` et les réductions de `|+_C⟩` et `|-_C⟩`
-restent identiques ; la décision est impossible. Donc :
+Avec la convention :
+
+```text
+capacité = log₂ dim(M),
+```
+
+une capacité `< 1 qubit` signifie `dim(M) < 2`, donc un médiateur trivial (un seul état distinguable).
+Dans ce cas, l’interface effective reste `{1,2}` et les réductions de `|+_C⟩` et `|-_C⟩` y restent identiques ;
+la décision est impossible. Donc :
 
 ```text
 n = 1 qubit
