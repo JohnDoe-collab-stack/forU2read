@@ -16,7 +16,7 @@ Référence conceptuelle interne (cadre général) :
 
 ---
 
-## Theorem — témoin GHZ de clôture par interface
+## Theorem — témoin GHZ de clôture par interface (énoncé, preuve en section E)
 
 Dans l’encodage GHZ à 3 qubits (défini en section E), la **phase logique** `σ` vérifie :
 
@@ -80,11 +80,15 @@ On fixe une définition **opérationnelle** :
 > pour tout état logique `|ψ⟩` dans un **domaine de décision** `D_σ ⊂ H_L`, le résultat de `M_A` détermine `σ(|ψ⟩)`
 > (sans erreur) sur l’état encodé `V|ψ⟩`.
 
-Équivalent pratique (dans les exemples) :
+Équivalent pratique (dans les exemples, forme “observable logique”) :
 
-> Il existe un projecteur (ou observable) `Π_A` supporté sur `A` tel que  
-> `Π_A V|ψ⟩ = V Π_L |ψ⟩` pour tout `|ψ⟩`.  
-> (c’est une reconstruction exacte de `σ` sur `A`.)
+> Il existe un observable `O_A` supporté sur `A` tel que, sur le code subspace :
+>
+> ```text
+> (O_A ⊗ I_{\bar A}) V = V O_L
+> ```
+>
+> où `O_L` est l’observable logique correspondant à `σ`. (C’est une reconstruction exacte depuis `A`.)
 
 On note ce prédicat :
 
@@ -165,6 +169,13 @@ On formalise un médiateur `M` comme un supplément d’interface de capacité f
 - soit un registre classique/quantique de dimension `d(M)`,
 - soit un sous‑système additionnel autorisé dans l’accès.
 
+Dans le théorème GHZ, la minimalité porte sur les **suppléments physiques accessibles** :
+`M` est un sous‑système du complément de `A∪B`, et sa capacité est mesurée par :
+
+```text
+capacité(M) = log₂ dim(H_M).
+```
+
 On vise un énoncé de type :
 
 ```text
@@ -232,6 +243,13 @@ car :
 ```text
 X_1 X_2 X_3 |+_C⟩ = + |+_C⟩
 X_1 X_2 X_3 |-_C⟩ = - |-_C⟩
+```
+
+Forme “observable logique” (notation de la section C) :
+
+```text
+O_L = X_L
+O_{123} = X_1 X_2 X_3
 ```
 
 ### E3. No‑go marginal strict
