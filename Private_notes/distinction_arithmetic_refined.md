@@ -16,7 +16,7 @@ On fixe :
 Alors le schéma visé n’est pas “faire des scores”, mais certifier trois faits :
 
 1) **No‑go marginal** : `A` seul ne ferme pas (la vérité varie à visible fixé), et `B` seul ne ferme pas.
-2) **Composition** : la combinaison `A∧B` est le premier niveau où l’information pertinente devient accessible.
+2) **Composition** : la combinaison `A∧B` est le premier niveau où l’information pertinente devient soit directement décidable, soit localisable comme résidu réparable par médiation finie.
    Il y a alors deux régimes à distinguer :
    - **clôture directe** : `A∧B` ferme déjà (la vérité devient fonction de l’interface jointe) ;
    - **clôture médiée** : `A∧B` ne ferme pas encore (il reste un résidu), mais il existe un **médiateur fini** qui,
@@ -25,7 +25,7 @@ Alors le schéma visé n’est pas “faire des scores”, mais certifier trois 
    capacité strictement plus petite `m<n` ne peut préserver la décision.
 
 Le point essentiel : une “orthogonalité” n’est pas une corrélation. C’est un **défaut de clôture marginal**
-qui disparaît sous composition, avec une **dimension minimale** (taille du plus petit médiateur nécessaire).
+qui se résout soit par clôture directe de la composition, soit par clôture médiée, avec une **dimension minimale** dans le second cas.
 
 ## Rôle de la version finie “par distinctions”
 
