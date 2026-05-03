@@ -16,6 +16,21 @@ Référence conceptuelle interne (cadre général) :
 
 ---
 
+## Theorem — témoin GHZ de clôture par interface
+
+Dans l’encodage GHZ à 3 qubits (défini en section E), la **phase logique** `σ` vérifie :
+
+```text
+1) pour toute marginale stricte S ⊊ {1,2,3} : Fail(S, σ)
+2) pour l’interface composée complète {1,2,3} : Close({1,2,3}, σ)
+3) dans la présentation médiée A={1}, B={2} : le médiateur minimal est exactement un qubit (M={3})
+```
+
+Autrement dit : `σ` est invisible à toute interface stricte, devient décidable par composition totale, et la
+capacité minimale d’accès additionnel requise (entre `{1,2}` et `{1,2,3}`) est **un qubit**.
+
+---
+
 ## A. Cadre fixé (choix de modèle)
 
 On travaille dans un modèle QECC discret suffisamment simple pour :
@@ -308,6 +323,9 @@ la décision est impossible. Donc :
 ```text
 n = 1 qubit
 ```
+
+Dans cet exemple, le médiateur est réalisé comme **sous‑système physique additionnel accessible**
+(le qubit `{3}`), et sa capacité est mesurée par `log₂` de sa dimension de Hilbert.
 
 ### E6. Phrase de synthèse (à réutiliser)
 
