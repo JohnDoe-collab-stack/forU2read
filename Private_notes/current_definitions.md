@@ -64,3 +64,11 @@ the visible is not a sufficient invariant of the dynamic truth, and mediation me
 - Descent: a mediator descends to the visible when its value is already reconstructible from the visible quotient.
 - Non descent: under failure of visible closure and correctness requirements, it is impossible to reconstruct the mediator from the visible alone.
 - Causal certification (operational sense): attestation that the decision actually follows the mediator, established by interventions on that mediator.
+
+Stability emerges from the longest verified path capable of preserving its contextual integrity. Accuracy measures the correctness of points along that path; pointwise optimization exerts a pressure of context collapse by isolating those points from their field of dependencies.
+
+Context, understood as dependence on a path, manifests as a diagonalization: it forces a dynamic factorization across interfaces, and it yields orthogonalities that are not correlations, but invariants of intervenability. An orthogonality exists when two marginals, taken in isolation, remain deprived of access to a piece of information, while their combination makes it accessible. The content of that access can be compressed into a finite mediator, and minimality means that no strictly smaller mediator suffices to preserve the decision.
+
+“An orthogonality exists when two marginals, considered in isolation, remain deprived of access to a piece of information, while their combination makes it accessible.”
+
+Think Maxwell and light: one can read electromagnetism as an instance in which a higher‑order composition law makes accessible a variable that does not exist as a marginal observable.
