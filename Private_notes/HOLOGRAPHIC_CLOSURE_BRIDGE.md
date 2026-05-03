@@ -29,6 +29,8 @@ Dans l’encodage GHZ à 3 qubits (défini en section E), la **phase logique** `
 Autrement dit : `σ` est invisible à toute interface stricte, devient décidable par composition totale, et la
 capacité minimale d’accès additionnel requise (entre `{1,2}` et `{1,2,3}`) est **un qubit**.
 
+La minimalité est entendue dans la classe des **suppléments physiques accessibles** pris dans le complément de `A∪B`.
+
 ---
 
 ## A. Cadre fixé (choix de modèle)
@@ -89,6 +91,12 @@ On fixe une définition **opérationnelle** :
 > ```
 >
 > où `O_L` est l’observable logique correspondant à `σ`. (C’est une reconstruction exacte depuis `A`.)
+
+Remarque (force de l’hypothèse) :
+la définition `Close(A, σ)` demande seulement une **décision sans erreur** sur le domaine `D_σ`.
+Dans les exemples, on utilise souvent une condition suffisante **plus forte** : la reconstruction exacte d’un
+observable logique supporté sur l’interface. Pour le théorème GHZ, cette forme forte est satisfaite sur
+l’interface complète.
 
 On note ce prédicat :
 
@@ -345,6 +353,9 @@ n = 1 qubit
 Dans cet exemple, le médiateur est réalisé comme **sous‑système physique additionnel accessible**
 (le qubit `{3}`), et sa capacité est mesurée par `log₂` de sa dimension de Hilbert.
 
+Pour `A∪B = {1,2}`, le seul supplément physique strictement plus petit que le qubit `{3}` est trivial :
+il conserve l’interface effective `{1,2}`, où les deux témoins restent indistinguables.
+
 ### E6. Phrase de synthèse (à réutiliser)
 
 ```text
@@ -361,3 +372,23 @@ et, dans la présentation médiée, requiert exactement un qubit de capacité ad
 2) Un document `Example` qui contient l’exemple complet (témoins + reconstruction + minimalité).
 3) (Option) Un mini proofpack empirique sur le même schéma (pour illustrer la différence “universel vs instancié”),
    mais **la preuve** ici est mathématique et fermée.
+
+---
+
+## Résultat (phrase finale défendable)
+
+English:
+
+```text
+The GHZ bridge theorem gives a finite stabilizer witness for interface-closure:
+a logical truth can be invisible to every strict marginal, decidable on the composed interface,
+and require exactly one qubit of additional physical access in the mediated presentation.
+```
+
+Français :
+
+```text
+Le théorème-pont GHZ fournit un témoin stabilizer fini de clôture par interface :
+une vérité logique peut être invisible à toute marginale stricte, décidable sur l’interface composée,
+et requérir exactement un qubit d’accès physique additionnel dans la présentation médiée.
+```
