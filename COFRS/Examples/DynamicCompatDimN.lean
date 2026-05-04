@@ -25,6 +25,11 @@ Results:
 - and an exact compatibility dimension statement for `step`:
   `CompatDimEq … step n` under a `PairwisePropSeparated Pred` hypothesis.
 
+The split theorem `profileDimSplit_step_stepDim_n_of_pairwisePropSeparated` is the canonical
+parametric witness family for the abstract mediator-minimality hypothesis used by
+`COFRS/Examples/IndependenceRelationMediationChain.lean`: the qualitative no-go lives on `step`,
+while the finite lower-bound/exactness witness lives on `stepDim`.
+
 All proofs are constructive.
 -/
 
@@ -69,7 +74,7 @@ inductive DPath : DPrefix → DPrefix → Type where
 
  instance : HistoryGraph DPrefix where
    Path h k := DPath h k
-   Deformation {_ _} p q := DDef p q
+   Deformation {_ _} pth qth := DDef pth qth
    idPath h := DPath.id h
    compPath := dComp
 
@@ -455,17 +460,23 @@ def PairwisePropSeparated (Pred : Fin n → Prop) : Prop :=
   ∀ i j : Fin n, i ≠ j → ¬ (Pred i ↔ Pred j)
 
 /-!
-### A basic combinatorial limitation
+### Scope of the pairwise lower-bound hypothesis
 
-The predicate `Pred : Fin n → Prop` feeds a *binary* compatibility test for `step`.
-In this file we also use a strong hypothesis `PairwisePropSeparated Pred` to force exactness
-`CompatDimEq … step n`. However, once we additionally require a *split witness* `Pred (i0 n hn)`,
-the hypothesis `PairwisePropSeparated Pred` becomes impossible as soon as `n > 2`:
-two distinct indices different from `i0` must both be refutable, hence equivalent.
+The hypothesis `PairwisePropSeparated Pred` is a deliberately strong lower-bound device for a
+dedicated quantitative branch: it lets the single-step predicate `Compatible ... step x : Prop`
+force an exact `CompatDimEq ... step n` result by making all `n` finite classes propositionally
+distinguishable.
 
-This explains why the “global” existence statement
-`∃ Pred, Pred(i0) ∧ ¬ Pred(i1) ∧ PairwisePropSeparated Pred`
-cannot hold uniformly for all `n > 1` inside this example family.
+This should not be read as the general form of an `n`-class mediator. A single fixed step carries
+a binary truth value, while the broader mediator story may be distributed across a signature or
+across a separate quantitative step. Accordingly, this file separates the qualitative lag/no-go
+witness (`step`) from the dimensional exactness witness (`stepDim`) in
+`profileDimSplit_step_stepDim_n_of_pairwisePropSeparated`.
+
+The lemmas below record the boundary of the strong hypothesis: if one also asks for a concrete
+binary split `Pred (i0 n hn)` and `¬ Pred (i1 n hn)`, then `PairwisePropSeparated Pred` cannot
+hold once `n > 2`, because two indices outside the positive class would both be refutable and
+hence propositionally equivalent.
 -/
 
 /-- A third canonical hidden value `i2 : Fin n` under `2 < n`, avoiding `OfNat` on `Fin`. -/
@@ -833,6 +844,10 @@ Split package (usable for all `n > 1`):
 - `step` carries the qualitative no-go profile under `PredStep i0` and `¬ PredStep i1`;
 - `stepDim` carries the quantitative exactness `CompatDimEq … stepDim n` under a separate
   `PairwisePropSeparated PredDim` hypothesis.
+
+This is the file's main non-vacuity bridge to the independence/mediation chain: it exhibits a
+concrete parametric family where the abstract exact finite mediator assumption `CompatDimEq … n`
+is realized constructively.
 -/
 theorem profileDimSplit_step_stepDim_n_of_pairwisePropSeparated
     (PredStep PredDim : Fin n → Prop)

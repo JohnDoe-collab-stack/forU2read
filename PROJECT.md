@@ -78,6 +78,23 @@ The corresponding spine is packaged and proved constructively in `COFRS/Examples
 
 Scope note: `endToEnd_full` / `endToEnd_full_with_causalSignature2` are the “full story” wrappers that include marginal diagonal certification and constructive extraction of marginal separation; the joint-only invariant layer is isolated separately in `COFRS/Synthesis.lean` as `JointIrreducibleMediationProfile`.
 
+Bridge to the finite lower-bound layer:
+
+```text
+abstract lower bound
+  COFRS/Combinatorics/FinCompression.lean
+  COFRS/Dynamics.lean
+  COFRS/ConverseNormalForm.lean
+
+parametric Lean witness
+  COFRS/Examples/DynamicCompatDimN.lean
+
+empirical collision certificate
+  Empirical/aslmt/v20_algebra_v3b_unified_v2_strong_qforced_zread_policy_nontrivial_proofpack_v6
+```
+
+In words: the abstract pigeonhole/lower-bound theorem explains why a too-small finite mediator must collide; `DynamicCompatDimN.lean` shows the `CompatDimEq … n` hypothesis is constructively non-vacuous in a parametric family; the v20/v6 proofpack is the empirical analogue, where `z_classes < n_classes` produces explicit collision witnesses and forced paired-discrimination failures.
+
 ## Diagonalization, factorization, and causal mediation
 
 In this repository, diagonalization is used as a general adversarial pattern: for any candidate rule claiming to close a decision at the level of a given observable interface, a counter-construction produces a point, typically a fiber point, where that rule fails. Concretely, the critical interface is a projection `obs : S → V`. The diagonal pattern produces a situation in which the same visible value supports multiple internal states that cannot simultaneously satisfy the targeted dynamic truth.
@@ -276,7 +293,7 @@ The point is not classical Gödel logic as an external excursus. The point is to
 
 ### 6.2 `DynamicCompatDimN`
 
-`COFRS/Examples/DynamicCompatDimN.lean` develops a parametric family in arbitrary finite dimension. It shows how compatibility dimension behaves uniformly in `n`, and supplies the scalable counterpart to the binary diagonal instance.
+`COFRS/Examples/DynamicCompatDimN.lean` develops a parametric family in arbitrary finite dimension. It shows how compatibility dimension behaves uniformly in `n`, supplies the scalable counterpart to the binary diagonal instance, and gives a concrete non-vacuity witness for the abstract `CompatDimEq … n` mediator-minimality assumption used by the independence/mediation chain.
 
 ### 6.3 `Synthesis`
 

@@ -426,6 +426,9 @@ This closes the longer operational chain:
 * exact joint compatibility dimension ⇒ canonical finite mediator on the joint interface, with minimality.
 
 The mediator part uses `CompatDimEq … n` on `obsAB` (the joint interface).
+This hypothesis is non-vacuous: `COFRS/Examples/DynamicCompatDimN.lean` provides a parametric
+witness family, notably `profileDimSplit_step_stepDim_n_of_pairwisePropSeparated`, realizing
+`CompatDimEq … n` constructively.
 -/
 
 theorem double_noGo_to_separation_and_minimalJointLift
@@ -507,6 +510,10 @@ This packages the strongest “single theorem” form expected operationally:
 * impossibility of left-only and right-only prediction of the joint truth,
 * existence and minimality of a canonical joint finite mediator (`Fin n`),
 * and (optionally) the binary intervention signature.
+
+The exact mediator hypothesis `hDimAB : CompatDimEq … n` is the abstract lower-bound input used
+by this wrapper. For a concrete non-vacuity witness of this input, see
+`DynamicCompatDimN.profileDimSplit_step_stepDim_n_of_pairwisePropSeparated`.
 -/
 
 theorem endToEnd_joint
