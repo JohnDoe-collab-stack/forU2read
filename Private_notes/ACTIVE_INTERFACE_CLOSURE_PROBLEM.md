@@ -50,8 +50,11 @@ central problem:
 solution mechanism:
   minimal admissible active mediator/query extension
 
+concrete ML/world-model problem:
+  active latent problem in world models
+
 ML/world-model realization:
-  active recovery architecture for missing non-descended information
+  minimal active latent for recovering missing non-descended information
 
 certificates:
   marginal no-go, diagonal obstruction, ablation, swap, under-capacity collision
@@ -69,8 +72,11 @@ probleme central:
 mecanisme de resolution:
   mediateur actif admissible minimal / extension de requete admissible minimale
 
+probleme concret ML / world model:
+  probleme du latent actif dans les world models
+
 realisation ML / world model:
-  architecture de recuperation active de l'information non descendue
+  latent actif minimal pour recuperer l'information non descendue
 
 certificats:
   no-go marginal, obstruction diagonale, ablation, swap, collision de sous-capacite
@@ -240,6 +246,50 @@ partial interface
 -> stable decision after access repair
 ```
 
+## 4.1) Concrete ML problem: active latent in world models
+
+The concrete ML/world-model problem solved by the v20/v6 architecture is:
+
+> how to construct and validate a world-model latent that is not merely a
+> predictive embedding, but a minimal admissible active mediator: it repairs a
+> non-closed partial interface, chooses the useful access to the world, retrieves
+> the missing information, and makes the target decidable and stable.
+
+In French:
+
+> comment construire et valider un latent de world model qui ne soit pas
+> seulement un embedding predictif, mais un mediateur actif admissible minimal :
+> il repare une interface partielle non fermee, choisit l'acces utile au monde,
+> recupere l'information manquante, puis rend la cible decidable et stable.
+
+In the v20/v6 instance:
+
+```text
+cue -> z
+z -> query/action
+action -> res_bit through the environment
+(image, z, res_bit) -> target
+```
+
+The latent `z` is therefore not decorative:
+
+- **informative**: it carries the hidden class needed by the query policy;
+- **active**: it selects the interface/action;
+- **access-repairing**: it makes the missing branch information retrievable
+  through the environment response;
+- **capacity-constrained**: under-capacity produces collision witnesses;
+- **intervention-audited**: ablation breaks and swap makes the decision follow
+  the mediator.
+
+Thus the ML specialization of dynamic non-descent theory can be named:
+
+> **the active latent problem in world models**
+
+or more fully:
+
+> **the problem of validating a world-model latent as a minimal active mediator
+> for interface closure.**
+
 ## 5) What dynamic non-descent theory adds beyond known names
 
 The known theories contain parts of the picture.
@@ -405,6 +455,11 @@ Architecture/empirical layer:
   - ablation and swap;
   - minproof collision witnesses.
 
+- `Empirical/aslmt/v20_algebra_v3b_unified_v2_strong_qforced_zread_policy_nontrivial_proofpack_v6/README_aslmt_v20_algebra_v3b_unified_v2_strong_qforced_zread_policy_nontrivial.md`
+  - concrete active-latent chain:
+    `cue -> zread -> action -> res_bit -> target`;
+  - residual ambiguity over `k` contracts when the correct interface is selected.
+
 Page/black-hole reading:
 
 - `Private_notes/PAGE_AS_CLOSURE_REGIME.md`
@@ -487,6 +542,15 @@ It claims:
 > access repair. The mediator is audited by ablation, swap and under-capacity
 > collision tests.
 
+### World-model / latent-facing
+
+> Dynamic non-descent theory solves, in its ML realization, a finite
+> constructive form of the **active latent problem in world models**: construct a
+> latent that is not merely a predictive embedding, but a minimal admissible
+> active mediator that closes a partial interface by choosing useful access to
+> the world, retrieving missing information, and stabilizing the target decision
+> under intervention audit.
+
 ### Mathematical
 
 > The result is a constructive quotient-closure theorem with active repair:
@@ -500,3 +564,10 @@ It claims:
 > non-identifiability at a partial interface into stable decidability by
 > constructing the minimal admissible active mediator that repairs access to the
 > missing information.
+
+### Concrete ML sentence
+
+> The concrete ML problem solved here is the active latent problem in world
+> models: validating `z` as a minimal admissible mediator that selects access,
+> retrieves missing context and closes the target decision, rather than as a
+> passive predictive embedding.
