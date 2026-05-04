@@ -110,7 +110,7 @@ minimal joint mediator irreducible to either marginal
 | Minimality | compression/usefulness learned empirically | theorem-level lower bound: for every `m < n`, lift of size `m` fails |
 | Causality/intervention | planning/action in later variants | optional `CausalSignature2` theorem for binary case |
 | Certificate type | downstream performance and planning success | obstruction, refining lift, lower bound, intervention audit |
-| Theorem name | no corresponding theorem in JEPA papers | `endToEnd_full` |
+| Theorem name | no theorem matching `endToEnd_full`: no left/right marginal irreducibility, no finite `RefiningLift`, no lower-bound statement `∀ m<n` | `endToEnd_full` |
 
 ## 3. What JEPA actually gives
 
@@ -199,6 +199,16 @@ each marginal alone fails; collisions in `z` under insufficient capacity force
 paired-discrimination failure because decoder inputs become identical.
 
 ## 6. Non-equivalence proposition
+
+The comparison is not between "latents" in general.
+
+It is between:
+
+```text
+predictive latent embeddings
+vs
+target-relative minimal joint mediators with formal irreducibility and lower bounds
+```
 
 ### Proposition
 
@@ -302,12 +312,13 @@ dynamic non-descent certifies minimal joint irreducibility.
 
 The clean comparative claim is:
 
-> JEPA-style systems provide powerful predictive latents for world models.
-> Dynamic non-descent identifies a stricter object: a minimal joint mediator,
-> irreducible to either marginal interface, with finite refining lift and
-> lower-bound certificate. The ASLMT v20 implementation realizes this object
-> operationally by making `z` a discrete mediator read by the query, then
-> auditing the chain by marginal no-go, ablation, swap, and collision witnesses.
+> JEPA learns predictive latents for world modeling. Dynamic non-descent
+> characterizes a stricter object: a target-relative minimal joint mediator,
+> irreducible to either marginal, equipped with a finite refining lift and a
+> lower-bound certificate against smaller mediators. The ASLMT v20
+> implementation realizes this object operationally by making `z` a discrete
+> mediator read by the query, then testing the chain by marginal no-go,
+> ablation, swap, and collision witnesses.
 
 The shortest version:
 
