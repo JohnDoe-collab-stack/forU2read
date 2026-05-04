@@ -7,6 +7,9 @@ v6 fixes two proofpack hygiene issues from v5:
 - structural baseline controls now use the **trained image-only and cue-only baselines saved in the checkpoint**;
 - the minproof verifier now enforces the finite lower-bound obligation: when `z_classes < n_classes`,
   every certified context must carry a verified `h0≠h1` collision witness.
+- the image/cue ranking losses now mirror the structural verifier's actual witnesses:
+  fixed visible image, deterministic `h→h+1`, fixed `k`, verifier-distributed IID/OOD contexts,
+  and swap(z) without swapping the environment `res_bit`.
 
 This proofpack turns the v20 v3b algebra test into a **zero-counterexample** demonstration.
 
@@ -89,7 +92,8 @@ CompatDimEq in Lean
   --n-classes-list 8 \
   --z-classes-list 8 \
   --episodes 64 --seed-base 0 \
-  --pair-n-ctx 64
+  --pair-n-ctx 64 \
+  --rank-n-ctx 64
 ```
 
 Artifacts are written under:

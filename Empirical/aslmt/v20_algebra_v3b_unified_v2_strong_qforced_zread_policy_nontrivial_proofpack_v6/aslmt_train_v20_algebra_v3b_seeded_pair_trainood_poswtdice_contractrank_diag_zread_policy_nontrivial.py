@@ -108,6 +108,37 @@ class PairEvalCfg:
     img_size: int
 
 
+def _make_struct_ctxs(*, n_ctx: int, seed: int, ood: bool, img_size: int, n_classes: int) -> list[Ctx]:
+    """
+    Context family used by the structural proofpack.
+
+    This intentionally mirrors `certify_struct_aslmt_v20_algebra_v3b_proofpack.py`.
+    The training rank losses and the final pair evaluation must use the same
+    context distribution as the certificate/verifier; otherwise the optimizer can
+    satisfy an easier surrogate while still failing the proofpack.
+    """
+    g = torch.Generator(device="cpu")
+    g.manual_seed(int(seed) + (999 if bool(ood) else 0))
+
+    n = int(n_classes)
+    needed = int(POS_STRIDE) * int(n - 1) + 1
+    min_occ_half = int((needed + (9 if bool(ood) else 7)) // 2)
+
+    ctxs: list[Ctx] = []
+    for i in range(int(n_ctx)):
+        occ_half = int(torch.randint(low=min_occ_half, high=min_occ_half + (3 if bool(ood) else 2), size=(1,), generator=g).item())
+        margin = 4
+        lo = int(occ_half) + margin
+        hi = int(img_size) - int(occ_half) - margin
+        if hi < lo:
+            raise ValueError("ctx sampling failed: img_size too small for occ_half")
+        cx = int(torch.randint(low=int(lo), high=int(hi) + 1, size=(1,), generator=g).item())
+        cy = int(torch.randint(low=int(lo), high=int(hi) + 1, size=(1,), generator=g).item())
+        t = int(torch.randint(low=2, high=(4 if bool(ood) else 3) + 1, size=(1,), generator=g).item())
+        ctxs.append(Ctx(cx=cx, cy=cy, t=t, occ_half=occ_half, img_size=int(img_size), ood=bool(ood), seed=int(seed) + int(i)))
+    return ctxs
+
+
 def _pair_eval_one(
     *,
     modelA: V20AlgebraV3bQueryModelA_ZRead,
@@ -131,33 +162,11 @@ def _pair_eval_one(
     # - image barrier: vary h with fixed k => images must match
     # - cue barrier: vary k with fixed h => cues must match
     # - swap follow: computed on the image-barrier pair where k is fixed, so swapping z alone is meaningful
-    g = torch.Generator(device="cpu")
-    g.manual_seed(int(cfg.seed) + (999 if bool(ood) else 0))
-
     n_classes = int(n_classes)
     n_ctx = int(cfg.n_ctx)
     img_size = int(cfg.img_size)
 
-    # Context sampling close to v3b reference.
-    min_occ_half = 20
-    needed = int(POS_STRIDE) * int(n_classes - 1) + 1
-    if bool(ood):
-        min_occ_half = int((needed + 9) // 2)
-    else:
-        min_occ_half = int((needed + 7) // 2)
-
-    ctxs: list[Ctx] = []
-    for i in range(int(n_ctx)):
-        occ_half = int(torch.randint(low=min_occ_half, high=min_occ_half + (3 if bool(ood) else 2), size=(1,), generator=g).item())
-        margin = 4
-        lo = int(occ_half) + margin
-        hi = int(img_size) - int(occ_half) - margin
-        if hi < lo:
-            raise ValueError("ctx sampling failed: img_size too small for occ_half")
-        cx = int(torch.randint(low=int(lo), high=int(hi) + 1, size=(1,), generator=g).item())
-        cy = int(torch.randint(low=int(lo), high=int(hi) + 1, size=(1,), generator=g).item())
-        t = int(torch.randint(low=2, high=(4 if bool(ood) else 3) + 1, size=(1,), generator=g).item())
-        ctxs.append(Ctx(cx=cx, cy=cy, t=t, occ_half=occ_half, img_size=int(img_size), ood=bool(ood), seed=int(cfg.seed) + int(i)))
+    ctxs = _make_struct_ctxs(n_ctx=int(n_ctx), seed=int(cfg.seed), ood=bool(ood), img_size=int(img_size), n_classes=int(n_classes))
 
     obs_image_barrier_ok = True
     obs_cue_barrier_ok = True
@@ -171,16 +180,11 @@ def _pair_eval_one(
     A_swap_follow_image = 0
     A_swap_orig_both_image = 0
 
-    h_pairs: list[tuple[int, int]] = []
-    for i in range(n_classes):
-        for j in range(i + 1, n_classes):
-            h_pairs.append((i, j))
-
-    for i, ctx in enumerate(ctxs):
-        h0, h1 = h_pairs[i % len(h_pairs)]
-
+    for ctx in ctxs:
         # Image barrier: vary h with fixed k.
-        k_fixed = int((ctx.seed + 0) % 2)
+        h0 = int(ctx.seed % int(n_classes))
+        h1 = int((h0 + 1) % int(n_classes))
+        k_fixed = int(ctx.seed & 1)
         x_im0 = render(ctx, h=h0, k=k_fixed, n_classes=n_classes)
         x_im1 = render(ctx, h=h1, k=k_fixed, n_classes=n_classes)
         obs_image_barrier_ok = obs_image_barrier_ok and bool(torch.allclose(x_im0["image"], x_im1["image"]))
@@ -192,7 +196,7 @@ def _pair_eval_one(
         t_im1 = x_im1["hidden_target"].unsqueeze(0).to(device)
 
         # Cue barrier: vary k with fixed h.
-        h_fixed = int((ctx.seed + 1) % int(n_classes))
+        h_fixed = int((ctx.seed * 3 + 1) % int(n_classes))
         x_cu0 = render(ctx, h=h_fixed, k=0, n_classes=n_classes)
         x_cu1 = render(ctx, h=h_fixed, k=1, n_classes=n_classes)
         obs_cue_barrier_ok = obs_cue_barrier_ok and bool(torch.allclose(x_cu0["cue_image"], x_cu1["cue_image"]))
@@ -337,7 +341,7 @@ def main() -> None:
     p.add_argument("--w-pos", type=float, default=0.25)
     p.add_argument("--w-rank-img", type=float, default=1.0)
     p.add_argument("--w-rank-cue", type=float, default=0.25)
-    p.add_argument("--rank-n-ctx", type=int, default=8)
+    p.add_argument("--rank-n-ctx", type=int, default=64)
     p.add_argument("--rank-ood-ratio", type=float, default=0.5)
     p.add_argument("--rank-margin", type=float, default=2.0)
     p.add_argument("--w-bce", type=float, default=1.0)
@@ -428,29 +432,29 @@ def main() -> None:
     ) -> torch.Tensor:
         loss_terms: list[torch.Tensor] = []
         for ctx in ctxs:
-            h0 = random.randint(0, int(n_classes) - 1)
-            h1 = random.randint(0, int(n_classes) - 1)
-            k0 = random.randint(0, 1)
-            k1 = random.randint(0, 1)
-            ex0 = render(ctx, h=int(h0), k=int(k0), n_classes=int(n_classes))
-            ex1 = render(ctx, h=int(h1), k=int(k1), n_classes=int(n_classes))
+            # Mirror the structural verifier's image-gate witness exactly:
+            # fixed visible image, h1=h0+1, k fixed by the context seed.
+            h0 = int(ctx.seed % int(n_classes))
+            h1 = int((h0 + 1) % int(n_classes))
+            k_fixed = int(ctx.seed & 1)
+            ex0 = render(ctx, h=int(h0), k=int(k_fixed), n_classes=int(n_classes))
+            ex1 = render(ctx, h=int(h1), k=int(k_fixed), n_classes=int(n_classes))
             cue0 = _add_xy(ex0["cue_image"].unsqueeze(0).to(device))
             cue1 = _add_xy(ex1["cue_image"].unsqueeze(0).to(device))
-            img0 = _add_xy(ex0["image"].unsqueeze(0).to(device))
-            img1 = _add_xy(ex1["image"].unsqueeze(0).to(device))
+            image_fixed = _add_xy(ex0["image"].unsqueeze(0).to(device))
             t0 = ex0["hidden_target"].unsqueeze(0).to(device)
             t1 = ex1["hidden_target"].unsqueeze(0).to(device)
-            h0t = torch.tensor([int(h0)], device=device, dtype=torch.long)
-            h1t = torch.tensor([int(h1)], device=device, dtype=torch.long)
-            k0t = torch.tensor([int(k0)], device=device, dtype=torch.long)
-            k1t = torch.tensor([int(k1)], device=device, dtype=torch.long)
+            h0t = ex0["h"].unsqueeze(0).to(device)
+            h1t = ex1["h"].unsqueeze(0).to(device)
+            k0t = ex0["k"].unsqueeze(0).to(device)
+            k1t = ex1["k"].unsqueeze(0).to(device)
             with torch.no_grad():
                 act0 = modelA.chosen_action(cue0)
                 act1 = modelA.chosen_action(cue1)
             res0 = _env_res_bit(h=h0t, k=k0t, action=act0)
             res1 = _env_res_bit(h=h1t, k=k1t, action=act1)
-            p0 = modelA.forward_with_res_bit(cue0, img0, res_bit=res0)
-            p1 = modelA.forward_with_res_bit(cue1, img1, res_bit=res1)
+            p0 = modelA.forward_with_res_bit(cue0, image_fixed, res_bit=res0)
+            p1 = modelA.forward_with_res_bit(cue1, image_fixed, res_bit=res1)
 
             # enforce: p0 overlaps t0 more than t1, and p1 overlaps t1 more than t0
             s00 = _overlap_score(p0, t0)
@@ -463,14 +467,12 @@ def main() -> None:
 
             # swap rank: swapped should prefer the opposite
             cue_pair = torch.cat([cue0, cue1], dim=0)
-            img_pair = torch.cat([img0, img1], dim=0)
+            img_pair = torch.cat([image_fixed, image_fixed], dim=0)
             res_pair = torch.cat([res0, res1], dim=0)
             perm = torch.tensor([1, 0], device=device, dtype=torch.long)
-            # For swap-ranking, we swap both mediators' carriers:
-            # - z is swapped inside swap_forward_with_res_bit
-            # - res_bit is swapped here (so the full (h,k) target follows)
-            res_pair_swap = res_pair[perm]
-            p_pair_swap = modelA.swap_forward_with_res_bit(cue_pair, img_pair, res_bit=res_pair_swap, perm=perm)
+            # Match the verifier: swap z only; keep the environment response bits
+            # attached to their original examples.
+            p_pair_swap = modelA.swap_forward_with_res_bit(cue_pair, img_pair, res_bit=res_pair, perm=perm)
             p0_swap = p_pair_swap[0:1]
             p1_swap = p_pair_swap[1:2]
             sw00 = _overlap_score(p0_swap, t0)
@@ -489,9 +491,9 @@ def main() -> None:
     ) -> torch.Tensor:
         loss_terms: list[torch.Tensor] = []
         for ctx in ctxs:
-            h0 = random.randint(0, int(n_classes) - 1)
-            k0 = random.randint(0, 1)
-            k1 = random.randint(0, 1)
+            h0 = int((ctx.seed * 3 + 1) % int(n_classes))
+            k0 = 0
+            k1 = 1
             ex0 = render(ctx, h=int(h0), k=int(k0), n_classes=int(n_classes))
             ex1 = render(ctx, h=int(h0), k=int(k1), n_classes=int(n_classes))
             cue = _add_xy(ex0["cue_image"].unsqueeze(0).to(device))
@@ -520,17 +522,6 @@ def main() -> None:
         if not loss_terms:
             return torch.tensor(0.0, device=device)
         return torch.stack(loss_terms, dim=0).mean()
-
-    # build ctx bank for rank loss
-    def _sample_ctxs(*, n_ctx: int, ood: bool) -> list[Ctx]:
-        out = []
-        for i in range(int(n_ctx)):
-            ctx = Ctx(cx=32, cy=32, t=2, occ_half=20, img_size=int(cfg.img_size), ood=bool(ood), seed=int(cfg.seed) + i)
-            out.append(ctx)
-        return out
-
-    ctxs_iid = _sample_ctxs(n_ctx=int(cfg.rank_n_ctx), ood=False)
-    ctxs_ood = _sample_ctxs(n_ctx=int(cfg.rank_n_ctx), ood=True)
 
     for step in range(1, int(cfg.steps) + 1):
         use_ood = random.random() < float(cfg.train_ood_ratio)
@@ -582,6 +573,13 @@ def main() -> None:
         # optional rank losses
         lossA_rank_img = torch.tensor(0.0, device=device)
         if float(cfg.w_rank_img) != 0.0:
+            rank_seed = int(cfg.seed) + 1000003 * int(step)
+            ctxs_iid = _make_struct_ctxs(
+                n_ctx=int(cfg.rank_n_ctx), seed=int(rank_seed), ood=False, img_size=int(cfg.img_size), n_classes=int(n_classes)
+            )
+            ctxs_ood = _make_struct_ctxs(
+                n_ctx=int(cfg.rank_n_ctx), seed=int(rank_seed), ood=True, img_size=int(cfg.img_size), n_classes=int(n_classes)
+            )
             lossA_rank_img_iid = _img_pair_contract_rank_loss(
                 modelA=modelA, device=device, n_classes=int(n_classes), ctxs=ctxs_iid, margin=float(cfg.rank_margin)
             )
@@ -592,6 +590,13 @@ def main() -> None:
 
         lossA_rank_cue = torch.tensor(0.0, device=device)
         if float(cfg.w_rank_cue) != 0.0:
+            rank_seed = int(cfg.seed) + 1000003 * int(step)
+            ctxs_iid = _make_struct_ctxs(
+                n_ctx=int(cfg.rank_n_ctx), seed=int(rank_seed), ood=False, img_size=int(cfg.img_size), n_classes=int(n_classes)
+            )
+            ctxs_ood = _make_struct_ctxs(
+                n_ctx=int(cfg.rank_n_ctx), seed=int(rank_seed), ood=True, img_size=int(cfg.img_size), n_classes=int(n_classes)
+            )
             lossA_rank_cue_iid = _cue_pair_contract_rank_loss(
                 modelA=modelA, device=device, n_classes=int(n_classes), ctxs=ctxs_iid, margin=float(cfg.rank_margin)
             )

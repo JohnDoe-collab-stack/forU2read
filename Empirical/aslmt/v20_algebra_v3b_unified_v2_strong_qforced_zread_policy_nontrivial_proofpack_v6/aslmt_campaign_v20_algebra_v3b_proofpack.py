@@ -96,7 +96,7 @@ def main() -> None:
     p.add_argument("--w-pos", type=float, default=0.25)
     p.add_argument("--w-rank-img", type=float, default=1.0)
     p.add_argument("--w-rank-cue", type=float, default=0.25)
-    p.add_argument("--rank-n-ctx", type=int, default=8)
+    p.add_argument("--rank-n-ctx", type=int, default=64)
     p.add_argument("--rank-margin", type=float, default=2.0)
     p.add_argument("--rank-ood-ratio", type=float, default=0.5)
     p.add_argument("--w-bce", type=float, default=1.0)
