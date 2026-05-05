@@ -365,11 +365,21 @@ def Subfamily.Proper (K I : Subfamily J) : Prop :=
 def Subfamily.Insert (I : Subfamily J) (j0 : J) : Subfamily J :=
   fun j => I j ∨ j = j0
 
+/-- Remove one interface from a subfamily, constructively. -/
+def Subfamily.Remove (I : Subfamily J) (j0 : J) : Subfamily J :=
+  fun j => I j ∧ j ≠ j0
+
 /-- A subfamily is included in the result of inserting one interface. -/
 theorem Subfamily.subset_insert (I : Subfamily J) (j0 : J) :
     Subfamily.Subset I (Subfamily.Insert I j0) := by
   intro j hj
   exact Or.inl hj
+
+/-- Removing one interface gives a subfamily of the original family. -/
+theorem Subfamily.remove_subset (I : Subfamily J) (j0 : J) :
+    Subfamily.Subset (Subfamily.Remove I j0) I := by
+  intro j hj
+  exact hj.1
 
 /-- Two states are indistinguishable by every interface in `I`. -/
 def JointSame (obs : J → S → V) (I : Subfamily J) (x y : S) : Prop :=
@@ -437,6 +447,20 @@ def LossProfileSeparated
   ∃ x y : S, Residual obs sigma I x y ∧
     ((Loss obs sigma j x y ∧ InterfaceSeparates obs sigma k x y) ∨
       (Loss obs sigma k x y ∧ InterfaceSeparates obs sigma j x y))
+
+/--
+A residual for `I \ {j0}` is exactly a required distinction lost by every other interface in `I`.
+-/
+theorem residual_remove_iff_required_and_other_losses
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j0 : J) (x y : S) :
+    Residual obs sigma (Subfamily.Remove I j0) x y ↔
+      RequiredDistinction sigma x y ∧
+        ∀ j : J, I j → j ≠ j0 → obs j x = obs j y := by
+  constructor
+  · intro hRes
+    exact ⟨hRes.1, fun j hjI hjNe => hRes.2 j ⟨hjI, hjNe⟩⟩
+  · intro h
+    exact ⟨h.1, fun j hj => h.2 j hj.1 hj.2⟩
 
 /--
 Residual after inserting one interface is exactly the old residual restricted to the
@@ -1304,6 +1328,108 @@ theorem closed_iff_residual_empty
     · exact hEq
     · exact False.elim (hEmpty x y ⟨hEq, hJoint⟩)
 
+/--
+An interface is structurally essential inside a closing coalition when removing it leaves an
+explicit residual witness.
+-/
+def EssentialInClosure
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j : J) : Prop :=
+  I j ∧ Closed obs sigma I ∧ ResidualNonempty obs sigma (Subfamily.Remove I j)
+
+/--
+An interface is structurally redundant inside a closing coalition when removing it preserves
+closure.
+-/
+def RedundantInClosure
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j : J) : Prop :=
+  I j ∧ Closed obs sigma I ∧ Closed obs sigma (Subfamily.Remove I j)
+
+/-- Essentiality is equivalent to closedness plus an explicit residual after ablation. -/
+theorem essentialInClosure_iff_closed_and_remove_residual
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j : J) :
+    EssentialInClosure obs sigma I j ↔
+      I j ∧ Closed obs sigma I ∧
+        ∃ x y : S, Residual obs sigma (Subfamily.Remove I j) x y := by
+  constructor
+  · intro h
+    exact h
+  · intro h
+    exact h
+
+/-- Redundancy is equivalent to closedness plus empty residual after ablation. -/
+theorem redundantInClosure_iff_closed_and_remove_residual_empty
+    [DecidableEq Y]
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j : J) :
+    RedundantInClosure obs sigma I j ↔
+      I j ∧ Closed obs sigma I ∧
+        ResidualEmpty obs sigma (Subfamily.Remove I j) := by
+  constructor
+  · intro h
+    exact ⟨h.1, h.2.1, (closed_iff_residual_empty obs sigma (Subfamily.Remove I j)).mp h.2.2⟩
+  · intro h
+    exact ⟨h.1, h.2.1, (closed_iff_residual_empty obs sigma (Subfamily.Remove I j)).mpr h.2.2⟩
+
+/--
+Numerical form of structural essentiality: after ablating `j`, the residual count is positive.
+-/
+theorem essentialInClosure_iff_closed_and_rho_remove_pos_of_exhaustive_states
+    [DecidableEq V] [DecidableEq Y]
+    (states : List S) (obs : J → S → V) (sigma : S → Y)
+    (I : Subfamily J) (j : J) (interfacesRemove : List J)
+    (hStates : ∀ s : S, InList s states)
+    (hEnumRemoveLeft :
+      ∀ k : J, Subfamily.Remove I j k → InList k interfacesRemove)
+    (hEnumRemoveRight :
+      ∀ k : J, InList k interfacesRemove → Subfamily.Remove I j k) :
+    EssentialInClosure obs sigma I j ↔
+      I j ∧ Closed obs sigma I ∧
+        0 < rho states obs sigma interfacesRemove := by
+  constructor
+  · intro hEss
+    have hNonempty : ResidualNonempty obs sigma (Subfamily.Remove I j) := hEss.2.2
+    have hPos : 0 < rho states obs sigma interfacesRemove :=
+      (rho_pos_iff_residualNonempty_of_exhaustive_states
+        states obs sigma interfacesRemove (Subfamily.Remove I j)
+        hStates hEnumRemoveLeft hEnumRemoveRight).mpr hNonempty
+    exact ⟨hEss.1, hEss.2.1, hPos⟩
+  · intro h
+    have hNonempty : ResidualNonempty obs sigma (Subfamily.Remove I j) :=
+      (rho_pos_iff_residualNonempty_of_exhaustive_states
+        states obs sigma interfacesRemove (Subfamily.Remove I j)
+        hStates hEnumRemoveLeft hEnumRemoveRight).mp h.2.2
+    exact ⟨h.1, h.2.1, hNonempty⟩
+
+/--
+Numerical form of structural redundancy: after ablating `j`, the residual count remains zero.
+-/
+theorem redundantInClosure_iff_closed_and_rho_remove_zero_of_exhaustive_states
+    [DecidableEq V] [DecidableEq Y]
+    (states : List S) (obs : J → S → V) (sigma : S → Y)
+    (I : Subfamily J) (j : J) (interfacesRemove : List J)
+    (hStates : ∀ s : S, InList s states)
+    (hEnumRemoveLeft :
+      ∀ k : J, Subfamily.Remove I j k → InList k interfacesRemove)
+    (hEnumRemoveRight :
+      ∀ k : J, InList k interfacesRemove → Subfamily.Remove I j k) :
+    RedundantInClosure obs sigma I j ↔
+      I j ∧ Closed obs sigma I ∧
+        rho states obs sigma interfacesRemove = 0 := by
+  constructor
+  · intro hRed
+    have hEmpty : ResidualEmpty obs sigma (Subfamily.Remove I j) :=
+      (closed_iff_residual_empty obs sigma (Subfamily.Remove I j)).mp hRed.2.2
+    have hZero : rho states obs sigma interfacesRemove = 0 :=
+      (rho_eq_zero_iff_residualEmpty_of_exhaustive_states
+        states obs sigma interfacesRemove (Subfamily.Remove I j)
+        hStates hEnumRemoveLeft hEnumRemoveRight).mpr hEmpty
+    exact ⟨hRed.1, hRed.2.1, hZero⟩
+  · intro h
+    have hEmpty : ResidualEmpty obs sigma (Subfamily.Remove I j) :=
+      (rho_eq_zero_iff_residualEmpty_of_exhaustive_states
+        states obs sigma interfacesRemove (Subfamily.Remove I j)
+        hStates hEnumRemoveLeft hEnumRemoveRight).mp h.2.2
+    exact ⟨h.1, h.2.1, (closed_iff_residual_empty obs sigma (Subfamily.Remove I j)).mpr hEmpty⟩
+
 /-- Irreducible closure: `I` closes, but every proper subfamily leaves a residual. -/
 def IrreducibleClosure (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) : Prop :=
   Closed obs sigma I ∧
@@ -1409,7 +1535,7 @@ allowed information is a subfamily readout.
 -/
 def SubfamilyPredictsStep
     {P : Type p} [HistoryGraph P]
-    {S V W : Type w}
+    {S V : Type w} {W : Type y}
     (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
     {h k : P} (step : HistoryGraph.Path h k)
     (readout : S → W) : Prop :=
@@ -1423,7 +1549,7 @@ from that subfamily readout alone.
 -/
 def DynamicMediatorDescendsSubfamily
     {P : Type p} [HistoryGraph P]
-    {S V W : Type w}
+    {S V : Type w} {W : Type y}
     (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
     {h k : P} (step : HistoryGraph.Path h k) {n : Nat}
     (readout : S → W)
@@ -1436,7 +1562,7 @@ joint dynamic truth is predictable from that readout.
 -/
 theorem subfamilyPredictsStep_of_dynamicMediatorDescendsSubfamily
     {P : Type p} [HistoryGraph P]
-    {S V W : Type w}
+    {S V : Type w} {W : Type y}
     (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
     {h k : P} (step : HistoryGraph.Path h k) {n : Nat}
     (readout : S → W)
@@ -1453,7 +1579,7 @@ theorem subfamilyPredictsStep_of_dynamicMediatorDescendsSubfamily
 /-- If the joint truth is not predictable from a subfamily readout, no lift mediator descends to it. -/
 theorem not_dynamicMediatorDescendsSubfamily_of_not_subfamilyPredictsStep
     {P : Type p} [HistoryGraph P]
-    {S V W : Type w}
+    {S V : Type w} {W : Type y}
     (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
     {h k : P} (step : HistoryGraph.Path h k) {n : Nat}
     (readout : S → W)
@@ -1474,7 +1600,7 @@ The n-interface dynamic mediation profile:
 -/
 def FamilyIrreducibleMediationProfile
     {P : Type p} [HistoryGraph P]
-    {S V : Type w} {J : Type u} {W : Subfamily J → Type w}
+    {S V : Type w} {J : Type u} {W : Subfamily J → Type y}
     (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
     (I : Subfamily J) (readoutOf : (K : Subfamily J) → S → W K)
     {h k : P} (step : HistoryGraph.Path h k) (n : Nat) : Prop :=
@@ -1486,7 +1612,7 @@ def FamilyIrreducibleMediationProfile
 /-- A dynamic family profile yields a refining lift at the certified finite dimension. -/
 theorem refiningLift_of_familyIrreducibleMediationProfile
     {P : Type p} [HistoryGraph P]
-    {S V : Type w} {J : Type u} {W : Subfamily J → Type w}
+    {S V : Type w} {J : Type u} {W : Subfamily J → Type y}
     (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
     (I : Subfamily J) (readoutOf : (K : Subfamily J) → S → W K)
     {h k : P} (step : HistoryGraph.Path h k) (n : Nat) :
@@ -1498,7 +1624,7 @@ theorem refiningLift_of_familyIrreducibleMediationProfile
 /-- A dynamic family profile excludes refining lifts with any smaller finite supplement. -/
 theorem no_smaller_refiningLift_of_familyIrreducibleMediationProfile
     {P : Type p} [HistoryGraph P]
-    {S V : Type w} {J : Type u} {W : Subfamily J → Type w}
+    {S V : Type w} {J : Type u} {W : Subfamily J → Type y}
     (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
     (I : Subfamily J) (readoutOf : (K : Subfamily J) → S → W K)
     {h k : P} (step : HistoryGraph.Path h k) (n : Nat) :
@@ -1514,7 +1640,7 @@ dimension cannot descend to any proper subfamily readout.
 -/
 theorem not_dynamicMediatorDescendsSubfamily_of_familyIrreducibleMediationProfile
     {P : Type p} [HistoryGraph P]
-    {S V : Type w} {J : Type u} {W : Subfamily J → Type w}
+    {S V : Type w} {J : Type u} {W : Subfamily J → Type y}
     (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
     (I : Subfamily J) (readoutOf : (K : Subfamily J) → S → W K)
     {h k : P} (step : HistoryGraph.Path h k) {n : Nat}
@@ -1526,6 +1652,38 @@ theorem not_dynamicMediatorDescendsSubfamily_of_familyIrreducibleMediationProfil
       (P := P) sem jointObs targetJoint step (readoutOf K) L := by
   exact not_dynamicMediatorDescendsSubfamily_of_not_subfamilyPredictsStep
     (P := P) sem jointObs targetJoint step (readoutOf K) L (hProf.2.2 K hProper)
+
+/--
+End-to-end wrapper for the dynamic minimal-access-coalition profile.
+
+It packages the three operational consequences of `FamilyIrreducibleMediationProfile`:
+
+* a refining lift exists at the certified finite dimension `n`;
+* no smaller finite supplement can refine the joint dynamic truth;
+* any concrete lift at dimension `n` fails to descend to every proper subfamily readout.
+-/
+theorem endToEnd_minimalAccessCoalition
+    {P : Type p} [HistoryGraph P]
+    {S V : Type w} {J : Type u} {W : Subfamily J → Type y}
+    (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
+    (I : Subfamily J) (readoutOf : (K : Subfamily J) → S → W K)
+    {h k : P} (step : HistoryGraph.Path h k) (n : Nat) :
+    FamilyIrreducibleMediationProfile (P := P) sem jointObs targetJoint I readoutOf step n →
+      RefiningLift (P := P) sem jointObs targetJoint h step n
+        ∧ (∀ m : Nat, m < n → ¬ RefiningLift (P := P) sem jointObs targetJoint h step m)
+        ∧ (∀ L : RefiningLiftData (P := P) sem jointObs targetJoint h step n,
+            ∀ K : Subfamily J, Subfamily.Proper K I →
+              ¬ DynamicMediatorDescendsSubfamily
+                (P := P) sem jointObs targetJoint step (readoutOf K) L) := by
+  intro hProf
+  refine ⟨?_, ?_, ?_⟩
+  · exact refiningLift_of_familyIrreducibleMediationProfile
+      (P := P) sem jointObs targetJoint I readoutOf step n hProf
+  · exact no_smaller_refiningLift_of_familyIrreducibleMediationProfile
+      (P := P) sem jointObs targetJoint I readoutOf step n hProf
+  · intro L K hProper
+    exact not_dynamicMediatorDescendsSubfamily_of_familyIrreducibleMediationProfile
+      (P := P) sem jointObs targetJoint I readoutOf step hProf K hProper L
 
 /-- A finite mediator readout descends to the subfamily `K`. -/
 def MediatorDescendsSubfamily
@@ -1561,6 +1719,9 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.MultiInterface.LocallyRedundantInterface
 #print axioms PrimitiveHolonomy.MultiInterface.SameLossProfileOn
 #print axioms PrimitiveHolonomy.MultiInterface.LossProfileSeparated
+#print axioms PrimitiveHolonomy.MultiInterface.Subfamily.Remove
+#print axioms PrimitiveHolonomy.MultiInterface.Subfamily.remove_subset
+#print axioms PrimitiveHolonomy.MultiInterface.residual_remove_iff_required_and_other_losses
 #print axioms PrimitiveHolonomy.MultiInterface.residual_insert_iff_residual_and_loss
 #print axioms PrimitiveHolonomy.MultiInterface.locallyUsefulInterface_iff_exists_residual_not_insert
 #print axioms PrimitiveHolonomy.MultiInterface.locallyRedundantInterface_iff_insert_residual_iff
@@ -1576,6 +1737,12 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.MultiInterface.deltaGain_eq_rho_sub
 #print axioms PrimitiveHolonomy.MultiInterface.locallyUsefulInterface_iff_rho_insert_lt_of_exhaustive_states
 #print axioms PrimitiveHolonomy.MultiInterface.closed_iff_residual_empty
+#print axioms PrimitiveHolonomy.MultiInterface.EssentialInClosure
+#print axioms PrimitiveHolonomy.MultiInterface.RedundantInClosure
+#print axioms PrimitiveHolonomy.MultiInterface.essentialInClosure_iff_closed_and_remove_residual
+#print axioms PrimitiveHolonomy.MultiInterface.redundantInClosure_iff_closed_and_remove_residual_empty
+#print axioms PrimitiveHolonomy.MultiInterface.essentialInClosure_iff_closed_and_rho_remove_pos_of_exhaustive_states
+#print axioms PrimitiveHolonomy.MultiInterface.redundantInClosure_iff_closed_and_rho_remove_zero_of_exhaustive_states
 #print axioms PrimitiveHolonomy.MultiInterface.irreducibleClosureW_iff_residual_empty_and_proper_residual_nonempty
 #print axioms PrimitiveHolonomy.MultiInterface.irreducibleClosure_of_irreducibleClosureW
 #print axioms PrimitiveHolonomy.MultiInterface.IrreducibleClosureRho
@@ -1588,6 +1755,7 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.MultiInterface.refiningLift_of_familyIrreducibleMediationProfile
 #print axioms PrimitiveHolonomy.MultiInterface.no_smaller_refiningLift_of_familyIrreducibleMediationProfile
 #print axioms PrimitiveHolonomy.MultiInterface.not_dynamicMediatorDescendsSubfamily_of_familyIrreducibleMediationProfile
+#print axioms PrimitiveHolonomy.MultiInterface.endToEnd_minimalAccessCoalition
 #print axioms PrimitiveHolonomy.MultiInterface.MediatorDescendsSubfamily
 #print axioms PrimitiveHolonomy.MultiInterface.IrreducibleMediator
 /- AXIOM_AUDIT_END -/
