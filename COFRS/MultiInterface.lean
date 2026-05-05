@@ -228,6 +228,105 @@ theorem countListBool_le_of_true_imp
               exact Nat.succ_le_succ
                 (ih (fun y hy hby => h y (InList.tail hy) hby))
 
+/--
+Strict monotonicity of boolean counts on an explicit list.
+
+If every listed `b`-hit is a `c`-hit, and at least one listed element is a
+`c`-hit but not a `b`-hit, then the `b` count is strictly smaller.
+-/
+theorem countListBool_lt_of_exists_false_true
+    {A : Type a} (xs : List A) (b c : A → Bool) :
+    (∀ x : A, InList x xs → b x = true → c x = true) →
+      (∃ x : A, InList x xs ∧ b x = false ∧ c x = true) →
+        countListBool xs b < countListBool xs c := by
+  induction xs with
+  | nil =>
+      intro _hImp hExists
+      rcases hExists with ⟨x, hIn, _hb, _hc⟩
+      cases hIn
+  | cons x xs ih =>
+      intro hImp hExists
+      let hImpTail : ∀ y : A, InList y xs → b y = true → c y = true :=
+        fun y hy hby => hImp y (InList.tail hy) hby
+      unfold countListBool
+      cases hb : b x with
+      | false =>
+          cases hc : c x with
+          | false =>
+              refine ih hImpTail ?_
+              rcases hExists with ⟨y, hIn, hbyFalse, hcyTrue⟩
+              cases hIn with
+              | head =>
+                  rw [hc] at hcyTrue
+                  cases hcyTrue
+              | tail hTail =>
+                  exact ⟨y, hTail, hbyFalse, hcyTrue⟩
+          | true =>
+              exact Nat.lt_succ_of_le
+                (countListBool_le_of_true_imp xs b c hImpTail)
+      | true =>
+          have hcTrue : c x = true := hImp x InList.head hb
+          cases hc : c x with
+          | false =>
+              rw [hc] at hcTrue
+              cases hcTrue
+          | true =>
+              refine Nat.succ_lt_succ (ih hImpTail ?_)
+              rcases hExists with ⟨y, hIn, hbyFalse, hcyTrue⟩
+              cases hIn with
+              | head =>
+                  rw [hb] at hbyFalse
+                  cases hbyFalse
+              | tail hTail =>
+                  exact ⟨y, hTail, hbyFalse, hcyTrue⟩
+
+/--
+Witness extraction from a strict boolean-count inequality under pointwise implication.
+-/
+theorem exists_false_true_of_countListBool_lt
+    {A : Type a} (xs : List A) (b c : A → Bool) :
+    (∀ x : A, InList x xs → b x = true → c x = true) →
+      countListBool xs b < countListBool xs c →
+        ∃ x : A, InList x xs ∧ b x = false ∧ c x = true := by
+  induction xs with
+  | nil =>
+      intro _hImp hLt
+      unfold countListBool at hLt
+      exact False.elim (Nat.lt_irrefl 0 hLt)
+  | cons x xs ih =>
+      intro hImp hLt
+      let hImpTail : ∀ y : A, InList y xs → b y = true → c y = true :=
+        fun y hy hby => hImp y (InList.tail hy) hby
+      unfold countListBool at hLt
+      cases hb : b x with
+      | false =>
+          rw [hb] at hLt
+          cases hc : c x with
+          | false =>
+              rw [hc] at hLt
+              exact
+                let hTail : countListBool xs b < countListBool xs c := hLt
+                match ih hImpTail hTail with
+                | ⟨y, hIn, hbyFalse, hcyTrue⟩ =>
+                    ⟨y, InList.tail hIn, hbyFalse, hcyTrue⟩
+          | true =>
+              rw [hc] at hLt
+              exact ⟨x, InList.head, hb, hc⟩
+      | true =>
+          rw [hb] at hLt
+          have hcTrue : c x = true := hImp x InList.head hb
+          cases hc : c x with
+          | false =>
+              rw [hc] at hcTrue
+              cases hcTrue
+          | true =>
+              rw [hc] at hLt
+              have hTail : countListBool xs b < countListBool xs c :=
+                Nat.lt_of_succ_lt_succ hLt
+              match ih hImpTail hTail with
+              | ⟨y, hIn, hbyFalse, hcyTrue⟩ =>
+                  exact ⟨y, InList.tail hIn, hbyFalse, hcyTrue⟩
+
 def inList_append_left
     {A : Type a} {a : A} {xs ys : List A} :
     InList a xs → InList a (xs ++ ys)
@@ -1113,6 +1212,85 @@ theorem deltaGain_eq_rho_sub
       rho states obs sigma interfaces - rho states obs sigma interfacesPlus := by
   rfl
 
+/--
+Numerical characterization of local usefulness.
+
+Under exhaustive states and two-sided enumerations of `I` and `insert I j0`, an interface is locally
+useful exactly when inserting it strictly decreases `rho`.
+-/
+theorem locallyUsefulInterface_iff_rho_insert_lt_of_exhaustive_states
+    [DecidableEq V] [DecidableEq Y]
+    (states : List S) (obs : J → S → V) (sigma : S → Y)
+    (I : Subfamily J) (j0 : J)
+    (interfacesI interfacesInsert : List J)
+    (hStates : ∀ s : S, InList s states)
+    (hEnumILeft : ∀ j : J, I j → InList j interfacesI)
+    (hEnumIRight : ∀ j : J, InList j interfacesI → I j)
+    (hEnumInsertLeft :
+      ∀ j : J, Subfamily.Insert I j0 j → InList j interfacesInsert)
+    (hEnumInsertRight :
+      ∀ j : J, InList j interfacesInsert → Subfamily.Insert I j0 j) :
+    LocallyUsefulInterface obs sigma I j0 ↔
+      rho states obs sigma interfacesInsert < rho states obs sigma interfacesI := by
+  let b : S × S → Bool :=
+    fun xy => ResidualListBool obs sigma interfacesInsert xy.1 xy.2
+  let c : S × S → Bool :=
+    fun xy => ResidualListBool obs sigma interfacesI xy.1 xy.2
+  have hImp : ∀ xy : S × S, InList xy (pairLists states states) → b xy = true → c xy = true := by
+    intro xy _hIn hInsertBool
+    have hInsertList : ResidualList obs sigma interfacesInsert xy.1 xy.2 :=
+      residualList_of_bool_true obs sigma interfacesInsert xy.1 xy.2 hInsertBool
+    have hInsertRes : Residual obs sigma (Subfamily.Insert I j0) xy.1 xy.2 :=
+      residual_of_residualList obs sigma hEnumInsertLeft hInsertList
+    have hIRes : Residual obs sigma I xy.1 xy.2 :=
+      residual_mono obs sigma (Subfamily.subset_insert I j0) xy.1 xy.2 hInsertRes
+    have hIList : ResidualList obs sigma interfacesI xy.1 xy.2 :=
+      residualList_of_residual obs sigma hEnumIRight hIRes
+    exact bool_true_of_residualList obs sigma interfacesI xy.1 xy.2 hIList
+  constructor
+  · intro hUseful
+    rcases (locallyUsefulInterface_iff_exists_residual_not_insert
+        obs sigma I j0).mp hUseful with
+      ⟨x, y, hResI, hNotInsert⟩
+    have hPair : InList (x, y) (pairLists states states) :=
+      inList_pairLists_of_inList (hStates x) (hStates y)
+    have hIList : ResidualList obs sigma interfacesI x y :=
+      residualList_of_residual obs sigma hEnumIRight hResI
+    have hCTrue : c (x, y) = true :=
+      bool_true_of_residualList obs sigma interfacesI x y hIList
+    have hBFalse : b (x, y) = false := by
+      cases hb : b (x, y) with
+      | false =>
+          rfl
+      | true =>
+          have hInsertList : ResidualList obs sigma interfacesInsert x y :=
+            residualList_of_bool_true obs sigma interfacesInsert x y hb
+          have hInsertRes : Residual obs sigma (Subfamily.Insert I j0) x y :=
+            residual_of_residualList obs sigma hEnumInsertLeft hInsertList
+          exact False.elim (hNotInsert hInsertRes)
+    unfold rho
+    exact countListBool_lt_of_exists_false_true
+      (pairLists states states) b c hImp ⟨(x, y), hPair, hBFalse, hCTrue⟩
+  · intro hLt
+    unfold rho at hLt
+    rcases exists_false_true_of_countListBool_lt
+        (pairLists states states) b c hImp hLt with
+      ⟨xy, _hIn, hBFalse, hCTrue⟩
+    have hIList : ResidualList obs sigma interfacesI xy.1 xy.2 :=
+      residualList_of_bool_true obs sigma interfacesI xy.1 xy.2 hCTrue
+    have hIRes : Residual obs sigma I xy.1 xy.2 :=
+      residual_of_residualList obs sigma hEnumILeft hIList
+    have hNotInsert : ¬ Residual obs sigma (Subfamily.Insert I j0) xy.1 xy.2 := by
+      intro hInsertRes
+      have hInsertList : ResidualList obs sigma interfacesInsert xy.1 xy.2 :=
+        residualList_of_residual obs sigma hEnumInsertRight hInsertRes
+      have hBTrue : b xy = true :=
+        bool_true_of_residualList obs sigma interfacesInsert xy.1 xy.2 hInsertList
+      rw [hBFalse] at hBTrue
+      cases hBTrue
+    exact (locallyUsefulInterface_iff_exists_residual_not_insert
+      obs sigma I j0).mpr ⟨xy.1, xy.2, hIRes, hNotInsert⟩
+
 /-- Closure is exactly emptiness of the residual common to the subfamily. -/
 theorem closed_iff_residual_empty
     [DecidableEq Y]
@@ -1236,6 +1414,8 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.MultiInterface.countList
 #print axioms PrimitiveHolonomy.MultiInterface.countList_eq_zero_of_allFalse
 #print axioms PrimitiveHolonomy.MultiInterface.countListBool_le_of_true_imp
+#print axioms PrimitiveHolonomy.MultiInterface.countListBool_lt_of_exists_false_true
+#print axioms PrimitiveHolonomy.MultiInterface.exists_false_true_of_countListBool_lt
 #print axioms PrimitiveHolonomy.MultiInterface.InterfaceSeparates
 #print axioms PrimitiveHolonomy.MultiInterface.lossIncidence
 #print axioms PrimitiveHolonomy.MultiInterface.separationIncidence
@@ -1259,6 +1439,7 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.MultiInterface.rho_mono_of_subfamily_subset
 #print axioms PrimitiveHolonomy.MultiInterface.deltaGain
 #print axioms PrimitiveHolonomy.MultiInterface.deltaGain_eq_rho_sub
+#print axioms PrimitiveHolonomy.MultiInterface.locallyUsefulInterface_iff_rho_insert_lt_of_exhaustive_states
 #print axioms PrimitiveHolonomy.MultiInterface.closed_iff_residual_empty
 #print axioms PrimitiveHolonomy.MultiInterface.irreducibleClosureW_iff_residual_empty_and_proper_residual_nonempty
 #print axioms PrimitiveHolonomy.MultiInterface.irreducibleClosure_of_irreducibleClosureW
