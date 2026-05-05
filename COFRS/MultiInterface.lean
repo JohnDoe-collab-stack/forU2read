@@ -284,6 +284,10 @@ def RequiredDistinction (sigma : S → Y) (x y : S) : Prop :=
 def Loss (obs : J → S → V) (sigma : S → Y) (j : J) (x y : S) : Prop :=
   RequiredDistinction sigma x y ∧ obs j x = obs j y
 
+/-- Distinctions required by `sigma` and separated by interface `j`. -/
+def InterfaceSeparates (obs : J → S → V) (sigma : S → Y) (j : J) (x y : S) : Prop :=
+  RequiredDistinction sigma x y ∧ obs j x ≠ obs j y
+
 /--
 Residual common to a subfamily `I`: a required distinction that every interface in `I` loses.
 
@@ -349,6 +353,37 @@ def ResidualListBool [DecidableEq V] [DecidableEq Y]
   | true => JointSameListBool obs interfaces x y
   | false => false
 
+/-- Boolean witness that interface `j` loses the required distinction `(x,y)`. -/
+def LossBool [DecidableEq V] [DecidableEq Y]
+    (obs : J → S → V) (sigma : S → Y) (j : J) (x y : S) : Bool :=
+  match neqBool (sigma x) (sigma y) with
+  | true => eqBool (obs j x) (obs j y)
+  | false => false
+
+/-- Boolean witness that interface `j` separates the required distinction `(x,y)`. -/
+def InterfaceSeparatesBool [DecidableEq V] [DecidableEq Y]
+    (obs : J → S → V) (sigma : S → Y) (j : J) (x y : S) : Bool :=
+  match neqBool (sigma x) (sigma y) with
+  | true =>
+      match eqBool (obs j x) (obs j y) with
+      | true => false
+      | false => true
+  | false => false
+
+/-- Incidence count: how many listed interfaces lose the distinction `(x,y)`. -/
+def lossIncidence
+    [DecidableEq V] [DecidableEq Y]
+    (obs : J → S → V) (sigma : S → Y)
+    (interfaces : List J) (x y : S) : Nat :=
+  countListBool interfaces (fun j => LossBool obs sigma j x y)
+
+/-- Incidence count: how many listed interfaces separate the distinction `(x,y)`. -/
+def separationIncidence
+    [DecidableEq V] [DecidableEq Y]
+    (obs : J → S → V) (sigma : S → Y)
+    (interfaces : List J) (x y : S) : Nat :=
+  countListBool interfaces (fun j => InterfaceSeparatesBool obs sigma j x y)
+
 theorem eq_of_eqBool_true
     [DecidableEq V] {x y : V} :
     eqBool x y = true → x = y := by
@@ -371,6 +406,29 @@ theorem eqBool_true_of_eq
       rfl
   | isFalse hNe =>
       exact False.elim (hNe hEq)
+
+theorem ne_of_eqBool_false
+    [DecidableEq V] {x y : V} :
+    eqBool x y = false → x ≠ y := by
+  unfold eqBool
+  cases (inferInstance : Decidable (x = y)) with
+  | isTrue _hEq =>
+      intro h
+      cases h
+  | isFalse hNe =>
+      intro _h
+      exact hNe
+
+theorem eqBool_false_of_ne
+    [DecidableEq V] {x y : V} :
+    x ≠ y → eqBool x y = false := by
+  intro hNe
+  unfold eqBool
+  cases (inferInstance : Decidable (x = y)) with
+  | isTrue hEq =>
+      exact False.elim (hNe hEq)
+  | isFalse _hNe =>
+      rfl
 
 theorem requiredDistinction_of_neqBool_true
     [DecidableEq Y] {x y : S} (sigma : S → Y) :
@@ -395,6 +453,111 @@ theorem neqBool_true_of_requiredDistinction
       exact False.elim (hReq hEq)
   | isFalse _hNe =>
       rfl
+
+theorem loss_of_lossBool_true
+    [DecidableEq V] [DecidableEq Y]
+    (obs : J → S → V) (sigma : S → Y) (j : J) (x y : S) :
+    LossBool obs sigma j x y = true → Loss obs sigma j x y := by
+  intro h
+  unfold LossBool at h
+  cases hReq : neqBool (sigma x) (sigma y) with
+  | false =>
+      rw [hReq] at h
+      cases h
+  | true =>
+      rw [hReq] at h
+      exact ⟨requiredDistinction_of_neqBool_true sigma hReq, eq_of_eqBool_true h⟩
+
+theorem lossBool_true_of_loss
+    [DecidableEq V] [DecidableEq Y]
+    (obs : J → S → V) (sigma : S → Y) (j : J) (x y : S) :
+    Loss obs sigma j x y → LossBool obs sigma j x y = true := by
+  intro hLoss
+  unfold LossBool
+  have hReq : neqBool (sigma x) (sigma y) = true :=
+    neqBool_true_of_requiredDistinction sigma hLoss.1
+  rw [hReq]
+  exact eqBool_true_of_eq hLoss.2
+
+theorem interfaceSeparates_of_bool_true
+    [DecidableEq V] [DecidableEq Y]
+    (obs : J → S → V) (sigma : S → Y) (j : J) (x y : S) :
+    InterfaceSeparatesBool obs sigma j x y = true →
+      InterfaceSeparates obs sigma j x y := by
+  intro h
+  unfold InterfaceSeparatesBool at h
+  cases hReq : neqBool (sigma x) (sigma y) with
+  | false =>
+      rw [hReq] at h
+      cases h
+  | true =>
+      rw [hReq] at h
+      cases hEq : eqBool (obs j x) (obs j y) with
+      | true =>
+          rw [hEq] at h
+          cases h
+      | false =>
+          exact ⟨requiredDistinction_of_neqBool_true sigma hReq, ne_of_eqBool_false hEq⟩
+
+theorem bool_true_of_interfaceSeparates
+    [DecidableEq V] [DecidableEq Y]
+    (obs : J → S → V) (sigma : S → Y) (j : J) (x y : S) :
+    InterfaceSeparates obs sigma j x y →
+      InterfaceSeparatesBool obs sigma j x y = true := by
+  intro hSep
+  unfold InterfaceSeparatesBool
+  have hReq : neqBool (sigma x) (sigma y) = true :=
+    neqBool_true_of_requiredDistinction sigma hSep.1
+  rw [hReq]
+  have hNe : eqBool (obs j x) (obs j y) = false :=
+    eqBool_false_of_ne hSep.2
+  rw [hNe]
+
+theorem lossIncidence_pos_iff_exists_loss
+    [DecidableEq V] [DecidableEq Y]
+    (obs : J → S → V) (sigma : S → Y)
+    (interfaces : List J) (x y : S) :
+    0 < lossIncidence obs sigma interfaces x y ↔
+      ∃ j : J, InList j interfaces ∧ Loss obs sigma j x y := by
+  constructor
+  · intro hPos
+    unfold lossIncidence at hPos
+    rcases exists_inList_true_of_countListBool_pos
+        interfaces
+        (fun j => LossBool obs sigma j x y)
+        hPos with
+      ⟨j, hIn, hTrue⟩
+    exact ⟨j, hIn, loss_of_lossBool_true obs sigma j x y hTrue⟩
+  · intro hExists
+    rcases hExists with ⟨j, hIn, hLoss⟩
+    unfold lossIncidence
+    exact countListBool_pos_of_inList_true
+      interfaces
+      (fun k => LossBool obs sigma k x y)
+      j hIn (lossBool_true_of_loss obs sigma j x y hLoss)
+
+theorem separationIncidence_pos_iff_exists_interfaceSeparates
+    [DecidableEq V] [DecidableEq Y]
+    (obs : J → S → V) (sigma : S → Y)
+    (interfaces : List J) (x y : S) :
+    0 < separationIncidence obs sigma interfaces x y ↔
+      ∃ j : J, InList j interfaces ∧ InterfaceSeparates obs sigma j x y := by
+  constructor
+  · intro hPos
+    unfold separationIncidence at hPos
+    rcases exists_inList_true_of_countListBool_pos
+        interfaces
+        (fun j => InterfaceSeparatesBool obs sigma j x y)
+        hPos with
+      ⟨j, hIn, hTrue⟩
+    exact ⟨j, hIn, interfaceSeparates_of_bool_true obs sigma j x y hTrue⟩
+  · intro hExists
+    rcases hExists with ⟨j, hIn, hSep⟩
+    unfold separationIncidence
+    exact countListBool_pos_of_inList_true
+      interfaces
+      (fun k => InterfaceSeparatesBool obs sigma k x y)
+      j hIn (bool_true_of_interfaceSeparates obs sigma j x y hSep)
 
 theorem jointSameList_of_bool_true
     [DecidableEq V]
@@ -555,6 +718,41 @@ theorem jointSameList_eq_of_inList
           exact hJoint.1
       | tail hTail =>
           exact ih hJoint.2 hTail
+
+theorem loss_of_residualList_of_inList
+    (obs : J → S → V) (sigma : S → Y)
+    {interfaces : List J} {x y : S} {j : J} :
+    ResidualList obs sigma interfaces x y → InList j interfaces →
+      Loss obs sigma j x y := by
+  intro hRes hIn
+  exact ⟨hRes.1, jointSameList_eq_of_inList obs hRes.2 hIn⟩
+
+theorem residualList_of_requiredDistinction_and_all_loss
+    (obs : J → S → V) (sigma : S → Y)
+    {interfaces : List J} {x y : S} :
+    RequiredDistinction sigma x y →
+      (∀ j : J, InList j interfaces → Loss obs sigma j x y) →
+        ResidualList obs sigma interfaces x y := by
+  intro hReq hAll
+  refine ⟨hReq, ?_⟩
+  induction interfaces with
+  | nil =>
+      exact True.intro
+  | cons j js ih =>
+      exact ⟨(hAll j InList.head).2,
+        ih (fun k hk => hAll k (InList.tail hk))⟩
+
+theorem residualList_iff_requiredDistinction_and_all_loss
+    (obs : J → S → V) (sigma : S → Y)
+    (interfaces : List J) (x y : S) :
+    ResidualList obs sigma interfaces x y ↔
+      RequiredDistinction sigma x y ∧
+        ∀ j : J, InList j interfaces → Loss obs sigma j x y := by
+  constructor
+  · intro hRes
+    exact ⟨hRes.1, fun j hIn => loss_of_residualList_of_inList obs sigma hRes hIn⟩
+  · intro h
+    exact residualList_of_requiredDistinction_and_all_loss obs sigma h.1 h.2
 
 theorem jointSame_of_jointSameList
     (obs : J → S → V) {interfaces : List J} {I : Subfamily J} {x y : S}
@@ -919,6 +1117,12 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.MultiInterface.countList
 #print axioms PrimitiveHolonomy.MultiInterface.countList_eq_zero_of_allFalse
 #print axioms PrimitiveHolonomy.MultiInterface.countListBool_le_of_true_imp
+#print axioms PrimitiveHolonomy.MultiInterface.InterfaceSeparates
+#print axioms PrimitiveHolonomy.MultiInterface.lossIncidence
+#print axioms PrimitiveHolonomy.MultiInterface.separationIncidence
+#print axioms PrimitiveHolonomy.MultiInterface.lossIncidence_pos_iff_exists_loss
+#print axioms PrimitiveHolonomy.MultiInterface.separationIncidence_pos_iff_exists_interfaceSeparates
+#print axioms PrimitiveHolonomy.MultiInterface.residualList_iff_requiredDistinction_and_all_loss
 #print axioms PrimitiveHolonomy.MultiInterface.rho
 #print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_of_allFalse_residualPairs
 #print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_of_residualEmpty_of_interface_enumeration
