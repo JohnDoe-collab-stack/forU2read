@@ -1,4 +1,4 @@
-import COFRS.Foundations
+import COFRS.Dynamics
 
 /-!
 # Multi-interface closure
@@ -21,7 +21,7 @@ No quotient, no `Classical`, no `propext`.
 
 namespace PrimitiveHolonomy
 
-universe u v w y a
+universe p u v w y a
 
 namespace MultiInterface
 
@@ -1392,6 +1392,141 @@ theorem irreducibleClosureW_iff_irreducibleClosureRho_of_exhaustive_states
         states obs sigma (interfacesOf K) K hStates
         (hEnumLeft K) (hEnumRight K)).mp (hRho.2 K hProper)
 
+/-!
+## Dynamic multi-interface profile
+
+The dynamic layer is stated over an already chosen joint observation `jointObs`. A subfamily is
+represented by a readout of the same underlying state. This keeps the first n-interface theorem
+independent from any particular encoding of products or heterogeneous interfaces.
+-/
+
+/--
+A subfamily readout predicts the joint dynamic truth on the joint fiber.
+
+This generalizes the binary `LeftObsPredictsJointStep` / `RightObsPredictsJointStep` pattern:
+the truth being predicted is still the compatibility truth for the joint observation, but the
+allowed information is a subfamily readout.
+-/
+def SubfamilyPredictsStep
+    {P : Type p} [HistoryGraph P]
+    {S V W : Type w}
+    (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
+    {h k : P} (step : HistoryGraph.Path h k)
+    (readout : S → W) : Prop :=
+  ∃ pred : W → Prop,
+    ∀ x : FiberPt (P := P) jointObs targetJoint h,
+      Compatible (P := P) sem jointObs targetJoint step x ↔ pred (readout x.1)
+
+/--
+A refining-lift mediator descends to a subfamily readout if its finite supplement can be read
+from that subfamily readout alone.
+-/
+def DynamicMediatorDescendsSubfamily
+    {P : Type p} [HistoryGraph P]
+    {S V W : Type w}
+    (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
+    {h k : P} (step : HistoryGraph.Path h k) {n : Nat}
+    (readout : S → W)
+    (L : RefiningLiftData (P := P) sem jointObs targetJoint h step n) : Prop :=
+  ∃ readoutK : W → Fin n, ∀ x, (L.extObs x).2 = readoutK (readout x.1)
+
+/--
+If the finite supplement of a refining lift descends to a subfamily readout, then the
+joint dynamic truth is predictable from that readout.
+-/
+theorem subfamilyPredictsStep_of_dynamicMediatorDescendsSubfamily
+    {P : Type p} [HistoryGraph P]
+    {S V W : Type w}
+    (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
+    {h k : P} (step : HistoryGraph.Path h k) {n : Nat}
+    (readout : S → W)
+    (L : RefiningLiftData (P := P) sem jointObs targetJoint h step n) :
+    DynamicMediatorDescendsSubfamily (P := P) sem jointObs targetJoint step readout L →
+      SubfamilyPredictsStep (P := P) sem jointObs targetJoint step readout := by
+  rintro ⟨readoutK, hDesc⟩
+  let pred : W → Prop := fun w => L.predFin (readoutK w)
+  refine ⟨pred, ?_⟩
+  intro x
+  have hEq : (L.extObs x).2 = readoutK (readout x.1) := hDesc x
+  simpa [pred, hEq] using (L.factors x)
+
+/-- If the joint truth is not predictable from a subfamily readout, no lift mediator descends to it. -/
+theorem not_dynamicMediatorDescendsSubfamily_of_not_subfamilyPredictsStep
+    {P : Type p} [HistoryGraph P]
+    {S V W : Type w}
+    (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
+    {h k : P} (step : HistoryGraph.Path h k) {n : Nat}
+    (readout : S → W)
+    (L : RefiningLiftData (P := P) sem jointObs targetJoint h step n) :
+    ¬ SubfamilyPredictsStep (P := P) sem jointObs targetJoint step readout →
+      ¬ DynamicMediatorDescendsSubfamily (P := P) sem jointObs targetJoint step readout L := by
+  intro hNoPredict hDesc
+  exact hNoPredict
+    (subfamilyPredictsStep_of_dynamicMediatorDescendsSubfamily
+      (P := P) sem jointObs targetJoint step readout L hDesc)
+
+/--
+The n-interface dynamic mediation profile:
+
+* the joint dynamic truth separates the joint fiber;
+* the joint truth has exact finite compatibility dimension `n`;
+* every proper subfamily of `I` fails to predict that joint truth from its readout.
+-/
+def FamilyIrreducibleMediationProfile
+    {P : Type p} [HistoryGraph P]
+    {S V : Type w} {J : Type u} {W : Subfamily J → Type w}
+    (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
+    (I : Subfamily J) (readoutOf : (K : Subfamily J) → S → W K)
+    {h k : P} (step : HistoryGraph.Path h k) (n : Nat) : Prop :=
+  StepSeparatesFiber (P := P) sem jointObs targetJoint step ∧
+    CompatDimEq (P := P) sem jointObs targetJoint step n ∧
+      ∀ K : Subfamily J, Subfamily.Proper K I →
+        ¬ SubfamilyPredictsStep (P := P) sem jointObs targetJoint step (readoutOf K)
+
+/-- A dynamic family profile yields a refining lift at the certified finite dimension. -/
+theorem refiningLift_of_familyIrreducibleMediationProfile
+    {P : Type p} [HistoryGraph P]
+    {S V : Type w} {J : Type u} {W : Subfamily J → Type w}
+    (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
+    (I : Subfamily J) (readoutOf : (K : Subfamily J) → S → W K)
+    {h k : P} (step : HistoryGraph.Path h k) (n : Nat) :
+    FamilyIrreducibleMediationProfile (P := P) sem jointObs targetJoint I readoutOf step n →
+      RefiningLift (P := P) sem jointObs targetJoint h step n := by
+  intro hProf
+  exact refiningLift_of_compatDimEq (P := P) sem jointObs targetJoint step n hProf.2.1
+
+/-- A dynamic family profile excludes refining lifts with any smaller finite supplement. -/
+theorem no_smaller_refiningLift_of_familyIrreducibleMediationProfile
+    {P : Type p} [HistoryGraph P]
+    {S V : Type w} {J : Type u} {W : Subfamily J → Type w}
+    (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
+    (I : Subfamily J) (readoutOf : (K : Subfamily J) → S → W K)
+    {h k : P} (step : HistoryGraph.Path h k) (n : Nat) :
+    FamilyIrreducibleMediationProfile (P := P) sem jointObs targetJoint I readoutOf step n →
+      ∀ m : Nat, m < n → ¬ RefiningLift (P := P) sem jointObs targetJoint h step m := by
+  intro hProf
+  exact no_smaller_refiningLift_of_compatDimEq
+    (P := P) sem jointObs targetJoint step n hProf.2.1
+
+/--
+In a dynamic family profile, the finite supplement of any refining lift at the certified
+dimension cannot descend to any proper subfamily readout.
+-/
+theorem not_dynamicMediatorDescendsSubfamily_of_familyIrreducibleMediationProfile
+    {P : Type p} [HistoryGraph P]
+    {S V : Type w} {J : Type u} {W : Subfamily J → Type w}
+    (sem : Semantics P S) (jointObs : S → V) (targetJoint : P → V)
+    (I : Subfamily J) (readoutOf : (K : Subfamily J) → S → W K)
+    {h k : P} (step : HistoryGraph.Path h k) {n : Nat}
+    (hProf : FamilyIrreducibleMediationProfile
+      (P := P) sem jointObs targetJoint I readoutOf step n)
+    (K : Subfamily J) (hProper : Subfamily.Proper K I)
+    (L : RefiningLiftData (P := P) sem jointObs targetJoint h step n) :
+    ¬ DynamicMediatorDescendsSubfamily
+      (P := P) sem jointObs targetJoint step (readoutOf K) L := by
+  exact not_dynamicMediatorDescendsSubfamily_of_not_subfamilyPredictsStep
+    (P := P) sem jointObs targetJoint step (readoutOf K) L (hProf.2.2 K hProper)
+
 /-- A finite mediator readout descends to the subfamily `K`. -/
 def MediatorDescendsSubfamily
     (obs : J → S → V) (K : Subfamily J)
@@ -1445,6 +1580,14 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.MultiInterface.irreducibleClosure_of_irreducibleClosureW
 #print axioms PrimitiveHolonomy.MultiInterface.IrreducibleClosureRho
 #print axioms PrimitiveHolonomy.MultiInterface.irreducibleClosureW_iff_irreducibleClosureRho_of_exhaustive_states
+#print axioms PrimitiveHolonomy.MultiInterface.SubfamilyPredictsStep
+#print axioms PrimitiveHolonomy.MultiInterface.DynamicMediatorDescendsSubfamily
+#print axioms PrimitiveHolonomy.MultiInterface.subfamilyPredictsStep_of_dynamicMediatorDescendsSubfamily
+#print axioms PrimitiveHolonomy.MultiInterface.not_dynamicMediatorDescendsSubfamily_of_not_subfamilyPredictsStep
+#print axioms PrimitiveHolonomy.MultiInterface.FamilyIrreducibleMediationProfile
+#print axioms PrimitiveHolonomy.MultiInterface.refiningLift_of_familyIrreducibleMediationProfile
+#print axioms PrimitiveHolonomy.MultiInterface.no_smaller_refiningLift_of_familyIrreducibleMediationProfile
+#print axioms PrimitiveHolonomy.MultiInterface.not_dynamicMediatorDescendsSubfamily_of_familyIrreducibleMediationProfile
 #print axioms PrimitiveHolonomy.MultiInterface.MediatorDescendsSubfamily
 #print axioms PrimitiveHolonomy.MultiInterface.IrreducibleMediator
 /- AXIOM_AUDIT_END -/
