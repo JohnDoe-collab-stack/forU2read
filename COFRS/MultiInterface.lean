@@ -145,6 +145,33 @@ theorem allFalseBool_false_of_inList
       | tail hTailIn =>
           exact ih hTailIn
 
+theorem countListBool_pos_of_inList_true
+    {A : Type u} (xs : List A) (b : A → Bool) (a : A) :
+    InList a xs → b a = true → 0 < countListBool xs b := by
+  induction xs with
+  | nil =>
+      intro hIn _hTrue
+      cases hIn
+  | cons c xs ih =>
+      intro hIn hTrue
+      cases hIn with
+      | head =>
+          unfold countListBool
+          cases hba : b a with
+          | false =>
+              have hContr : false = true := hba.symm.trans hTrue
+              cases hContr
+          | true =>
+              exact Nat.succ_pos _
+      | tail hTail =>
+          have hPos : 0 < countListBool xs b := ih hTail hTrue
+          unfold countListBool
+          cases b c with
+          | false =>
+              exact hPos
+          | true =>
+              exact Nat.succ_pos _
+
 def inList_append_left
     {A : Type u} {a : A} {xs ys : List A} :
     InList a xs → InList a (xs ++ ys)
@@ -565,6 +592,41 @@ theorem rho_eq_zero_of_residualEmpty_of_interface_enumeration
     (allFalse_pairLists_of_residualEmpty obs sigma hEnumLeft hEmpty states states)
 
 /--
+If explicit states cover all states and explicit interfaces enumerate the subfamily both ways,
+then numerical zero residual is exactly residual emptiness.
+-/
+theorem rho_eq_zero_iff_residualEmpty_of_exhaustive_states
+    [DecidableEq V] [DecidableEq Y]
+    (states : List S) (obs : J → S → V) (sigma : S → Y)
+    (interfaces : List J) (I : Subfamily J)
+    (hStates : ∀ s : S, InList s states)
+    (hEnumLeft : ∀ j : J, I j → InList j interfaces)
+    (hEnumRight : ∀ j : J, InList j interfaces → I j) :
+    rho states obs sigma interfaces = 0 ↔ ResidualEmpty obs sigma I := by
+  constructor
+  · intro hRho x y hRes
+    have hPair : InList (x, y) (pairLists states states) :=
+      inList_pairLists_of_inList (hStates x) (hStates y)
+    have hResListed : ResidualList obs sigma interfaces x y :=
+      residualList_of_residual obs sigma hEnumRight hRes
+    have hBoolTrue :
+        ResidualListBool obs sigma interfaces (x, y).1 (x, y).2 = true :=
+      bool_true_of_residualList obs sigma interfaces x y hResListed
+    have hPos : 0 < rho states obs sigma interfaces := by
+      unfold rho
+      exact countListBool_pos_of_inList_true
+        (pairLists states states)
+        (fun xy : S × S => ResidualListBool obs sigma interfaces xy.1 xy.2)
+        (x, y) hPair hBoolTrue
+    have hZeroPos : 0 < 0 := by
+      rw [hRho] at hPos
+      exact hPos
+    exact Nat.not_lt_zero 0 hZeroPos
+  · intro hEmpty
+    exact rho_eq_zero_of_residualEmpty_of_interface_enumeration
+      states obs sigma interfaces I hEnumLeft hEmpty
+
+/--
 Residual monotonicity: adding interfaces can only remove residual distinctions.
 
 If `I ⊆ K`, then anything lost by the larger family `K` was already lost by `I`.
@@ -653,6 +715,7 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.MultiInterface.rho
 #print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_of_allFalse_residualPairs
 #print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_of_residualEmpty_of_interface_enumeration
+#print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_iff_residualEmpty_of_exhaustive_states
 #print axioms PrimitiveHolonomy.MultiInterface.residual_mono
 #print axioms PrimitiveHolonomy.MultiInterface.closed_iff_residual_empty
 #print axioms PrimitiveHolonomy.MultiInterface.irreducibleClosureW_iff_residual_empty_and_proper_residual_nonempty

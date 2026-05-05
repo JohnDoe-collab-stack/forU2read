@@ -2,6 +2,7 @@ import COFRS.Foundations
 import COFRS.Dynamics
 import COFRS.RegulationAndReduction
 import COFRS.Synthesis
+import COFRS.MultiInterface
 
 import COFRS.Examples.GeometryDynamicsIndependence
 import COFRS.Examples.GodelByCode

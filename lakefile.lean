@@ -15,6 +15,7 @@ lean_lib «CompatObstructions» where
     `COFRS.ConverseNormalForm,
     `COFRS.RegulationAndReduction,
     `COFRS.Synthesis,
+    `COFRS.MultiInterface,
     `COFRS.Examples.GodelByCode,
     `COFRS.Examples.DiagonalizationMediationCausalityThesis,
     `COFRS.Examples.CorrelationRegimeAppendix,
