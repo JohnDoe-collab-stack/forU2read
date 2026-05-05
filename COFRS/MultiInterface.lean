@@ -305,6 +305,125 @@ def ResidualNonempty (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) :
   ∃ x y : S, Residual obs sigma I x y
 
 /--
+Local usefulness of an interface after a current subfamily:
+there is a currently residual distinction that the new interface separates.
+-/
+def LocallyUsefulInterface
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j : J) : Prop :=
+  ∃ x y : S, Residual obs sigma I x y ∧ InterfaceSeparates obs sigma j x y
+
+/--
+Local redundancy of an interface after a current subfamily:
+it loses every distinction that is already residual for the current subfamily.
+-/
+def LocallyRedundantInterface
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j : J) : Prop :=
+  ∀ x y : S, Residual obs sigma I x y → Loss obs sigma j x y
+
+/--
+Two interfaces have the same loss profile on the current residual.
+This is a pointwise, quotient-free profile equality.
+-/
+def SameLossProfileOn
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j k : J) : Prop :=
+  ∀ x y : S, Residual obs sigma I x y →
+    (Loss obs sigma j x y ↔ Loss obs sigma k x y)
+
+/--
+Two interfaces are loss-profile separated on the current residual when one loses a residual
+distinction that the other separates.
+-/
+def LossProfileSeparated
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j k : J) : Prop :=
+  ∃ x y : S, Residual obs sigma I x y ∧
+    ((Loss obs sigma j x y ∧ InterfaceSeparates obs sigma k x y) ∨
+      (Loss obs sigma k x y ∧ InterfaceSeparates obs sigma j x y))
+
+/--
+Residual after inserting one interface is exactly the old residual restricted to the
+distinctions that the inserted interface also loses.
+-/
+theorem residual_insert_iff_residual_and_loss
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j0 : J) (x y : S) :
+    Residual obs sigma (Subfamily.Insert I j0) x y ↔
+      Residual obs sigma I x y ∧ Loss obs sigma j0 x y := by
+  constructor
+  · intro hRes
+    refine ⟨?_, ?_⟩
+    · exact ⟨hRes.1, fun j hj => hRes.2 j (Or.inl hj)⟩
+    · exact ⟨hRes.1, hRes.2 j0 (Or.inr rfl)⟩
+  · intro h
+    refine ⟨h.1.1, ?_⟩
+    intro j hj
+    cases hj with
+    | inl hjI =>
+        exact h.1.2 j hjI
+    | inr hEq =>
+        cases hEq
+        exact h.2.2
+
+/--
+An interface is locally useful exactly when inserting it removes at least one currently
+residual distinction.
+-/
+theorem locallyUsefulInterface_iff_exists_residual_not_insert
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j0 : J) :
+    LocallyUsefulInterface obs sigma I j0 ↔
+      ∃ x y : S, Residual obs sigma I x y ∧
+        ¬ Residual obs sigma (Subfamily.Insert I j0) x y := by
+  constructor
+  · intro hUseful
+    rcases hUseful with ⟨x, y, hResI, hSep⟩
+    refine ⟨x, y, hResI, ?_⟩
+    intro hInserted
+    have hLoss : Loss obs sigma j0 x y :=
+      (residual_insert_iff_residual_and_loss obs sigma I j0 x y).mp hInserted |>.2
+    exact hSep.2 hLoss.2
+  · intro hRemoved
+    rcases hRemoved with ⟨x, y, hResI, hNotInserted⟩
+    refine ⟨x, y, hResI, ?_⟩
+    refine ⟨hResI.1, ?_⟩
+    intro hEq
+    have hLoss : Loss obs sigma j0 x y := ⟨hResI.1, hEq⟩
+    exact hNotInserted
+      ((residual_insert_iff_residual_and_loss obs sigma I j0 x y).mpr
+        ⟨hResI, hLoss⟩)
+
+/--
+An interface is locally redundant exactly when insertion leaves the residual relation
+pointwise unchanged.
+-/
+theorem locallyRedundantInterface_iff_insert_residual_iff
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j0 : J) :
+    LocallyRedundantInterface obs sigma I j0 ↔
+      ∀ x y : S,
+        (Residual obs sigma (Subfamily.Insert I j0) x y ↔
+          Residual obs sigma I x y) := by
+  constructor
+  · intro hRed x y
+    constructor
+    · intro hInserted
+      exact (residual_insert_iff_residual_and_loss obs sigma I j0 x y).mp hInserted |>.1
+    · intro hResI
+      exact (residual_insert_iff_residual_and_loss obs sigma I j0 x y).mpr
+        ⟨hResI, hRed x y hResI⟩
+  · intro hSame x y hResI
+    have hInserted : Residual obs sigma (Subfamily.Insert I j0) x y :=
+      (hSame x y).mpr hResI
+    exact (residual_insert_iff_residual_and_loss obs sigma I j0 x y).mp hInserted |>.2
+
+/-- Same loss profile is reflexive on every residual. -/
+theorem sameLossProfileOn_refl
+    (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (j : J) :
+    SameLossProfileOn obs sigma I j j := by
+  intro x y _hRes
+  constructor
+  · intro h
+    exact h
+  · intro h
+    exact h
+
+/--
 Closure of `sigma` by a subfamily `I`, stated quotient-free:
 jointly indistinguishable states have equal target value.
 -/
@@ -1123,6 +1242,14 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.MultiInterface.lossIncidence_pos_iff_exists_loss
 #print axioms PrimitiveHolonomy.MultiInterface.separationIncidence_pos_iff_exists_interfaceSeparates
 #print axioms PrimitiveHolonomy.MultiInterface.residualList_iff_requiredDistinction_and_all_loss
+#print axioms PrimitiveHolonomy.MultiInterface.LocallyUsefulInterface
+#print axioms PrimitiveHolonomy.MultiInterface.LocallyRedundantInterface
+#print axioms PrimitiveHolonomy.MultiInterface.SameLossProfileOn
+#print axioms PrimitiveHolonomy.MultiInterface.LossProfileSeparated
+#print axioms PrimitiveHolonomy.MultiInterface.residual_insert_iff_residual_and_loss
+#print axioms PrimitiveHolonomy.MultiInterface.locallyUsefulInterface_iff_exists_residual_not_insert
+#print axioms PrimitiveHolonomy.MultiInterface.locallyRedundantInterface_iff_insert_residual_iff
+#print axioms PrimitiveHolonomy.MultiInterface.sameLossProfileOn_refl
 #print axioms PrimitiveHolonomy.MultiInterface.rho
 #print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_of_allFalse_residualPairs
 #print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_of_residualEmpty_of_interface_enumeration
