@@ -192,6 +192,42 @@ theorem exists_inList_true_of_countListBool_pos
       | true =>
           exact ⟨x, InList.head, hb⟩
 
+/--
+Monotonicity of boolean counts on an explicit list.
+
+If every listed `b`-hit is also a `c`-hit, then the `b` count is bounded by the
+`c` count.
+-/
+theorem countListBool_le_of_true_imp
+    {A : Type a} (xs : List A) (b c : A → Bool) :
+    (∀ x : A, InList x xs → b x = true → c x = true) →
+      countListBool xs b ≤ countListBool xs c := by
+  induction xs with
+  | nil =>
+      intro _h
+      exact Nat.le_refl _
+  | cons x xs ih =>
+      intro h
+      unfold countListBool
+      cases hb : b x with
+      | false =>
+          cases hc : c x with
+          | false =>
+              exact ih (fun y hy hby => h y (InList.tail hy) hby)
+          | true =>
+              exact Nat.le_trans
+                (ih (fun y hy hby => h y (InList.tail hy) hby))
+                (Nat.le_succ _)
+      | true =>
+          have hcTrue : c x = true := h x InList.head hb
+          cases hc : c x with
+          | false =>
+              rw [hc] at hcTrue
+              cases hcTrue
+          | true =>
+              exact Nat.succ_le_succ
+                (ih (fun y hy hby => h y (InList.tail hy) hby))
+
 def inList_append_left
     {A : Type a} {a : A} {xs ys : List A} :
     InList a xs → InList a (xs ++ ys)
@@ -225,6 +261,16 @@ def Subfamily.Subset (K I : Subfamily J) : Prop :=
 /-- `K` is a proper subfamily of `I`, witnessed without propositional extensionality. -/
 def Subfamily.Proper (K I : Subfamily J) : Prop :=
   Subfamily.Subset K I ∧ ∃ j : J, I j ∧ ¬ K j
+
+/-- Add one interface to a subfamily, constructively. -/
+def Subfamily.Insert (I : Subfamily J) (j0 : J) : Subfamily J :=
+  fun j => I j ∨ j = j0
+
+/-- A subfamily is included in the result of inserting one interface. -/
+theorem Subfamily.subset_insert (I : Subfamily J) (j0 : J) :
+    Subfamily.Subset I (Subfamily.Insert I j0) := by
+  intro j hj
+  exact Or.inl hj
 
 /-- Two states are indistinguishable by every interface in `I`. -/
 def JointSame (obs : J → S → V) (I : Subfamily J) (x y : S) : Prop :=
@@ -700,6 +746,56 @@ theorem residual_mono
   intro x y hRes
   exact ⟨hRes.1, fun j hjI => hRes.2 j (hIK hjI)⟩
 
+/--
+Numerical residual monotonicity for explicitly enumerated subfamilies.
+
+If `I ⊆ K`, then the residual counted for `K` is bounded by the residual counted
+for `I`: adding interfaces can only remove residual distinctions.
+-/
+theorem rho_mono_of_subfamily_subset
+    [DecidableEq V] [DecidableEq Y]
+    (states : List S) (obs : J → S → V) (sigma : S → Y)
+    (interfacesI interfacesK : List J) (I K : Subfamily J)
+    (hIK : Subfamily.Subset I K)
+    (hEnumKLeft : ∀ j : J, K j → InList j interfacesK)
+    (hEnumIRight : ∀ j : J, InList j interfacesI → I j) :
+    rho states obs sigma interfacesK ≤ rho states obs sigma interfacesI := by
+  unfold rho
+  exact countListBool_le_of_true_imp
+    (pairLists states states)
+    (fun xy : S × S => ResidualListBool obs sigma interfacesK xy.1 xy.2)
+    (fun xy : S × S => ResidualListBool obs sigma interfacesI xy.1 xy.2)
+    (fun xy _hIn hKBool => by
+      have hKList : ResidualList obs sigma interfacesK xy.1 xy.2 :=
+        residualList_of_bool_true obs sigma interfacesK xy.1 xy.2 hKBool
+      have hKRes : Residual obs sigma K xy.1 xy.2 :=
+        residual_of_residualList obs sigma hEnumKLeft hKList
+      have hIRes : Residual obs sigma I xy.1 xy.2 :=
+        residual_mono obs sigma hIK xy.1 xy.2 hKRes
+      have hIList : ResidualList obs sigma interfacesI xy.1 xy.2 :=
+        residualList_of_residual obs sigma hEnumIRight hIRes
+      exact bool_true_of_residualList obs sigma interfacesI xy.1 xy.2 hIList)
+
+/--
+Residual contraction caused by passing from one explicit interface list to an extended one.
+
+This is deliberately numerical: it is the amount by which the residual count decreases.
+-/
+def deltaGain
+    [DecidableEq V] [DecidableEq Y]
+    (states : List S) (obs : J → S → V) (sigma : S → Y)
+    (interfaces interfacesPlus : List J) : Nat :=
+  rho states obs sigma interfaces - rho states obs sigma interfacesPlus
+
+/-- The defining equation for `deltaGain`. -/
+theorem deltaGain_eq_rho_sub
+    [DecidableEq V] [DecidableEq Y]
+    (states : List S) (obs : J → S → V) (sigma : S → Y)
+    (interfaces interfacesPlus : List J) :
+    deltaGain states obs sigma interfaces interfacesPlus =
+      rho states obs sigma interfaces - rho states obs sigma interfacesPlus := by
+  rfl
+
 /-- Closure is exactly emptiness of the residual common to the subfamily. -/
 theorem closed_iff_residual_empty
     [DecidableEq Y]
@@ -822,12 +918,16 @@ end PrimitiveHolonomy
 /- AXIOM_AUDIT_BEGIN -/
 #print axioms PrimitiveHolonomy.MultiInterface.countList
 #print axioms PrimitiveHolonomy.MultiInterface.countList_eq_zero_of_allFalse
+#print axioms PrimitiveHolonomy.MultiInterface.countListBool_le_of_true_imp
 #print axioms PrimitiveHolonomy.MultiInterface.rho
 #print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_of_allFalse_residualPairs
 #print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_of_residualEmpty_of_interface_enumeration
 #print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_iff_residualEmpty_of_exhaustive_states
 #print axioms PrimitiveHolonomy.MultiInterface.rho_pos_iff_residualNonempty_of_exhaustive_states
 #print axioms PrimitiveHolonomy.MultiInterface.residual_mono
+#print axioms PrimitiveHolonomy.MultiInterface.rho_mono_of_subfamily_subset
+#print axioms PrimitiveHolonomy.MultiInterface.deltaGain
+#print axioms PrimitiveHolonomy.MultiInterface.deltaGain_eq_rho_sub
 #print axioms PrimitiveHolonomy.MultiInterface.closed_iff_residual_empty
 #print axioms PrimitiveHolonomy.MultiInterface.irreducibleClosureW_iff_residual_empty_and_proper_residual_nonempty
 #print axioms PrimitiveHolonomy.MultiInterface.irreducibleClosure_of_irreducibleClosureW
