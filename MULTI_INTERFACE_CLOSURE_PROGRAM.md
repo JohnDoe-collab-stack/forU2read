@@ -2,6 +2,23 @@
 
 Statut : note de travail theorique. Aucun resultat experimental nouveau n'est affirme ici.
 
+Etat actuel apres formalisation Lean :
+
+```text
+la piece formelle centrale existe maintenant dans COFRS/MultiInterface.lean ;
+ce qui reste avant de parler de theorie complete est surtout :
+  1. l'audit empirique multi-interface ;
+  2. la version heterogene des interfaces.
+```
+
+Le fichier Lean couvre deja la chaine statique, structurelle et dynamique :
+
+```text
+residual / rho / incidence / fermeture / coalitions minimales
+-> utilite locale / redondance locale / essentialite par ablation
+-> prediction par sous-famille / descente du mediateur / end-to-end dynamique
+```
+
 But : etudier serieusement si la decouverte actuelle peut etre generalisee a un nombre arbitraire
 d'interfaces, et preciser ce qu'il faut prouver, mesurer, puis formaliser.
 
