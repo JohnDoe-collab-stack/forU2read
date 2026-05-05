@@ -5,7 +5,8 @@ import COFRS.Foundations
 
 Constructive first layer for the multi-interface program.
 
-This file deliberately starts before heterogeneous products and before finite cardinal arithmetic.
+This file deliberately starts before heterogeneous products and before quotient cardinality;
+finite counts are explicit list counts.
 It formalizes the kernel that survives constructively:
 
 * a family of homogeneous interfaces;
@@ -695,9 +696,9 @@ theorem irreducibleClosure_of_irreducibleClosureW
 def MediatorDescendsSubfamily
     (obs : J → S → V) (K : Subfamily J)
     {n : Nat} (mediator : S → Fin n) : Prop :=
-  ∃ rhoK : S → Fin n,
-    (∀ x y : S, JointSame obs K x y → rhoK x = rhoK y) ∧
-      ∀ x : S, mediator x = rhoK x
+  ∃ readoutK : S → Fin n,
+    (∀ x y : S, JointSame obs K x y → readoutK x = readoutK y) ∧
+      ∀ x : S, mediator x = readoutK x
 
 /-- A mediator is irreducible over `I` if it descends to no proper subfamily. -/
 def IrreducibleMediator
