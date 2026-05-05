@@ -21,11 +21,11 @@ No quotient, no `Classical`, no `propext`.
 
 namespace PrimitiveHolonomy
 
-universe u v w z
+universe u v w y a
 
 namespace MultiInterface
 
-variable {J : Type u} {S : Type v} {V : Type w} {Y : Type w}
+variable {J : Type u} {S : Type v} {V : Type w} {Y : Type y}
 
 /-!
 ## Constructive finite counting by explicit lists
@@ -40,7 +40,7 @@ def sumList : List Nat → Nat
   | x :: xs => x + sumList xs
 
 /-- Constructive count over an explicit finite list with explicit decidability data. -/
-def countListD {A : Type u} (xs : List A) (P : A → Prop)
+def countListD {A : Type a} (xs : List A) (P : A → Prop)
     (decP : ∀ x, Decidable (P x)) : Nat :=
   match xs with
   | [] => 0
@@ -50,16 +50,16 @@ def countListD {A : Type u} (xs : List A) (P : A → Prop)
       | isFalse _ => countListD xs P decP
 
 /-- Constructive count over an explicit finite list. -/
-def countList {A : Type u} (xs : List A) (P : A → Prop) [∀ x, Decidable (P x)] : Nat :=
+def countList {A : Type a} (xs : List A) (P : A → Prop) [∀ x, Decidable (P x)] : Nat :=
   countListD xs P (fun _ => inferInstance)
 
 /-- Structural "all entries fail `P`", avoiding membership elimination. -/
-inductive AllFalse {A : Type u} (P : A → Prop) : List A → Prop
+inductive AllFalse {A : Type a} (P : A → Prop) : List A → Prop
   | nil : AllFalse P []
   | cons {a : A} {xs : List A} : ¬ P a → AllFalse P xs → AllFalse P (a :: xs)
 
 theorem countListD_eq_zero_of_allFalse
-    {A : Type u} (xs : List A) (P : A → Prop) (decP : ∀ x, Decidable (P x)) :
+    {A : Type a} (xs : List A) (P : A → Prop) (decP : ∀ x, Decidable (P x)) :
     AllFalse P xs → countListD xs P decP = 0 := by
   intro h
   induction xs with
@@ -76,7 +76,7 @@ theorem countListD_eq_zero_of_allFalse
               exact ih hTail
 
 theorem countList_eq_zero_of_allFalse
-    {A : Type u} (xs : List A) (P : A → Prop) [∀ x, Decidable (P x)] :
+    {A : Type a} (xs : List A) (P : A → Prop) [∀ x, Decidable (P x)] :
     AllFalse P xs → countList xs P = 0 := by
   exact countListD_eq_zero_of_allFalse xs P (fun _ => inferInstance)
 
@@ -86,12 +86,12 @@ Type-valued membership in an explicit list.
 This is intentionally not `List.Mem`: it lets the finite bridge stay quotient-free and avoid
 propositional extensionality in audited declarations.
 -/
-inductive InList {A : Type z} (a : A) : List A → Prop
+inductive InList {A : Type a} (a : A) : List A → Prop
   | head {xs : List A} : InList a (a :: xs)
   | tail {b : A} {xs : List A} : InList a xs → InList a (b :: xs)
 
 theorem allFalse_not_of_inList
-    {A : Type u} {P : A → Prop} {a : A} {xs : List A} :
+    {A : Type a} {P : A → Prop} {a : A} {xs : List A} :
     AllFalse P xs → InList a xs → ¬ P a := by
   intro hAll hIn
   induction hAll with
@@ -105,7 +105,7 @@ theorem allFalse_not_of_inList
           exact ih hTailIn
 
 /-- Boolean count over an explicit list. This is the computable core used by `rho`. -/
-def countListBool {A : Type u} : List A → (A → Bool) → Nat
+def countListBool {A : Type a} : List A → (A → Bool) → Nat
   | [], _b => 0
   | a :: xs, b =>
       match b a with
@@ -113,13 +113,13 @@ def countListBool {A : Type u} : List A → (A → Bool) → Nat
       | false => countListBool xs b
 
 /-- Structural statement that a boolean predicate is false on every listed element. -/
-inductive AllFalseBool {A : Type u} (b : A → Bool) : List A → Prop
+inductive AllFalseBool {A : Type a} (b : A → Bool) : List A → Prop
   | nil : AllFalseBool b []
   | cons {a : A} {xs : List A} :
       b a = false → AllFalseBool b xs → AllFalseBool b (a :: xs)
 
 theorem countListBool_eq_zero_of_allFalseBool
-    {A : Type u} (xs : List A) (b : A → Bool) :
+    {A : Type a} (xs : List A) (b : A → Bool) :
     AllFalseBool b xs → countListBool xs b = 0 := by
   intro h
   induction xs with
@@ -133,7 +133,7 @@ theorem countListBool_eq_zero_of_allFalseBool
           exact ih hTail
 
 theorem allFalseBool_false_of_inList
-    {A : Type u} {b : A → Bool} {a : A} {xs : List A} :
+    {A : Type a} {b : A → Bool} {a : A} {xs : List A} :
     AllFalseBool b xs → InList a xs → b a = false := by
   intro hAll hIn
   induction hAll with
@@ -147,7 +147,7 @@ theorem allFalseBool_false_of_inList
           exact ih hTailIn
 
 theorem countListBool_pos_of_inList_true
-    {A : Type u} (xs : List A) (b : A → Bool) (a : A) :
+    {A : Type a} (xs : List A) (b : A → Bool) (a : A) :
     InList a xs → b a = true → 0 < countListBool xs b := by
   induction xs with
   | nil =>
@@ -173,21 +173,40 @@ theorem countListBool_pos_of_inList_true
           | true =>
               exact Nat.succ_pos _
 
+theorem exists_inList_true_of_countListBool_pos
+    {A : Type a} (xs : List A) (b : A → Bool) :
+    0 < countListBool xs b → ∃ a : A, InList a xs ∧ b a = true := by
+  induction xs with
+  | nil =>
+      intro h
+      unfold countListBool at h
+      exact False.elim (Nat.not_lt_zero 0 h)
+  | cons x xs ih =>
+      intro h
+      unfold countListBool at h
+      cases hb : b x with
+      | false =>
+          rw [hb] at h
+          rcases ih h with ⟨a, hIn, hTrue⟩
+          exact ⟨a, InList.tail hIn, hTrue⟩
+      | true =>
+          exact ⟨x, InList.head, hb⟩
+
 def inList_append_left
-    {A : Type u} {a : A} {xs ys : List A} :
+    {A : Type a} {a : A} {xs ys : List A} :
     InList a xs → InList a (xs ++ ys)
   | InList.head => InList.head
   | InList.tail hTail => InList.tail (inList_append_left hTail)
 
 def inList_append_right
-    {A : Type u} {a : A} (xs : List A) {ys : List A} :
+    {A : Type a} {a : A} (xs : List A) {ys : List A} :
     InList a ys → InList a (xs ++ ys) :=
   match xs with
   | [] => fun h => h
   | _ :: xs => fun h => InList.tail (inList_append_right xs h)
 
 theorem allFalse_append
-    {A : Type u} {P : A → Prop} {xs ys : List A} :
+    {A : Type a} {P : A → Prop} {xs ys : List A} :
     AllFalse P xs → AllFalse P ys → AllFalse P (xs ++ ys) := by
   intro hXs hYs
   induction hXs with
@@ -230,6 +249,10 @@ def Residual (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) (x y : S)
 /-- A subfamily has empty residual: no required target distinction is still jointly lost. -/
 def ResidualEmpty (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) : Prop :=
   ∀ x y : S, ¬ Residual obs sigma I x y
+
+/-- Nonempty residual, as a constructive witness. -/
+def ResidualNonempty (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) : Prop :=
+  ∃ x y : S, Residual obs sigma I x y
 
 /--
 Closure of `sigma` by a subfamily `I`, stated quotient-free:
@@ -628,6 +651,44 @@ theorem rho_eq_zero_iff_residualEmpty_of_exhaustive_states
       states obs sigma interfaces I hEnumLeft hEmpty
 
 /--
+With exhaustive states and a two-sided interface enumeration, positive numerical residual is
+exactly an explicit propositional residual witness.
+-/
+theorem rho_pos_iff_residualNonempty_of_exhaustive_states
+    [DecidableEq V] [DecidableEq Y]
+    (states : List S) (obs : J → S → V) (sigma : S → Y)
+    (interfaces : List J) (I : Subfamily J)
+    (hStates : ∀ s : S, InList s states)
+    (hEnumLeft : ∀ j : J, I j → InList j interfaces)
+    (hEnumRight : ∀ j : J, InList j interfaces → I j) :
+    0 < rho states obs sigma interfaces ↔ ResidualNonempty obs sigma I := by
+  constructor
+  · intro hPos
+    unfold rho at hPos
+    rcases exists_inList_true_of_countListBool_pos
+        (pairLists states states)
+        (fun xy : S × S => ResidualListBool obs sigma interfaces xy.1 xy.2)
+        hPos with
+      ⟨xy, _hIn, hTrue⟩
+    exact ⟨xy.1, xy.2,
+      residual_of_residualList obs sigma hEnumLeft
+        (residualList_of_bool_true obs sigma interfaces xy.1 xy.2 hTrue)⟩
+  · intro hNonempty
+    rcases hNonempty with ⟨x, y, hRes⟩
+    have hPair : InList (x, y) (pairLists states states) :=
+      inList_pairLists_of_inList (hStates x) (hStates y)
+    have hResListed : ResidualList obs sigma interfaces x y :=
+      residualList_of_residual obs sigma hEnumRight hRes
+    have hBoolTrue :
+        ResidualListBool obs sigma interfaces (x, y).1 (x, y).2 = true :=
+      bool_true_of_residualList obs sigma interfaces x y hResListed
+    unfold rho
+    exact countListBool_pos_of_inList_true
+      (pairLists states states)
+      (fun xy : S × S => ResidualListBool obs sigma interfaces xy.1 xy.2)
+      (x, y) hPair hBoolTrue
+
+/--
 Residual monotonicity: adding interfaces can only remove residual distinctions.
 
 If `I ⊆ K`, then anything lost by the larger family `K` was already lost by `I`.
@@ -651,10 +712,6 @@ theorem closed_iff_residual_empty
     by_cases hEq : sigma x = sigma y
     · exact hEq
     · exact False.elim (hEmpty x y ⟨hEq, hJoint⟩)
-
-/-- Nonempty residual, as a constructive witness. -/
-def ResidualNonempty (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) : Prop :=
-  ∃ x y : S, Residual obs sigma I x y
 
 /-- Irreducible closure: `I` closes, but every proper subfamily leaves a residual. -/
 def IrreducibleClosure (obs : J → S → V) (sigma : S → Y) (I : Subfamily J) : Prop :=
@@ -692,6 +749,58 @@ theorem irreducibleClosure_of_irreducibleClosureW
   rcases h.2 K hProper with ⟨x, y, hRes⟩
   exact hRes.1 (hClosedK x y hRes.2)
 
+/--
+Numerical irreducible closure over explicit enumerations.
+
+`interfacesOf K` is the chosen finite list presentation for each subfamily `K`.
+The main interface has zero residual count, while every proper subfamily has a positive
+residual count.
+-/
+def IrreducibleClosureRho
+    [DecidableEq V] [DecidableEq Y]
+    (states : List S) (obs : J → S → V) (sigma : S → Y)
+    (I : Subfamily J) (interfacesOf : Subfamily J → List J) : Prop :=
+  rho states obs sigma (interfacesOf I) = 0 ∧
+    ∀ K : Subfamily J, Subfamily.Proper K I →
+      0 < rho states obs sigma (interfacesOf K)
+
+/--
+With exhaustive states and two-sided enumerations for every subfamily, witness-style
+irreducible closure is exactly the numerical `rho` certificate.
+-/
+theorem irreducibleClosureW_iff_irreducibleClosureRho_of_exhaustive_states
+    [DecidableEq V] [DecidableEq Y]
+    (states : List S) (obs : J → S → V) (sigma : S → Y)
+    (I : Subfamily J) (interfacesOf : Subfamily J → List J)
+    (hStates : ∀ s : S, InList s states)
+    (hEnumLeft : ∀ K : Subfamily J, ∀ j : J, K j → InList j (interfacesOf K))
+    (hEnumRight : ∀ K : Subfamily J, ∀ j : J, InList j (interfacesOf K) → K j) :
+    IrreducibleClosureW obs sigma I ↔
+      IrreducibleClosureRho states obs sigma I interfacesOf := by
+  constructor
+  · intro hIrr
+    refine ⟨?_, ?_⟩
+    · have hEmpty : ResidualEmpty obs sigma I :=
+        (closed_iff_residual_empty obs sigma I).mp hIrr.1
+      exact (rho_eq_zero_iff_residualEmpty_of_exhaustive_states
+        states obs sigma (interfacesOf I) I hStates
+        (hEnumLeft I) (hEnumRight I)).mpr hEmpty
+    · intro K hProper
+      exact (rho_pos_iff_residualNonempty_of_exhaustive_states
+        states obs sigma (interfacesOf K) K hStates
+        (hEnumLeft K) (hEnumRight K)).mpr (hIrr.2 K hProper)
+  · intro hRho
+    refine ⟨?_, ?_⟩
+    · have hEmpty : ResidualEmpty obs sigma I :=
+        (rho_eq_zero_iff_residualEmpty_of_exhaustive_states
+          states obs sigma (interfacesOf I) I hStates
+          (hEnumLeft I) (hEnumRight I)).mp hRho.1
+      exact (closed_iff_residual_empty obs sigma I).mpr hEmpty
+    · intro K hProper
+      exact (rho_pos_iff_residualNonempty_of_exhaustive_states
+        states obs sigma (interfacesOf K) K hStates
+        (hEnumLeft K) (hEnumRight K)).mp (hRho.2 K hProper)
+
 /-- A finite mediator readout descends to the subfamily `K`. -/
 def MediatorDescendsSubfamily
     (obs : J → S → V) (K : Subfamily J)
@@ -717,10 +826,13 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_of_allFalse_residualPairs
 #print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_of_residualEmpty_of_interface_enumeration
 #print axioms PrimitiveHolonomy.MultiInterface.rho_eq_zero_iff_residualEmpty_of_exhaustive_states
+#print axioms PrimitiveHolonomy.MultiInterface.rho_pos_iff_residualNonempty_of_exhaustive_states
 #print axioms PrimitiveHolonomy.MultiInterface.residual_mono
 #print axioms PrimitiveHolonomy.MultiInterface.closed_iff_residual_empty
 #print axioms PrimitiveHolonomy.MultiInterface.irreducibleClosureW_iff_residual_empty_and_proper_residual_nonempty
 #print axioms PrimitiveHolonomy.MultiInterface.irreducibleClosure_of_irreducibleClosureW
+#print axioms PrimitiveHolonomy.MultiInterface.IrreducibleClosureRho
+#print axioms PrimitiveHolonomy.MultiInterface.irreducibleClosureW_iff_irreducibleClosureRho_of_exhaustive_states
 #print axioms PrimitiveHolonomy.MultiInterface.MediatorDescendsSubfamily
 #print axioms PrimitiveHolonomy.MultiInterface.IrreducibleMediator
 /- AXIOM_AUDIT_END -/
