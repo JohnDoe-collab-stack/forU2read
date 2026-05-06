@@ -816,6 +816,155 @@ Dans ce langage, `ρ_σ(E_1,…,E_n)` n’est rien d’autre que le poids du sou
 ρ_σ(E_1,…,E_n) = w({1,…,n}).
 ```
 
+## 11bis) Algèbre n-interface autonome
+
+Cette section isole l’algèbre multi-interface indépendamment de toute réalisation particulière par partitions,
+modèles neuronaux ou médiateurs dynamiques.
+
+Le point de départ n’est pas un scalaire, mais une famille de pertes :
+
+```text
+L : J → 𝒫(R_σ)
+j ↦ L_j
+```
+
+où :
+
+```text
+R_σ  = ensemble des distinctions requises par la cible σ
+L_j  = distinctions requises encore perdues par l’interface j
+```
+
+Pour une sous-famille d’interfaces `I ⊆ J`, le résidu commun est :
+
+```text
+Res(I) := ⋂_{j∈I} L_j.
+```
+
+Avec la convention obligatoire :
+
+```text
+Res(∅) := R_σ.
+```
+
+Cette convention signifie : avant toute interface, toutes les distinctions requises par `σ` restent à couvrir.
+
+Le scalaire associé est seulement une projection :
+
+```text
+ρ(I) := #Res(I).
+```
+
+La fermeture par une sous-famille est :
+
+```text
+Closed(I) ⇔ Res(I) = ∅ ⇔ ρ(I) = 0.
+```
+
+L’irréductibilité de fermeture est :
+
+```text
+IrreducibleClosed(I)
+⇔
+Res(I) = ∅
+and
+∀ K ⊂ I, Res(K) ≠ ∅.
+```
+
+Autrement dit, `I` ferme la cible, mais aucune sous-famille stricte ne la ferme.
+
+Le gain marginal d’une nouvelle interface `j` après une famille `I` est :
+
+```text
+δ(I,j) := ρ(I) - ρ(I ∪ {j}).
+```
+
+Equivalentement :
+
+```text
+δ(I,j) = #(Res(I) \ L_j).
+```
+
+Lecture : `δ(I,j)` compte les distinctions encore résiduelles après `I` que l’interface `j` sépare.
+
+Donc :
+
+```text
+j utile relativement à I
+⇔ δ(I,j) > 0
+⇔ Res(I ∪ {j}) ⊂ Res(I).
+```
+
+Et :
+
+```text
+j redondante relativement à I
+⇔ δ(I,j) = 0
+⇔ Res(I ∪ {j}) = Res(I).
+```
+
+Dans une famille fermante `I`, une interface `j ∈ I` est essentielle si son ablation recrée un résidu :
+
+```text
+Essential(j,I)
+⇔
+Closed(I)
+and
+Res(I \ {j}) ≠ ∅.
+```
+
+Elle est redondante dans `I` si l’ablation ne casse pas la fermeture :
+
+```text
+Redundant(j,I)
+⇔
+Closed(I)
+and
+Res(I \ {j}) = ∅.
+```
+
+L’objet complet n’est donc pas `ρ(I)` seul. L’objet complet est l’incidence des pertes :
+
+```text
+d ∈ R_σ ↦ { j ∈ J | d ∈ L_j }.
+```
+
+ou, dualement, la table des intersections :
+
+```text
+U ⊆ J ↦ ⋂_{j∈U} L_j.
+```
+
+Le scalaire `ρ(I)` répond seulement à la question :
+
+```text
+combien de distinctions restent perdues par toute la famille I ?
+```
+
+L’incidence répond aux questions structurelles :
+
+```text
+quelles distinctions restent perdues ?
+quelles interfaces les perdent ?
+quelles interfaces les séparent ?
+quelles sous-familles ferment ?
+quelles interfaces sont essentielles, redondantes ou complémentaires ?
+```
+
+Formulation condensée :
+
+```text
+multi-interface = algèbre d’incidence des pertes
+fermeture       = résidu commun vide
+irréductibilité = minimalité par sous-familles strictes
+gain            = contraction du résidu
+redondance      = absence de contraction du résidu
+essentialité    = résidu recréé par ablation
+```
+
+Ainsi, l’arithmétique utile n’est pas d’abord une arithmétique de nombres. C’est une arithmétique
+d’intersections de pertes, puis seulement ensuite une cardinalisation.
+
 ---
 
 ## 12) Propriétés algébriques (morphismes de treillis)
