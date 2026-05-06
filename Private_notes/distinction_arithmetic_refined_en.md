@@ -1,10 +1,5 @@
 # Closure by distinctions (incidence-first) — refined version
 
-This note is a refined version of `Private_notes/distinction_arithmetic.md`.
-
-Goal: isolate what is structural — closure, non-descent, finite minimal mediator — from what is merely
-a convenient finite realization — calculation over `R_σ ⊆ ΔX` with cardinalization delayed to the end.
-
 ## Structural statement — what is genuinely strong
 
 Fix:
@@ -74,8 +69,6 @@ Separately, **separation of the joint fiber** (`StepSeparatesFiber` on `obsAB`) 
 or step. It corresponds to the mediated-closure regime: the truth still varies inside the joint fiber.
 It is packaged by other statements, for example joint irreducible profiles and end-to-end versions.
 
-This file keeps a finite realization by distinctions as a mental model and computational tool.
-
 ---
 
 ## Appendix — finite distinction calculus
@@ -90,7 +83,7 @@ Peano cardinalizes collections.
 Closure arithmetic first preserves the incidence of lost distinctions, then cardinalizes.
 ```
 
-By **incidence**, we mean the relative position of loss subsets inside `R_σ`: their overlap, disjointness,
+**Incidence** is the relative position of loss subsets inside `R_σ`: their overlap, disjointness,
 or alignment.
 
 Central point:
@@ -198,7 +191,7 @@ by `n ≥ 1`:
 ρ_σ^{(n)}(E₁,…,Eₙ) := #(⋂_{i=1}^n L_σ(E_i)).
 ```
 
-In the rest of the text, we keep the practical notation `ρ_σ(E₁,…,Eₙ)`.
+The practical notation `ρ_σ(E₁,…,Eₙ)` is used.
 
 Additional typing remarks:
 
@@ -272,7 +265,7 @@ Let `X` be a finite set of states.
 ΔX := {{x, x'} | x ≠ x'}
 ```
 
-We work in `𝒫(ΔX)`, the powerset of distinctions, and only then apply:
+The calculation takes place in `𝒫(ΔX)`, the powerset of distinctions, before applying:
 
 ```text
 # : 𝒫(ΔX) → ℕ

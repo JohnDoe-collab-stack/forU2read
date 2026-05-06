@@ -1,10 +1,5 @@
 # Clôture par distinctions (incidence-first) — version raffinée
 
-Cette note est une **raffine** de `Private_notes/distinction_arithmetic.md`.
-
-Objectif : isoler ce qui est **structurel** (clôture / non‑descente / médiateur fini minimal) de ce qui est
-simplement une **réalisation finie** commode (calcul sur `R_σ ⊆ ΔX` avec cardinalisation tardive).
-
 ## Énoncé structurel (ce qui est réellement “fort”)
 
 On fixe :
@@ -59,11 +54,9 @@ package précisément la chaîne :
 (elle correspond au régime “clôture médiée” : la vérité varie encore dans la fibre jointe), et se package via d’autres
 énoncés (ex. profils “joint irreducible”, versions end‑to‑end).
 
-Ce fichier, lui, garde une réalisation finie (distinctions) comme “modèle mental” et comme outil de calcul.
-
 ---
 
-## Appendice — calcul finitaire par distinctions (texte d’origine)
+## Appendice — calcul finitaire par distinctions
 
 Idée : **retarder la cardinalisation** (`ℕ`) : calculer d’abord sur des **distinctions** (paires d’états), puis appliquer un
 cardinal `#` seulement à la fin.
@@ -75,7 +68,7 @@ Peano cardinalise des collections.
 L’arithmétique de clôture conserve d’abord l’incidence des pertes de distinctions, puis cardinalise.
 ```
 
-Par **incidence**, on entend la position relative des sous-ensembles de pertes dans `R_σ` :
+L’**incidence** est la position relative des sous-ensembles de pertes dans `R_σ` :
 leur recouvrement, leur disjonction, ou leur alignement.
 
 Point central :
@@ -183,7 +176,7 @@ indexée par `n ≥ 1` :
 ρ_σ^{(n)}(E₁,…,Eₙ) := #(⋂_{i=1}^n L_σ(E_i)).
 ```
 
-Dans le reste du texte, on garde la notation pratique `ρ_σ(E₁,…,Eₙ)`.
+La notation pratique `ρ_σ(E₁,…,Eₙ)` sera utilisée.
 
 Remarques de typage (compléments).
 
