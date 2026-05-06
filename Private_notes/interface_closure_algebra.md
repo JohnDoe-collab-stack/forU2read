@@ -1,4 +1,4 @@
-# Interface closure algebra
+# Minimal access coalitions — interface closure algebra
 
 Status: autonomous definition document.
 
@@ -126,6 +126,19 @@ Res(∅) := R_σ.
 
 This convention means that without any interface no required distinction is covered.
 
+For heterogeneous interface values, the joint observation has dependent product type:
+
+```text
+Joint_I : X → Π_{j∈I} V_j
+Joint_I(x) := (obs_j(x))_{j∈I}.
+```
+
+In the homogeneous case `V_j = V`, this reduces to:
+
+```text
+Joint_I : X → I → V.
+```
+
 ## 5. Closure
 
 A subfamily `I` closes the target `σ` if the target is determined by the joint view of `I`.
@@ -135,7 +148,19 @@ Functional form:
 ```text
 Closed(I,σ)
 ⇔
-∃ pred, ∀ x ∈ X, σ(x) = pred((obs_j(x))_{j∈I}).
+∃ pred : (Π_{j∈I} V_j) → Y,
+  ∀ x ∈ X,
+    σ(x) = pred(Joint_I(x)).
+```
+
+For a propositional target `φ : X → Prop`, the corresponding form is:
+
+```text
+Closed(I,φ)
+⇔
+∃ pred : (Π_{j∈I} V_j) → Prop,
+  ∀ x ∈ X,
+    φ(x) ↔ pred(Joint_I(x)).
 ```
 
 Fiber form:
@@ -385,25 +410,36 @@ Finite mediation adds an extra observation:
 M : X → Fin n.
 ```
 
-The mediated family closes `σ` when:
+The mediated joint observation is:
 
 ```text
-Closed(I + M, σ).
+Joint_{I,M} : X → (Π_{j∈I} V_j) × Fin n
+Joint_{I,M}(x) := (Joint_I(x), M(x)).
+```
+
+The mediated family closes `σ` when there is a decision rule:
+
+```text
+Closed_M(I,M,σ)
+⇔
+∃ pred : ((Π_{j∈I} V_j) × Fin n) → Y,
+  ∀ x ∈ X,
+    σ(x) = pred(Joint_{I,M}(x)).
 ```
 
 The mediator is minimal if:
 
 ```text
-Closed(I + M_n, σ)
+∃ M_n : X → Fin n, Closed_M(I,M_n,σ)
 and
-∀ m < n, no mediator M_m closes σ over I.
+∀ m < n, ∀ M_m : X → Fin m, not Closed_M(I,M_m,σ).
 ```
 
 Thus:
 
 ```text
 direct closure  : Res(I) = ∅
-mediated closure: Res(I) ≠ ∅ then Res(I + M_n) = ∅ with n minimal
+mediated closure: Res(I) ≠ ∅, then Joint_{I,M_n} closes with n minimal
 ```
 
 ## 12. Mediator non-descent
@@ -416,8 +452,9 @@ Definition:
 ```text
 Descends(M,K)
 ⇔
-∃ f, ∀ x ∈ X,
-  M(x) = f((obs_j(x))_{j∈K}).
+∃ f : (Π_{j∈K} V_j) → Fin n,
+  ∀ x ∈ X,
+    M(x) = f(Joint_K(x)).
 ```
 
 A mediator is irreducible relative to `I` if it descends to no strict subfamily:
@@ -461,7 +498,7 @@ In the mediated regime, the minimal explanation is:
 ```text
 a subfamily I
 a finite mediator M_n
-a proof that I + M_n closes
+a proof that Joint_{I,M_n} closes
 a proof that m<n fails
 a proof that M_n descends to no relevant strict subfamily
 ```
@@ -499,7 +536,102 @@ a notion of loss by interface
 a closure criterion
 ```
 
-## 15. Formal summary
+## 15. Complete finite example: XOR
+
+Let:
+
+```text
+X = {00, 01, 10, 11}
+σ(x) = xor(x)
+```
+
+The required distinctions are the unordered pairs with different XOR value:
+
+```text
+R_σ = {00|01, 00|10, 01|11, 10|11}
+r_σ = 4.
+```
+
+Define two interfaces:
+
+```text
+A(x) = first bit of x
+B(x) = second bit of x.
+```
+
+Losses:
+
+```text
+L_A = {00|01, 10|11}
+L_B = {00|10, 01|11}.
+```
+
+Each marginal fails:
+
+```text
+Res({A}) = L_A ≠ ∅
+Res({B}) = L_B ≠ ∅.
+```
+
+The joint residual is:
+
+```text
+Res({A,B})
+= L_A ∩ L_B
+= ∅.
+```
+
+Therefore:
+
+```text
+Closed({A,B},σ)
+ρ({A,B}) = 0.
+```
+
+The closure is irreducible:
+
+```text
+ρ({A}) = 2 > 0
+ρ({B}) = 2 > 0
+ρ({A,B}) = 0.
+```
+
+Thus `{A,B}` is a minimal access coalition for `σ`.
+
+The marginal gains are:
+
+```text
+δ(∅,A) = ρ(∅) - ρ({A}) = 4 - 2 = 2
+δ(∅,B) = ρ(∅) - ρ({B}) = 4 - 2 = 2
+δ({A},B) = ρ({A}) - ρ({A,B}) = 2 - 0 = 2
+δ({B},A) = ρ({B}) - ρ({A,B}) = 2 - 0 = 2.
+```
+
+Mediated reading:
+
+```text
+I = {A}
+M = B : X → Fin 2.
+```
+
+Then:
+
+```text
+Joint_{I,M}(x) = (A(x), B(x))
+```
+
+closes `σ`. A mediator of size `1` is constant, so `Joint_{I,M_1}` carries no more information than `A`
+alone. Since `A` does not close `σ`, no `Fin 1` mediator closes over `{A}`.
+
+Thus, in this presentation:
+
+```text
+M = B
+```
+
+is a finite mediator of minimal size `2`, equivalently one bit of additional access.
+
+## 16. Formal summary
 
 Objects:
 
@@ -545,8 +677,8 @@ Mediation:
 
 ```text
 I does not directly close
-I + M_n closes
-∀m<n, I + M_m fails
+Joint_{I,M_n} closes
+∀m<n, Joint_{I,M_m} fails
 M_n does not descend to a strict subfamily
 ```
 
@@ -560,4 +692,3 @@ incidence of losses
 + closure
 + minimality
 ```
-

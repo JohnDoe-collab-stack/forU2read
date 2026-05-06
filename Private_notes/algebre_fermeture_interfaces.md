@@ -1,4 +1,4 @@
-# Algèbre de fermeture par interfaces
+# Coalitions minimales d’accès — algèbre de fermeture par interfaces
 
 Statut : document autonome de définition.
 
@@ -126,6 +126,19 @@ Res(∅) := R_σ.
 
 Cette convention signifie que sans interface aucune distinction requise n’est couverte.
 
+Pour des interfaces de types hétérogènes, l’observation conjointe a un type produit dépendant :
+
+```text
+Joint_I : X → Π_{j∈I} V_j
+Joint_I(x) := (obs_j(x))_{j∈I}.
+```
+
+Dans le cas homogène `V_j = V`, cela se réduit à :
+
+```text
+Joint_I : X → I → V.
+```
+
 ## 5. Fermeture
 
 Une sous-famille `I` ferme la cible `σ` si la cible est déterminée par la vue conjointe de `I`.
@@ -135,7 +148,19 @@ Forme fonctionnelle :
 ```text
 Closed(I,σ)
 ⇔
-∃ pred, ∀ x ∈ X, σ(x) = pred((obs_j(x))_{j∈I}).
+∃ pred : (Π_{j∈I} V_j) → Y,
+  ∀ x ∈ X,
+    σ(x) = pred(Joint_I(x)).
+```
+
+Pour une cible propositionnelle `φ : X → Prop`, la forme correspondante est :
+
+```text
+Closed(I,φ)
+⇔
+∃ pred : (Π_{j∈I} V_j) → Prop,
+  ∀ x ∈ X,
+    φ(x) ↔ pred(Joint_I(x)).
 ```
 
 Forme par fibres :
@@ -386,25 +411,36 @@ Une médiation finie ajoute une observation supplémentaire :
 M : X → Fin n.
 ```
 
-La famille médiée ferme `σ` lorsque :
+L’observation conjointe médiée est :
 
 ```text
-Closed(I + M, σ).
+Joint_{I,M} : X → (Π_{j∈I} V_j) × Fin n
+Joint_{I,M}(x) := (Joint_I(x), M(x)).
+```
+
+La famille médiée ferme `σ` lorsqu’il existe une règle de décision :
+
+```text
+Closed_M(I,M,σ)
+⇔
+∃ pred : ((Π_{j∈I} V_j) × Fin n) → Y,
+  ∀ x ∈ X,
+    σ(x) = pred(Joint_{I,M}(x)).
 ```
 
 Le médiateur est minimal si :
 
 ```text
-Closed(I + M_n, σ)
+∃ M_n : X → Fin n, Closed_M(I,M_n,σ)
 and
-∀ m < n, no mediator M_m closes σ over I.
+∀ m < n, ∀ M_m : X → Fin m, not Closed_M(I,M_m,σ).
 ```
 
 Ainsi :
 
 ```text
 clôture directe : Res(I) = ∅
-clôture médiée  : Res(I) ≠ ∅ puis Res(I + M_n) = ∅ avec n minimal
+clôture médiée  : Res(I) ≠ ∅, puis Joint_{I,M_n} ferme avec n minimal
 ```
 
 ## 12. Non-descente du médiateur
@@ -417,8 +453,9 @@ Définition :
 ```text
 Descends(M,K)
 ⇔
-∃ f, ∀ x ∈ X,
-  M(x) = f((obs_j(x))_{j∈K}).
+∃ f : (Π_{j∈K} V_j) → Fin n,
+  ∀ x ∈ X,
+    M(x) = f(Joint_K(x)).
 ```
 
 Un médiateur est irréductible relativement à `I` s’il ne descend vers aucune sous-famille stricte :
@@ -462,7 +499,7 @@ Dans le régime médié, l’explication minimale est :
 ```text
 une sous-famille I
 un médiateur fini M_n
-une preuve que I + M_n ferme
+une preuve que Joint_{I,M_n} ferme
 une preuve que m<n échoue
 une preuve que M_n ne descend vers aucune sous-famille stricte pertinente
 ```
@@ -500,7 +537,102 @@ d’une notion de perte par interface
 d’un critère de fermeture
 ```
 
-## 15. Résumé formel
+## 15. Exemple fini complet : XOR
+
+Soit :
+
+```text
+X = {00, 01, 10, 11}
+σ(x) = xor(x)
+```
+
+Les distinctions requises sont les paires non ordonnées de valeurs XOR différentes :
+
+```text
+R_σ = {00|01, 00|10, 01|11, 10|11}
+r_σ = 4.
+```
+
+Définir deux interfaces :
+
+```text
+A(x) = premier bit de x
+B(x) = second bit de x.
+```
+
+Pertes :
+
+```text
+L_A = {00|01, 10|11}
+L_B = {00|10, 01|11}.
+```
+
+Chaque marginale échoue :
+
+```text
+Res({A}) = L_A ≠ ∅
+Res({B}) = L_B ≠ ∅.
+```
+
+Le résidu conjoint est :
+
+```text
+Res({A,B})
+= L_A ∩ L_B
+= ∅.
+```
+
+Donc :
+
+```text
+Closed({A,B},σ)
+ρ({A,B}) = 0.
+```
+
+La fermeture est irréductible :
+
+```text
+ρ({A}) = 2 > 0
+ρ({B}) = 2 > 0
+ρ({A,B}) = 0.
+```
+
+Ainsi `{A,B}` est une coalition minimale d’accès pour `σ`.
+
+Les gains marginaux sont :
+
+```text
+δ(∅,A) = ρ(∅) - ρ({A}) = 4 - 2 = 2
+δ(∅,B) = ρ(∅) - ρ({B}) = 4 - 2 = 2
+δ({A},B) = ρ({A}) - ρ({A,B}) = 2 - 0 = 2
+δ({B},A) = ρ({B}) - ρ({A,B}) = 2 - 0 = 2.
+```
+
+Lecture médiée :
+
+```text
+I = {A}
+M = B : X → Fin 2.
+```
+
+Alors :
+
+```text
+Joint_{I,M}(x) = (A(x), B(x))
+```
+
+ferme `σ`. Un médiateur de taille `1` est constant, donc `Joint_{I,M_1}` ne porte pas plus
+d’information que `A` seul. Comme `A` ne ferme pas `σ`, aucun médiateur `Fin 1` ne ferme au-dessus de `{A}`.
+
+Donc, dans cette présentation :
+
+```text
+M = B
+```
+
+est un médiateur fini de taille minimale `2`, équivalemment un bit d’accès additionnel.
+
+## 16. Résumé formel
 
 Objets :
 
@@ -546,8 +678,8 @@ Médiation :
 
 ```text
 I ne ferme pas directement
-I + M_n ferme
-∀m<n, I + M_m échoue
+Joint_{I,M_n} ferme
+∀m<n, Joint_{I,M_m} échoue
 M_n ne descend pas vers une sous-famille stricte
 ```
 
@@ -561,4 +693,3 @@ incidence des pertes
 + fermeture
 + minimalité
 ```
-
