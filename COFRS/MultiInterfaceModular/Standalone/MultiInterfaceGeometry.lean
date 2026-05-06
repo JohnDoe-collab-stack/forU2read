@@ -14,7 +14,9 @@ geometry that sits above it:
 * witness-style covering coalitions,
 * local gluing of covers,
 * incidence isomorphisms and preservation of residuals/covers,
+* finite mediated cover extensions,
 * observation systems as concrete realizations of an abstract incidence system.
+* concrete state-readout mediators `X → Fin n`.
 
 Constructive only.
 -/
@@ -928,6 +930,276 @@ theorem realizes_separates (j : J) (p : X × X) :
     (O.toAbstractIncidenceSystem).Separates j p ↔ O.SeparatesPair j p := by
   rfl
 
+/-!
+## Concrete state-readout mediators
+
+The abstract mediator layer allows arbitrary finite incidence profiles. The
+concrete observation layer adds the stricter admissible object: a finite readout
+of states, `readout : X → Fin n`, whose action on distinctions is induced by
+the two endpoint values of the pair.
+
+This is the non-oracle layer: the mediator reads states, not distinctions.
+-/
+
+/-- Loss of a required pair distinction by a finite state readout. -/
+def StateReadoutLoss {n : Nat} (readout : X → Fin n) (p : X × X) : Prop :=
+  O.RequiredPair p ∧ readout p.1 = readout p.2
+
+/-- Separation of a required pair distinction by a finite state readout. -/
+def StateReadoutSeparates {n : Nat} (readout : X → Fin n) (p : X × X) : Prop :=
+  O.RequiredPair p ∧ readout p.1 ≠ readout p.2
+
+/-- A state-readout separation always targets a required pair distinction. -/
+theorem stateReadoutSeparates_required {n : Nat}
+    (readout : X → Fin n) {p : X × X} :
+    O.StateReadoutSeparates readout p → O.RequiredPair p := by
+  intro h
+  exact h.1
+
+/-- A state readout cannot both separate and lose the same pair distinction. -/
+theorem stateReadoutSeparates_not_loss {n : Nat}
+    (readout : X → Fin n) {p : X × X} :
+    O.StateReadoutSeparates readout p → ¬ O.StateReadoutLoss readout p := by
+  intro hSep hLoss
+  exact hSep.2 hLoss.2
+
+/-- Extend a concrete observation incidence system with one finite state readout. -/
+def extendWithStateReadout {n : Nat} (readout : X → Fin n) :
+    AbstractIncidenceSystem (X × X) (Option J) where
+  Required := O.RequiredPair
+  Loss := fun j p =>
+    match j with
+    | none => O.StateReadoutLoss readout p
+    | some j0 => O.LossPair j0 p
+  Separates := fun j p =>
+    match j with
+    | none => O.StateReadoutSeparates readout p
+    | some j0 => O.SeparatesPair j0 p
+  separates_required := by
+    intro j p h
+    cases j with
+    | none =>
+        exact h.1
+    | some _j0 =>
+        exact h.1
+  separates_not_loss := by
+    intro j p hSep hLoss
+    cases j with
+    | none =>
+        exact O.stateReadoutSeparates_not_loss readout hSep hLoss
+    | some _j0 =>
+        exact hSep.2 hLoss.2
+
+/-- Lift a base coalition and include the concrete state-readout mediator. -/
+def withStateReadoutCoalition (I : Coalition J) : Coalition (Option J) :=
+  fun j =>
+    match j with
+    | none => True
+    | some j0 => I j0
+
+/-- A concrete finite readout turns `I` into a cover in the extended observation system. -/
+def StateReadoutMediatedCover {n : Nat}
+    (I : Coalition J) (readout : X → Fin n) : Prop :=
+  (O.extendWithStateReadout readout).CoveringCoalition (withStateReadoutCoalition I)
+
+/--
+Normal form for concrete state-readout mediated cover.
+
+Every required pair distinction is separated either by the base coalition or by
+the finite state readout.
+-/
+theorem stateReadoutMediatedCover_iff_base_or_readout {n : Nat}
+    (I : Coalition J) (readout : X → Fin n) :
+    O.StateReadoutMediatedCover I readout ↔
+      ∀ p, O.RequiredPair p →
+        (∃ j, I j ∧ O.SeparatesPair j p) ∨ O.StateReadoutSeparates readout p := by
+  constructor
+  · intro hMed p hp
+    rcases hMed p hp with ⟨j, hjI, hjSep⟩
+    cases j with
+    | none =>
+        exact Or.inr hjSep
+    | some j0 =>
+        exact Or.inl ⟨j0, hjI, hjSep⟩
+  · intro h p hp
+    cases h p hp with
+    | inl hBase =>
+        rcases hBase with ⟨j, hjI, hjSep⟩
+        exact ⟨some j, hjI, hjSep⟩
+    | inr hReadout =>
+        exact ⟨none, True.intro, hReadout⟩
+
+/-- Proper concrete mediated cover: `I` fails directly but succeeds with the readout. -/
+def ProperStateReadoutMediatedCover {n : Nat}
+    (I : Coalition J) (readout : X → Fin n) : Prop :=
+  ¬ (O.toAbstractIncidenceSystem).CoveringCoalition I ∧
+    O.StateReadoutMediatedCover I readout
+
+/-- Existence of a concrete state-readout cover extension of dimension `n`. -/
+def StateReadoutCoverExtension (I : Coalition J) (n : Nat) : Prop :=
+  ∃ readout : X → Fin n, O.StateReadoutMediatedCover I readout
+
+/-- Existence of a genuine concrete state-readout mediation of dimension `n`. -/
+def ProperStateReadoutCoverExtension (I : Coalition J) (n : Nat) : Prop :=
+  ∃ readout : X → Fin n, O.ProperStateReadoutMediatedCover I readout
+
+/-- Exact minimal concrete state-readout mediated cover dimension. -/
+def MinimalStateReadoutMediatedCover (I : Coalition J) (n : Nat) : Prop :=
+  O.StateReadoutCoverExtension I n ∧
+    ∀ m : Nat, m < n → ¬ O.StateReadoutCoverExtension I m
+
+/-- Exact minimal proper concrete state-readout mediated cover dimension. -/
+def ProperMinimalStateReadoutMediatedCover (I : Coalition J) (n : Nat) : Prop :=
+  O.ProperStateReadoutCoverExtension I n ∧
+    ∀ m : Nat, m < n → ¬ O.ProperStateReadoutCoverExtension I m
+
+/--
+If `I + readout` covers, then the readout separates every residual distinction
+left by `I`.
+-/
+theorem stateReadout_separates_residual_of_mediatedCover {n : Nat}
+    (I : Coalition J) (readout : X → Fin n) :
+    O.StateReadoutMediatedCover I readout →
+      ∀ p, (O.toAbstractIncidenceSystem).Residual I p →
+        O.StateReadoutSeparates readout p := by
+  intro hMed p hRes
+  rcases hMed p hRes.1 with ⟨j, hjI, hjSep⟩
+  cases j with
+  | none =>
+      exact hjSep
+  | some j0 =>
+      exact False.elim ((O.toAbstractIncidenceSystem).separates_not_loss hjSep (hRes.2 j0 hjI))
+
+/-- Proper concrete mediated covers are concrete mediated covers. -/
+theorem stateReadoutMediatedCover_of_properStateReadoutMediatedCover {n : Nat}
+    (I : Coalition J) (readout : X → Fin n) :
+    O.ProperStateReadoutMediatedCover I readout →
+      O.StateReadoutMediatedCover I readout := by
+  intro h
+  exact h.2
+
+/-- Proper concrete mediated covers certify that the base coalition fails directly. -/
+theorem not_coveringCoalition_of_properStateReadoutMediatedCover {n : Nat}
+    (I : Coalition J) (readout : X → Fin n) :
+    O.ProperStateReadoutMediatedCover I readout →
+      ¬ (O.toAbstractIncidenceSystem).CoveringCoalition I := by
+  intro h
+  exact h.1
+
+/-- Minimal concrete state-readout cover implies existence at that dimension. -/
+theorem stateReadoutCoverExtension_of_minimalStateReadoutMediatedCover
+    (I : Coalition J) (n : Nat) :
+    O.MinimalStateReadoutMediatedCover I n →
+      O.StateReadoutCoverExtension I n := by
+  intro h
+  exact h.1
+
+/-- Minimal concrete state-readout cover excludes smaller concrete readouts. -/
+theorem no_smaller_stateReadoutCoverExtension_of_minimalStateReadoutMediatedCover
+    (I : Coalition J) (n : Nat) :
+    O.MinimalStateReadoutMediatedCover I n →
+      ∀ m : Nat, m < n → ¬ O.StateReadoutCoverExtension I m := by
+  intro h
+  exact h.2
+
+/-- Proper minimal concrete state-readout cover implies proper existence. -/
+theorem properStateReadoutCoverExtension_of_properMinimalStateReadoutMediatedCover
+    (I : Coalition J) (n : Nat) :
+    O.ProperMinimalStateReadoutMediatedCover I n →
+      O.ProperStateReadoutCoverExtension I n := by
+  intro h
+  exact h.1
+
+/-- Proper minimal concrete state-readout cover excludes smaller proper readout mediations. -/
+theorem no_smaller_properStateReadoutCoverExtension_of_properMinimalStateReadoutMediatedCover
+    (I : Coalition J) (n : Nat) :
+    O.ProperMinimalStateReadoutMediatedCover I n →
+      ∀ m : Nat, m < n → ¬ O.ProperStateReadoutCoverExtension I m := by
+  intro h
+  exact h.2
+
+/--
+A concrete readout realizes an abstract finite mediator profile when that
+profile has exactly the same loss and separation behavior on state pairs.
+-/
+def StateReadoutRealizesMediatorProfile {n : Nat}
+    (readout : X → Fin n)
+    (M : (O.toAbstractIncidenceSystem).FiniteMediatorProfile n) : Prop :=
+  (∀ p, M.Loss p ↔ O.StateReadoutLoss readout p) ∧
+    ∀ p, M.Separates p ↔ O.StateReadoutSeparates readout p
+
+/-- Admissibility predicate: the abstract finite profile is induced by a state readout. -/
+def StateReadoutAdmissibleMediatorProfile {n : Nat}
+    (M : (O.toAbstractIncidenceSystem).FiniteMediatorProfile n) : Prop :=
+  ∃ readout : X → Fin n, O.StateReadoutRealizesMediatorProfile readout M
+
+/-- The canonical admissibility predicate for abstract profiles realized by state readouts. -/
+def StateReadoutAdmissible {n : Nat}
+    (M : (O.toAbstractIncidenceSystem).FiniteMediatorProfile n) : Prop :=
+  O.StateReadoutAdmissibleMediatorProfile M
+
+/-- State-readout admissible mediated covers are admissible abstract finite cover extensions. -/
+theorem admissibleFiniteCoverExtension_of_stateReadoutAdmissible_mediatedCover
+    {n : Nat} (I : Coalition J)
+    (M : (O.toAbstractIncidenceSystem).FiniteMediatorProfile n) :
+    O.StateReadoutAdmissibleMediatorProfile M →
+      (O.toAbstractIncidenceSystem).MediatedCover I M →
+        (O.toAbstractIncidenceSystem).AdmissibleFiniteCoverExtension
+          O.StateReadoutAdmissible I n := by
+  intro hAdm hMed
+  exact ⟨M, hAdm, hMed⟩
+
+/--
+State-readout admissible proper mediated covers are admissible abstract proper
+finite cover extensions.
+-/
+theorem properAdmissibleFiniteCoverExtension_of_stateReadoutAdmissible_properMediatedCover
+    {n : Nat} (I : Coalition J)
+    (M : (O.toAbstractIncidenceSystem).FiniteMediatorProfile n) :
+    O.StateReadoutAdmissibleMediatorProfile M →
+      (O.toAbstractIncidenceSystem).ProperMediatedCover I M →
+        (O.toAbstractIncidenceSystem).ProperAdmissibleFiniteCoverExtension
+          O.StateReadoutAdmissible I n := by
+  intro hAdm hProper
+  exact ⟨M, hAdm, hProper⟩
+
+/--
+Residual-targeted descent for a concrete state readout: every residual distinction
+separated by the readout is already separated by a subcoalition.
+-/
+def StateReadoutDescendsToOnResidual {n : Nat}
+    (I K : Coalition J) (readout : X → Fin n) : Prop :=
+  ∀ p, (O.toAbstractIncidenceSystem).Residual I p →
+    O.StateReadoutSeparates readout p →
+      ∃ j, K j ∧ O.SeparatesPair j p
+
+/-- Concrete readout non-descent over residuals of `I`. -/
+def NonDescentStateReadoutOnResidual {n : Nat}
+    (I : Coalition J) (readout : X → Fin n) : Prop :=
+  ∀ K, Coalition.Proper K I → ¬ O.StateReadoutDescendsToOnResidual I K readout
+
+/-- Proper concrete mediated cover with residual-targeted non-descent. -/
+def ProperIrreducibleStateReadoutMediatedCover {n : Nat}
+    (I : Coalition J) (readout : X → Fin n) : Prop :=
+  O.ProperStateReadoutMediatedCover I readout ∧
+    O.NonDescentStateReadoutOnResidual I readout
+
+/-- Proper irreducible concrete readout covers are proper concrete mediated covers. -/
+theorem properStateReadoutMediatedCover_of_properIrreducibleStateReadoutMediatedCover
+    {n : Nat} (I : Coalition J) (readout : X → Fin n) :
+    O.ProperIrreducibleStateReadoutMediatedCover I readout →
+      O.ProperStateReadoutMediatedCover I readout := by
+  intro h
+  exact h.1
+
+/-- Proper irreducible concrete readout covers have residual-targeted non-descent. -/
+theorem nonDescentStateReadoutOnResidual_of_properIrreducibleStateReadoutMediatedCover
+    {n : Nat} (I : Coalition J) (readout : X → Fin n) :
+    O.ProperIrreducibleStateReadoutMediatedCover I readout →
+      O.NonDescentStateReadoutOnResidual I readout := by
+  intro h
+  exact h.2
+
 end ObservationSystem
 
 end MultiInterfaceGeometry
@@ -966,4 +1238,21 @@ end PrimitiveHolonomy
 #print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.AbstractIncidenceSystem.nonDescentOnResidual_of_properIrreducibleMediatedCover
 #print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.toAbstractIncidenceSystem
 #print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.realizes_toAbstractIncidenceSystem
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.extendWithStateReadout
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.StateReadoutMediatedCover
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.stateReadoutMediatedCover_iff_base_or_readout
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.ProperStateReadoutMediatedCover
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.MinimalStateReadoutMediatedCover
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.ProperMinimalStateReadoutMediatedCover
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.stateReadout_separates_residual_of_mediatedCover
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.no_smaller_stateReadoutCoverExtension_of_minimalStateReadoutMediatedCover
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.no_smaller_properStateReadoutCoverExtension_of_properMinimalStateReadoutMediatedCover
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.StateReadoutRealizesMediatorProfile
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.StateReadoutAdmissibleMediatorProfile
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.StateReadoutAdmissible
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.admissibleFiniteCoverExtension_of_stateReadoutAdmissible_mediatedCover
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.properAdmissibleFiniteCoverExtension_of_stateReadoutAdmissible_properMediatedCover
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.StateReadoutDescendsToOnResidual
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.ProperIrreducibleStateReadoutMediatedCover
+#print axioms PrimitiveHolonomy.Standalone.MultiInterfaceGeometry.ObservationSystem.nonDescentStateReadoutOnResidual_of_properIrreducibleStateReadoutMediatedCover
 /- AXIOM_AUDIT_END -/
