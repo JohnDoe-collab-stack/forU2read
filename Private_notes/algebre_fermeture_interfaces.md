@@ -245,7 +245,7 @@ Donc :
 La fermeture est monotone :
 
 ```text
-Closed(I,σ) and I ⊆ K
+Closed(I,σ) et I ⊆ K
 ⇒
 Closed(K,σ).
 ```
@@ -315,8 +315,8 @@ Définition :
 IrreducibleClosed(I,σ)
 ⇔
 Closed(I,σ)
-and
-∀ K ⊂ I, not Closed(K,σ).
+et
+∀ K ⊂ I, ¬ Closed(K,σ).
 ```
 
 Forme résiduelle :
@@ -325,7 +325,7 @@ Forme résiduelle :
 IrreducibleClosed(I,σ)
 ⇔
 Res(I) = ∅
-and
+et
 ∀ K ⊂ I, Res(K) ≠ ∅.
 ```
 
@@ -335,7 +335,7 @@ Forme numérique :
 IrreducibleClosed(I,σ)
 ⇔
 ρ(I) = 0
-and
+et
 ∀ K ⊂ I, ρ(K) > 0.
 ```
 
@@ -411,6 +411,15 @@ Une médiation finie ajoute une observation supplémentaire :
 M : X → Fin n.
 ```
 
+De façon équivalente, on peut nommer la famille médiée :
+
+```text
+I_M := I ∪ {M}.
+```
+
+Cette notation est un raccourci formel : `M` n’est pas une des interfaces originales de `J`; c’est un
+readout fini ajouté, de type de valeurs `Fin n`.
+
 L’observation conjointe médiée est :
 
 ```text
@@ -421,6 +430,8 @@ Joint_{I,M}(x) := (Joint_I(x), M(x)).
 La famille médiée ferme `σ` lorsqu’il existe une règle de décision :
 
 ```text
+Closed(I_M,σ) := Closed_M(I,M,σ)
+
 Closed_M(I,M,σ)
 ⇔
 ∃ pred : ((Π_{j∈I} V_j) × Fin n) → Y,
@@ -432,15 +443,15 @@ Le médiateur est minimal si :
 
 ```text
 ∃ M_n : X → Fin n, Closed_M(I,M_n,σ)
-and
-∀ m < n, ∀ M_m : X → Fin m, not Closed_M(I,M_m,σ).
+et
+∀ m < n, ∀ M_m : X → Fin m, ¬ Closed_M(I,M_m,σ).
 ```
 
 Ainsi :
 
 ```text
 clôture directe : Res(I) = ∅
-clôture médiée  : Res(I) ≠ ∅, puis Joint_{I,M_n} ferme avec n minimal
+clôture médiée  : Res(I) ≠ ∅, puis Closed(I_{M_n},σ) avec n minimal
 ```
 
 ## 12. Non-descente du médiateur
@@ -463,7 +474,7 @@ Un médiateur est irréductible relativement à `I` s’il ne descend vers aucun
 ```text
 IrreducibleMediator(M,I)
 ⇔
-∀ K ⊂ I, not Descends(M,K).
+∀ K ⊂ I, ¬ Descends(M,K).
 ```
 
 La non-descente signifie que le médiateur n’est pas une information marginale déguisée. Il dépend réellement
@@ -490,7 +501,7 @@ L’explication minimale d’une décision cible est alors :
 ```text
 une sous-famille I telle que
 Res(I) = ∅
-and
+et
 ∀ K ⊂ I, Res(K) ≠ ∅.
 ```
 
@@ -613,6 +624,7 @@ Lecture médiée :
 ```text
 I = {A}
 M = B : X → Fin 2.
+I_M = {A} ∪ {M}.
 ```
 
 Alors :
@@ -671,7 +683,7 @@ Irreductibilité :
 ```text
 IrreducibleClosed(I,σ)
 ⇔
-ρ(I)=0 and ∀K⊂I, ρ(K)>0
+ρ(I)=0 et ∀K⊂I, ρ(K)>0
 ```
 
 Médiation :

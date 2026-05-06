@@ -410,6 +410,15 @@ Finite mediation adds an extra observation:
 M : X → Fin n.
 ```
 
+Equivalently, one may name the mediated family:
+
+```text
+I_M := I ∪ {M}.
+```
+
+This notation is formal shorthand only: `M` is not one of the original interfaces in `J`; it is an added
+finite readout with value type `Fin n`.
+
 The mediated joint observation is:
 
 ```text
@@ -420,6 +429,8 @@ Joint_{I,M}(x) := (Joint_I(x), M(x)).
 The mediated family closes `σ` when there is a decision rule:
 
 ```text
+Closed(I_M,σ) := Closed_M(I,M,σ)
+
 Closed_M(I,M,σ)
 ⇔
 ∃ pred : ((Π_{j∈I} V_j) × Fin n) → Y,
@@ -439,7 +450,7 @@ Thus:
 
 ```text
 direct closure  : Res(I) = ∅
-mediated closure: Res(I) ≠ ∅, then Joint_{I,M_n} closes with n minimal
+mediated closure: Res(I) ≠ ∅, then Closed(I_{M_n},σ) with n minimal
 ```
 
 ## 12. Mediator non-descent
@@ -612,6 +623,7 @@ Mediated reading:
 ```text
 I = {A}
 M = B : X → Fin 2.
+I_M = {A} ∪ {M}.
 ```
 
 Then:
